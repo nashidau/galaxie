@@ -1,0 +1,86 @@
+/*
+//EDC Form
+images {
+         // Images
+}
+collections {
+   group {
+         // Group1 Params
+         parts {
+                  part {
+                          // Part Params
+                          description {
+                                  // State Params
+                          }
+                  }
+         }
+         programs {
+                  program {
+                          // Program Params
+                  }
+         }
+     }
+   group {
+         // Group2 Params
+         parts {
+         ........
+         }
+         programs {
+         ......
+         }
+   }
+}
+*/
+
+collections {
+    group { 
+	name, 	"Splash";
+	min, 	128 128;
+	max,	1024  1024;
+	parts {
+	    part {
+		name, "background";
+		mouse_events:  0;
+		type:          RECT;
+	        description {
+		    state:    "default" 0.0;
+		    rel1 {
+			relative: 0.0  0.0;
+			offset: 0 0;
+		    }
+		    rel2 {
+			relative: 1.0 1.0;
+			offset: -1 -1;
+		    }
+		    color: 221 221 221 255;
+		}
+	    }
+		
+	    part {
+		name, "button";
+		mouse_events:  1;
+		type:          RECT;
+	        description {
+		    state:    "default" 0.0;
+		    rel1 {
+			relative: 0.0  0.0;
+			offset: 10 10;
+		    }
+		    rel2 {
+			relative: 0.0 0.0;
+			offset: 20 20;
+		    }
+		    color: 80 200 80 200;
+		}
+	    }
+	}
+	program {
+	    name:   "connectclick";
+	    signal: "mouse,down,1";
+	    source: "button";
+	    action: SIGNAL_EMIT "Splash.connect" "";
+	}
+    }
+}
+
+/* vim :sw = 4: */
