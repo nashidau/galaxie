@@ -57,7 +57,6 @@ tpe_event_type_add(struct tpe_event *tpeev, const char *name){
 	
 	/* FIXME: This cast needs to go */
 	ecore_hash_set(tpeev->hash, (void*)name, einfo);	
-printf("Registered event type '%s'\n",name);
 	return 0;
 }
 

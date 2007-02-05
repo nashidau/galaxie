@@ -53,7 +53,7 @@ struct msgname {
 	{ "MsgORDER", 			11 },
 	{ "MsgINSERT_ORDER", 		12 },
 	{ "MsgREMOVE_ORDER", 		13 },
-	{ "MsgGET_TIME_REMAINING", 	14 },
+	{ "MsgGetTimeRemaining", 	14 },
 	{ "MsgTIME_REMAINING", 		15 },
 	{ "MsgGET_BOARDS", 		16 },
 	{ "MsgBOARD", 			17 },
@@ -64,19 +64,19 @@ struct msgname {
 	{ "MsgGET_RESOURCE_DESCRIPTION",22 },
 	{ "MsgRESOURCE_DESCRIPTION", 	23 },
 	{ "MsgREDIRECT", 		24 },
-	{ "MsgGET_FEATURES", 		25 },
+	{ "MsgGetFeatures", 		25 },
 	{ "MsgAVAILABLE_FEATURES", 	26 },
 	{ "MsgPING", 			27 },
-	{ "MsgGET_OBJECT_IDS", 		28 },
+	{ "MsgGetObjectIDs", 			28 },
 	{ "MsgGET_OBJECT_IDS_BY_POSITION", 	29 },
 	{ "MsgGET_OBJECT_IDS_BY_CONTAINER", 	30 },
 	{ "MsgLIST_OF_OBJECT_IDS", 		31 },
 	{ "MsgGET_ORDER_DESCRIPTION_IDS", 	32 },
 	{ "MsgLIST_OF_ORDER_DESCRIPTION_IDS", 	33 },
 	{ "MsgPROBE_ORDER", 			34 },
-	{ "MsgGET_BOARD_IDS", 			35 },
+	{ "MsgGetBoardIDs", 			35 },
 	{ "MsgLIST_OF_BOARDS", 			36 },
-	{ "MsgGET_RESOURCES_IDS", 		37 },
+	{ "MsgGetResourceIDs",	 		37 },
 	{ "MsgLIST_OF_RESOURCES_IDS", 		38 },
 	{ "MsgGET_PLAYER_DATA", 		39 },
 	{ "MsgPLAYER_DATA", 			40 },
@@ -112,8 +112,14 @@ struct msgname {
  * for the system.
  */
 struct tpe_msg {
+	struct tpe *tpe;
+
 	/* Actual server connection */
 	Ecore_Con_Server *svr;
+
+	/* Callbacks for connect */
+	conncb conncb;
+	void *conndata;
 
 	/* Sequence */
 	unsigned int seq;
@@ -121,10 +127,6 @@ struct tpe_msg {
 
 	/* Header */
 	unsigned int header;
-
-	/* Signals */
-	int *signals;
-
 
 	/* Buffered Data */
 	struct {
@@ -154,7 +156,7 @@ static void tpe_msg_event_register(struct tpe *tpe);
 
 
 static int tpe_msg_receive(void *data, int type, void *edata);
-//static int tpe_msg_connect(void *data, int type, void *edata);
+static int tpe_msg_con_event_server_add(void *data, int type, void *edata);
 static int tpe_msg_cb_add(struct tpe_msg *msg, int seq, msgcb cb, void *userdata);
 //static void tpe_connect_logged_in(void *msg, const char *type, int len, void *mdata);
 //static int tpe_msg_register_events(struct tpe_msg *msg);
@@ -180,9 +182,10 @@ tpe_msg_init(struct tpe *tpe){
 	
 	/* Register events */
 	tpe_msg_event_register(tpe);
+	msg->tpe = tpe;
 
-//	ecore_event_handler_add(ECORE_CON_EVENT_SERVER_ADD, 	
-//			tpe_msg_connect, msg);
+	ecore_event_handler_add(ECORE_CON_EVENT_SERVER_ADD, 	
+			tpe_msg_con_event_server_add, msg);
 	ecore_event_handler_add(ECORE_CON_EVENT_CLIENT_DATA,
 			tpe_msg_receive, msg);
 	ecore_event_handler_add(ECORE_CON_EVENT_SERVER_DATA,
@@ -203,6 +206,26 @@ tpe_msg_event_register(struct tpe *tpe){
 	}
 }
 
+/**
+ * Initialise a connection to a server
+ */
+int tpe_msg_connect(struct tpe_msg *msg, 
+		const char *server, int port, int usessl,
+		conncb cb, void *userdata){
+	Ecore_Con_Server *svr;
+
+	/* FIXME: ssl */
+	svr = ecore_con_server_connect(ECORE_CON_REMOTE_SYSTEM,
+				server,port,msg);
+
+	msg->svr = svr;
+
+	msg->conncb = cb;
+	msg->conndata = userdata;
+
+	return 0;
+}
+
 /***************************************/
 
 /* 
@@ -210,9 +233,16 @@ tpe_msg_event_register(struct tpe *tpe){
  *
  * Now we will attempt to connect
  */
-static int tpe_msg_connect(void *data, int type, void *edata){
-	//struct tpe_msg *msg; 
-	printf("Connected\n");
+static int tpe_msg_con_event_server_add(void *data, int type, void *edata){
+	struct tpe_msg *msg;
+
+	msg = data;
+
+	if (msg->conncb)
+		msg->conncb(msg->conndata, NULL);
+	
+	msg->conncb = 0;
+	msg->conndata = 0;
 
 	//msg = data;
 	//tpe_msg_send_strings(msg, TPE_MSG_CONNECT, tpe_connect_accept,msg,ID, NULL);
@@ -301,7 +331,7 @@ tpe_msg_handle_packet(struct tpe_msg *msg, int seq, int type,
 			next = cb->next;
 			if (cb->seq == seq){
 				if (cb->cb)
-					cb->cb(cb->userdata, type, len, 
+					cb->cb(cb->userdata, "FIXME", len, 
 							(char*)data + 16);
 				cb->deleteme = 1;
 			} 
@@ -326,11 +356,21 @@ tpe_msg_handle_packet(struct tpe_msg *msg, int seq, int type,
 
 	{
 		/* FIXME: Neeed to process this a little */
-		int *edata;
-		printf("Handling a %d\n",type);
+		int *edata,i;
+		const char *event = "None!";
+		for (i = 0 ; i < 100 ; i ++){ /* FIXME: Not 100 */
+			if (msgnames[i].tp03 == type){
+				event = msgnames[i].name;
+				break;
+			}
+		}
+		printf("Handling a %s (%d)\n",event,type);
+
 		edata = malloc(16 + len);
 		memcpy(edata,data,16+len);
-		ecore_event_add(msg->signals[type], edata, NULL, NULL);
+
+		/* FIXME: Do I need a cleanup function */
+		tpe_event_send(msg->tpe->event, event, edata, NULL, NULL);
 	}
 
 }	

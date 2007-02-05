@@ -4,7 +4,7 @@ PKGS='evas ecore edje'
 CFLAGS+=`${PKGCONFIG} --cflags ${PKGS}`
 LDFLAGS+=`${PKGCONFIG} --libs ${PKGS}`
 
-.TARGETS: tpe ${EDJE}
+TARGETS: tpe ${EDJE}
 
 OBJECTS=	\
 	tpe.o	\
@@ -13,11 +13,21 @@ OBJECTS=	\
 	tpe_gui.o	\
 	tpe_msg.o
 
-EDJE=	edje/basic.edj
+EDJE=	edje/basic.edj edje/background.edj
+
+
+%.edj : %.edc
+	edje_cc $<
 
 tpe: ${OBJECTS} 
+
 edje/basic.edj : edje/basic.edc
 	edje_cc edje/basic.edc
 
+
+
 tpe_msg.o : tpe_msg.h tpe.h
+
+clean: 
+	rm -f *.o 
 

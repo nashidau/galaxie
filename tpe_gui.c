@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 
 #include <Ecore.h>
 #include <Ecore_Evas.h>
@@ -14,6 +15,8 @@ struct tpe_gui {
 	Evas_Object *connect;
 
 	Evas_Object *main;
+
+	Evas_Object *background;
 };
 
 enum {
@@ -45,6 +48,14 @@ tpe_gui_init(struct tpe *tpe){
 
 	edje_init();
 
+	gui->background = edje_object_add(gui->e);
+	edje_object_file_set(gui->background,"edje/background.edj", 
+				"Background");
+	evas_object_move(gui->background, 0,0);
+	evas_object_show(gui->background);
+	evas_object_layer_set(gui->background,-100);
+	evas_object_resize(gui->background,WIDTH,HEIGHT);
+
 	gui->connect = edje_object_add(gui->e);
 	edje_object_file_set(gui->connect,"edje/basic.edj", "Splash");
 	evas_object_move(gui->connect,0,0);
@@ -68,7 +79,7 @@ tpe_gui_edje_splash_connect(void *data, Evas_Object *o,
 
 	tpe = data;
 
-	tpe_comm_connect(tpe);
+	tpe_comm_connect(tpe->comm, "localhost", 6923, "nash", "password");
 
 	/* General errors */
 /*	tpe_msg_event_handler_add(tpe->msg, TPE_MSG_FAIL,

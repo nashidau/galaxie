@@ -2,7 +2,7 @@ struct tpe;
 struct tpe_msg;
 struct tpe_msg_connection;
 
-typedef void (*msgcb)(void *userdata, const char *msgtype, int len, void *data);
+typedef int (*msgcb)(void *userdata, const char *msgtype, int len, void *data);
 typedef int (*conncb)(void *userdata, struct tpe_msg_connection *mcon);
 
 struct tpe_msg *tpe_msg_init(struct tpe *tpe);
