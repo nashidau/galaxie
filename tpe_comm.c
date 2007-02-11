@@ -12,6 +12,21 @@
 #include "tpe_msg.h"
 #include "tpe_event.h"
 
+struct features {
+	int id;
+	const char *desc;
+} features[] =  {
+	{ 1,	"SSL connection on this port" },
+	{ 2,	"SSL connection on another port" },
+	{ 3,	"http connect on this port" },
+	{ 4,	"http connect on another port" },
+	{ 5,	"keep alive" },
+	{ 6,	"Serverside properties" },
+	{ 1000,	"Automatic account registration" },
+};
+#define N_FEATURES (sizeof(features)/sizeof(features[0]))
+
+
 
 struct tpe_comm {
 	struct tpe *tpe;
@@ -28,12 +43,20 @@ static int tpe_comm_socket_connect(void *data, struct tpe_msg_connection *);
 static int tpe_comm_may_login(void *data, const char *msgtype, int len, void *mdata);
 static int tpe_comm_logged_in(void *data, const char *msgtype, int len, void *mdata);
 
+
+/* Generic handlers */
+static int tpe_comm_available_features_msg(void *udata, const char *type, void *event);
+
 struct tpe_comm *
 tpe_comm_init(struct tpe *tpe){
 	struct tpe_comm *comm;
 
 	comm = calloc(1,sizeof(struct tpe_comm));
 	comm->tpe = tpe;
+
+	tpe_event_handler_add(tpe->event, "MsgAvailableFeatures", 
+			tpe_comm_available_features_msg, comm);
+
 
 	return comm;
 }
@@ -121,3 +144,31 @@ printf("Sending lots of stuff\n");
 
 
 
+/**
+ * Event Handler for "Available features" message.
+ *
+ * Currently jsut prints out the data
+ */
+static int 
+tpe_comm_available_features_msg(void *udata, const char *type, void *event){
+	uint32_t *data;
+	int i,j,len,feature;
+
+	data = (uint32_t *)event + 4;
+	len = ntohl(*data);
+	if (len > 32) len = 32;
+
+	if ((len + 1) * 4!= ntohl(data[-1]))
+		printf("Data lengths don't match: %d items vs %d bytes\n",
+				len, ntohl(data[-1]));
+
+	for (i = 0 ; i < len ; i ++){
+		feature = ntohl(data[i + 1]);
+		for (j = 0 ; j < N_FEATURES ; j ++)
+			if (features[j].id == feature)
+				printf("\tFeature: %s\n",features[j].desc);
+	}
+
+	return 1;
+
+}

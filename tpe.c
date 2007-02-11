@@ -16,23 +16,8 @@
 #define WIDTH	1024
 #define HEIGHT	768
 
-struct features {
-	int id;
-	const char *desc;
-} features[] =  {
-	{ 1,	"SSL connection on this port" },
-	{ 2,	"SSL connection on another port" },
-	{ 3,	"http connect on this port" },
-	{ 4,	"http connect on another port" },
-	{ 5,	"keep alive" },
-	{ 6,	"Serverside properties" },
-	{ 1000,	"Automatic account registration" },
-};
-#define N_FEATURES (sizeof(features)/sizeof(features[0]))
-
 
 /* FIXME: These need to be sp;lit into different files */
-static int tpe_features(void *data, int type, void *event);
 static int tpe_time_remaining(void *data, int type, void *event);
 static int tpe_board(void *data, int type, void *event);
 static int tpe_resource_description(void *data, int type, void *event);
@@ -58,29 +43,7 @@ main(int argc, char **argv){
 	return 0;
 }
 
-static int 
-tpe_features(void *udata, int type, void *event){
-	uint32_t *data;
-	int i,j,len,feature;
 
-	data = (uint32_t *)event + 4;
-	len = ntohl(*data);
-	if (len > 32) len = 32;
-
-	if ((len + 1) * 4!= ntohl(data[-1]))
-		printf("Data lengths don't match: %d items vs %d bytes\n",
-				len, ntohl(data[-1]));
-
-	for (i = 0 ; i < len ; i ++){
-		feature = ntohl(data[i + 1]);
-		for (j = 0 ; j < N_FEATURES ; j ++)
-			if (features[j].id == feature)
-				printf("\tFeature: %s\n",features[j].desc);
-	}
-
-	return 1;
-
-}
 static int 
 tpe_time_remaining(void *data, int type, void *event){
 	printf("Time remaining: %d\n", ntohl(*((int32_t*)event + 4)));

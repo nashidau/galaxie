@@ -1,3 +1,5 @@
+#include <arpa/inet.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -8,8 +10,11 @@
 
 #include "tpe.h"
 #include "tpe_comm.h"
+#include "tpe_event.h"
 
 struct tpe_gui {
+	struct tpe *tpe;
+
 	Ecore_Evas  *ee;
 	Evas        *e;
 	Evas_Object *connect;
@@ -29,11 +34,16 @@ enum {
 static void tpe_gui_edje_splash_connect(void *data, Evas_Object *o, 
 		const char *emission, const char *source);
 
+/* System event handlers */
+static int tpe_gui_time_remaining(void *data, int eventid, void *event);
+
+
 struct tpe_gui *
 tpe_gui_init(struct tpe *tpe){
 	struct tpe_gui *gui;
 
 	gui = calloc(1,sizeof(struct tpe_gui));
+	gui->tpe = tpe;
 	
 	/* FIXME: Should check for --nogui option */
 
@@ -64,6 +74,10 @@ tpe_gui_init(struct tpe *tpe){
 	edje_object_signal_callback_add(gui->connect, "Splash.connect", "",
 			tpe_gui_edje_splash_connect, tpe);
 
+
+	/* Some code to display the time remaining */
+	tpe_event_handler_add(gui->tpe->event, "MsgTimeRemaining",
+			tpe_gui_time_remaining, gui);
 
 	return gui;
 }
@@ -96,11 +110,27 @@ tpe_gui_edje_splash_connect(void *data, Evas_Object *o,
 			tpe_resource_description, tpe);
 	*/	
 
-	/* Jump to the map screen */
+	/* Create the map screen */
+
+	gui->main = edje_object_add(gui->e);
+	edje_object_file_set(gui->main,"edje/main.edj", "Main");
+	evas_object_move(gui->main,0,0);
+	evas_object_show(gui->main);
+	evas_object_resize(gui->main,WIDTH,HEIGHT);
+
 
 }
 
 
+static int
+tpe_gui_time_remaining(void *guip, int type, void *eventd){
+	struct tpe_gui *gui;
+	int *event;
 
+	event = eventd;
+	printf("event %d\n",ntohl(event[4]));
+
+	return 1;
+}
 	
 

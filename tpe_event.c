@@ -67,7 +67,7 @@ tpe_event_type_add(struct tpe_event *tpeev, const char *name){
  */
 int 
 tpe_event_handler_add(struct tpe_event *tpeev, const char *event,
-		int (*handler)(void *data, int type, void *event), void *data){
+		int (*handler)(void *data, int typeid, void *event), void *data){
 	struct event_info *einfo;
 
 	assert(tpeev);
