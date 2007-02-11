@@ -22,8 +22,6 @@ EDJE=	edje/basic.edj edje/background.edj
 tpe: ${OBJECTS} 
 
 edje/basic.edj : edje/basic.edc
-	edje_cc edje/basic.edc
-
 
 
 tpe_msg.o : tpe_msg.h tpe.h

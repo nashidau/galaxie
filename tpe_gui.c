@@ -17,7 +17,6 @@ struct tpe_gui {
 
 	Ecore_Evas  *ee;
 	Evas        *e;
-	Evas_Object *connect;
 
 	Evas_Object *main;
 
@@ -66,12 +65,12 @@ tpe_gui_init(struct tpe *tpe){
 	evas_object_layer_set(gui->background,-100);
 	evas_object_resize(gui->background,WIDTH,HEIGHT);
 
-	gui->connect = edje_object_add(gui->e);
-	edje_object_file_set(gui->connect,"edje/basic.edj", "Splash");
-	evas_object_move(gui->connect,0,0);
-	evas_object_show(gui->connect);
-	evas_object_resize(gui->connect,WIDTH,HEIGHT);
-	edje_object_signal_callback_add(gui->connect, "Splash.connect", "",
+	gui->main = edje_object_add(gui->e);
+	edje_object_file_set(gui->main,"edje/basic.edj", "Splash");
+	evas_object_move(gui->main,0,0);
+	evas_object_show(gui->main);
+	evas_object_resize(gui->main,WIDTH,HEIGHT);
+	edje_object_signal_callback_add(gui->main, "Splash.connect", "",
 			tpe_gui_edje_splash_connect, tpe);
 
 
@@ -90,8 +89,10 @@ static void
 tpe_gui_edje_splash_connect(void *data, Evas_Object *o, 
 		const char *emission, const char *source){
 	struct tpe *tpe;
+	struct tpe_gui *gui;
 
 	tpe = data;
+	gui = tpe->gui;
 
 	tpe_comm_connect(tpe->comm, "localhost", 6923, "nash", "password");
 
@@ -111,12 +112,12 @@ tpe_gui_edje_splash_connect(void *data, Evas_Object *o,
 	*/	
 
 	/* Create the map screen */
-
+	evas_object_del(gui->main);
 	gui->main = edje_object_add(gui->e);
-	edje_object_file_set(gui->main,"edje/main.edj", "Main");
+	edje_object_file_set(gui->main,"edje/basic.edj", "Main");
 	evas_object_move(gui->main,0,0);
-	evas_object_show(gui->main);
 	evas_object_resize(gui->main,WIDTH,HEIGHT);
+	evas_object_show(gui->main);
 
 
 }
@@ -126,9 +127,14 @@ static int
 tpe_gui_time_remaining(void *guip, int type, void *eventd){
 	struct tpe_gui *gui;
 	int *event;
+	char buf[100];
 
+	gui = guip;
+	
 	event = eventd;
-	printf("event %d\n",ntohl(event[4]));
+	snprintf(buf,100,"%ds Remaining",ntohl(event[4]));
+
+	edje_object_part_text_set(gui->main, "counter", buf);
 
 	return 1;
 }

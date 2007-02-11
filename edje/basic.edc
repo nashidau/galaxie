@@ -81,6 +81,60 @@ collections {
 	    action: SIGNAL_EMIT "Splash.connect" "";
 	}
     }
+
+
+    group {
+    	name: 	"Main";
+	min:	128 128;
+	max:	4096 4096;
+	parts {
+	    part {
+	    	name: "background";
+		mouse_events: 0;
+		type:		RECT;
+		description {
+		    state:  "default"	0.0;
+		    rel1 {
+			relative: 0.0 0.0;
+			offset: 0 0;
+		    }
+		    rel2 {
+			relative: 1.0 1.0;
+			offset: -1 -1;
+		    }
+		    color:  70 70 70 255;
+		}
+	    }
+
+
+	    /* The clock */
+	    part {
+		name, "counter";
+		mouse_events: 0;
+		type:	TEXT;
+		effect: SOFT_SHADOW;
+		description {
+		    state: default  0.0;
+		    rel1 {
+			relative: 1.0 0.0;
+			offset: -50 10;
+		    }
+		    rel2 {
+			relative: 1.0 0.0;
+			offset: -1 20;
+		    }
+		    color: 255 255 255 255;
+		    color3: 128 255 128 150;
+		    text {
+			text: "??";
+			font: "Vera";
+			size: 16;
+			min: 1 1;
+		    }
+		}
+	    }	
+	}
+    }
 }
 
 /* vim :sw = 4: */
