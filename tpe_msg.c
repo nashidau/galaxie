@@ -70,7 +70,7 @@ struct msgname {
 	{ "MsgGetObjectIDs", 			28 },
 	{ "MsgGET_OBJECT_IDS_BY_POSITION", 	29 },
 	{ "MsgGET_OBJECT_IDS_BY_CONTAINER", 	30 },
-	{ "MsgLIST_OF_OBJECT_IDS", 		31 },
+	{ "MsgListOfObjectIDs", 		31 },
 	{ "MsgGET_ORDER_DESCRIPTION_IDS", 	32 },
 	{ "MsgLIST_OF_ORDER_DESCRIPTION_IDS", 	33 },
 	{ "MsgPROBE_ORDER", 			34 },
