@@ -12,6 +12,7 @@
 #include "tpe_comm.h"
 #include "tpe_msg.h"
 #include "tpe_gui.h"
+#include "tpe_obj.h"
 
 #define WIDTH	1024
 #define HEIGHT	768
@@ -37,6 +38,7 @@ main(int argc, char **argv){
 	tpe->msg   = tpe_msg_init(tpe);
 	tpe->gui   = tpe_gui_init(tpe);
 	tpe->comm  = tpe_comm_init(tpe);
+	tpe->obj   = tpe_obj_init(tpe);
 
 	ecore_main_loop_begin();
 

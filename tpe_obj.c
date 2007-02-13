@@ -49,7 +49,7 @@ tpe_obj_object_list(void *data, int eventid, void *event){
 	n = ntohl(edata[4]);
 	len = n * 4 + 4; /* int == 4 on the bus */
 
-	tpe_msg_send(obj->tpe->msg, "MsgGetObjectIDs",NULL, NULL, event, len);
+	tpe_msg_send(obj->tpe->msg, "MsgGetObjectIDs",NULL, NULL, edata+4, len);
 
 	return 1;
 }
