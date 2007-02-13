@@ -14,6 +14,24 @@ struct tpe_obj {
 	struct tpe *tpe;
 };
 
+struct vector {
+	uint64_t x,y,z;
+};
+
+
+/* Represents an object in the system */
+struct object {
+	uint32_t oid;	/* Unique ID */
+	enum objtype type;
+	char *name;
+	uint64_t size;
+	struct vector pos;
+	struct vector vel;
+
+
+	
+};
+
 static int tpe_obj_object_list(void *data, int eventid, void *event);
 
 struct tpe_obj *
@@ -52,6 +70,18 @@ tpe_obj_object_list(void *data, int eventid, void *event){
 	tpe_msg_send(obj->tpe->msg, "MsgGetObjectIDs",NULL, NULL, edata+4, len);
 
 	return 1;
+}
+
+static int
+tpe_obj_get(void *data, int eventid, void *event){
+	struct tpe_obj *obj;
+	struct object *o;
+	
+	obj = data;
+
+	o = calloc(1,sizeof(struct object));
+	
+
 }
 
 
