@@ -34,8 +34,8 @@ struct tpe_gui {
 
 enum {
 	WIDTH = 1024,
-	HEIGHT = 500,
-	DEFAULT_ZOOM = 4194304,
+	HEIGHT = 800,
+	DEFAULT_ZOOM = 8388608,
 };
 
 #define URI	"localhost"	/* FIXME */
@@ -187,6 +187,14 @@ tpe_gui_object_update(void *data, int eventid, void *event){
 
 	ecore_evas_geometry_get(gui->ee, 0,0,&width,&height);
 	printf("Putting %s at %d,%d\n",obj->name, x + width / 2,y + height / 2);
+
+	if (obj->obj == NULL){
+		printf("New obj\n");
+		obj->obj = evas_object_rectangle_add(gui->e);
+		evas_object_resize(obj->obj,5,5);
+		evas_object_show(obj->obj);
+		evas_object_move(obj->obj,x + width / 2,y + height / 2);
+	}
 
 	if (obj->type == OBJTYPE_SYSTEM){
 			

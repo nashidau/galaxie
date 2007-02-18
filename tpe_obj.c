@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <Evas.h>
 #include <Ecore_Data.h>
 
 #include "tpe.h"

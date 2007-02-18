@@ -32,6 +32,8 @@ struct object {
 	int norders;
 
 	uint64_t updated;
+
+	Evas_Object *obj;
 };
 
 
