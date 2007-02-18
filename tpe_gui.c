@@ -11,6 +11,7 @@
 #include "tpe.h"
 #include "tpe_comm.h"
 #include "tpe_event.h"
+#include "tpe_obj.h"
 
 struct tpe_gui {
 	struct tpe *tpe;
@@ -21,11 +22,20 @@ struct tpe_gui {
 	Evas_Object *main;
 
 	Evas_Object *background;
+
+	int zoom;
+
+	/* Bounding box of the universe */
+	struct {
+		int64_t minx,miny;
+		int64_t maxx,maxy;
+	} bb;
 };
 
 enum {
 	WIDTH = 1024,
-	HEIGHT = 500 
+	HEIGHT = 500,
+	DEFAULT_ZOOM = 4194304,
 };
 
 #define URI	"localhost"	/* FIXME */
@@ -35,6 +45,7 @@ static void tpe_gui_edje_splash_connect(void *data, Evas_Object *o,
 
 /* System event handlers */
 static int tpe_gui_time_remaining(void *data, int eventid, void *event);
+static int tpe_gui_object_update(void *data, int eventid, void *event);
 
 
 struct tpe_gui *
@@ -43,6 +54,7 @@ tpe_gui_init(struct tpe *tpe){
 
 	gui = calloc(1,sizeof(struct tpe_gui));
 	gui->tpe = tpe;
+	gui->zoom = DEFAULT_ZOOM;
 	
 	/* FIXME: Should check for --nogui option */
 
@@ -77,6 +89,10 @@ tpe_gui_init(struct tpe *tpe){
 	/* Some code to display the time remaining */
 	tpe_event_handler_add(gui->tpe->event, "MsgTimeRemaining",
 			tpe_gui_time_remaining, gui);
+	tpe_event_handler_add(gui->tpe->event, "ObjectNew",
+			tpe_gui_object_update, gui);
+	tpe_event_handler_add(gui->tpe->event, "ObjectChanged",
+			tpe_gui_object_update, gui);
 
 	return gui;
 }
@@ -139,5 +155,45 @@ tpe_gui_time_remaining(void *guip, int type, void *eventd){
 
 	return 1;
 }
+
+
+static int 
+tpe_gui_object_update(void *data, int eventid, void *event){
+	struct tpe_gui *gui;
+	struct object *obj;
+	int changed = 0;
+	Evas_Coord x,y;
+	int width,height;
 	
+	gui = data;
+	obj = event;
+
+	if (obj->type == OBJTYPE_UNIVERSE || obj->type == OBJTYPE_GALAXY){
+		return 1;
+	}
+
+	/* First update scaling factors */
+	if (obj->pos.x > gui->bb.maxx) {changed ++;gui->bb.maxx = obj->pos.x;}
+	if (obj->pos.y > gui->bb.maxy) {changed ++;gui->bb.maxy = obj->pos.y;}
+	if (obj->pos.x < gui->bb.minx) {changed ++;gui->bb.minx = obj->pos.x;}
+	if (obj->pos.y < gui->bb.miny) {changed ++;gui->bb.miny = obj->pos.y;}
+
+	if (changed){
+	}
+
+	/* work out where to put it on screen */
+	x = obj->pos.x / gui->zoom;
+	y = obj->pos.y / gui->zoom;
+
+	ecore_evas_geometry_get(gui->ee, 0,0,&width,&height);
+	printf("Putting %s at %d,%d\n",obj->name, x + width / 2,y + height / 2);
+
+	if (obj->type == OBJTYPE_SYSTEM){
+			
+	} else if (obj->type == OBJTYPE_FLEET){
+
+	}
+
+	return 1;
+}
 

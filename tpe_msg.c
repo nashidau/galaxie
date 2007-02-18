@@ -370,7 +370,7 @@ tpe_msg_handle_packet(struct tpe_msg *msg, int seq, int type,
 		memcpy(edata,data,16+len);
 
 		/* FIXME: Do I need a cleanup function */
-		tpe_event_send(msg->tpe->event, event, edata, NULL, NULL);
+		tpe_event_send(msg->tpe->event, event, edata, tpe_event_nofree, NULL);
 	}
 
 }	

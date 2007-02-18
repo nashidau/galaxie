@@ -17,7 +17,6 @@ tpe_util_string_extract(const char *src, int *lenp, const char **endp){
 	int len;
 	char *buf;
 	len = ntohl(*(int *)src);
-	printf("\tString is length %d\n",len);
 	if (endp) *endp = src + len + 4;
 	if (lenp) *lenp = len;
 	buf = malloc(len + 1);

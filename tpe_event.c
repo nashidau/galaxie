@@ -143,3 +143,9 @@ tpe_event_send(struct tpe_event *tpeev, const char *event, void *edata,
 
 	return 0;
 }
+
+
+void 
+tpe_event_nofree(void *x,void *y){
+
+}

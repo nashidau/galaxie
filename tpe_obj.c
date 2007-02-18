@@ -1,10 +1,14 @@
 /* 
  * General object related functions.
+ *
+ * TODO: Better data structure then a linked list 
  */
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <Ecore_Data.h>
 
 #include "tpe.h"
 #include "tpe_obj.h"
@@ -14,40 +18,10 @@
 
 struct tpe_obj {
 	struct tpe *tpe;
-};
-
-struct vector {
-	uint64_t x,y,z;
+	Ecore_List *objs;
 };
 
 
-/* Represents an object in the system */
-struct object {
-	uint32_t oid;	/* Unique ID */
-	enum objtype type;
-	char *name;
-	uint64_t size;
-	struct vector pos;
-	struct vector vel;
-
-	int nchildren;
-	int *children;
-
-	int nordertypes;
-	int *ordertypes;
-
-	int norders;
-
-	int updated;
-
-	int unused1, unused2;
-
-
-
-
-
-	
-};
 
 static int tpe_obj_object_list(void *data, int eventid, void *event);
 static int tpe_obj_data_receive(void *data, int eventid, void *event);
@@ -69,6 +43,8 @@ tpe_obj_init(struct tpe *tpe){
 
 	tpe_event_type_add(event, "ObjectNew");
 	tpe_event_type_add(event, "ObjectChanged");
+
+	obj->objs = ecore_list_new();
 
 	return obj;
 }
@@ -124,16 +100,21 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 	struct tpe_obj *obj;
 	struct object *o;
 	int id,n;
+	int isnew;
 	
 	obj = data;
 
 	tpe_util_parse_packet(edata, "i", &id);
 
-	o = tpe_obj_obj_get_by_id(obj,id);
-	if (o == NULL)
-		o = tpe_obj_obj_add(obj,id);
+	isnew = 0;
 
-	n = tpe_util_parse_packet(edata, "iislllllllaailii",
+	o = tpe_obj_obj_get_by_id(obj,id);
+	if (o == NULL){
+		isnew = 1;
+		o = tpe_obj_obj_add(obj,id);
+	}
+
+	n = tpe_util_parse_packet(edata, "iislllllllaail",
 			&o->oid, &o->type, &o->name,
 			&o->size, 
 			&o->pos.x,&o->pos.y,&o->pos.z,
@@ -141,20 +122,26 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 			&o->nchildren, &o->children, 
 			&o->nordertypes, &o->ordertypes,
 			&o->norders,
-			&o->updated,
-			&o->unused1, &o->unused2);
+			&o->updated);
 
 	tpe_obj_obj_dump(o);
-	
 
-
+	tpe_event_send(obj->tpe->event, isnew ? "ObjectNew" : "ObjectChange",
+				o, tpe_event_nofree, NULL);
 
 	return 1;
 }
 
 struct object *
 tpe_obj_obj_get_by_id(struct tpe_obj *obj, int oid){
-	return 0;
+	struct object *o;
+
+	ecore_list_first(obj->objs);
+	while ((o = ecore_list_next(obj->objs)))
+		if (o->oid == oid)
+			return o;
+
+	return NULL;
 }
 
 struct object *
@@ -162,6 +149,7 @@ tpe_obj_obj_add(struct tpe_obj *obj, int oid){
 	struct object *o;
 
 	o = calloc(1,sizeof(struct object));
+	ecore_list_insert(obj->objs, o);
 
 	return o;	
 }
@@ -176,11 +164,11 @@ tpe_obj_obj_dump(struct object *o){
 			o->pos.x, o->pos.y, o->pos.z );
 	printf("\t{ dx = %lld, dy = %lld, dz = %lld }\n",
 			o->vel.x, o->vel.y, o->vel.z );
-	printf("\t%d children:\n\t",o->nchildren);
+	printf("\t%d children: ",o->nchildren);
 	for (i = 0 ; i < o->nchildren ;  i ++){
 		printf("%d ",o->children[i]);
 	}
-	printf("\t%d orders:",o->nordertypes);
+	printf("\n\t%d orders: ",o->nordertypes);
 	for (i = 0 ; i < o->nordertypes ;  i ++){
 		printf("%d ",o->ordertypes[i]);
 	}
