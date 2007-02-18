@@ -12,7 +12,9 @@ OBJECTS=	\
 	tpe_event.o	\
 	tpe_gui.o	\
 	tpe_msg.o	\
-	tpe_obj.o
+	tpe_obj.o	\
+	tpe_util.o	\
+
 
 EDJE=	edje/basic.edj edje/background.edj
 
