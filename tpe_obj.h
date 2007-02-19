@@ -1,5 +1,6 @@
 struct tpe;
 struct tpe_obj;
+struct tpe_gui_obj;
 struct object;
 
 enum objtype {
@@ -33,7 +34,7 @@ struct object {
 
 	uint64_t updated;
 
-	Evas_Object *obj;
+	struct tpe_gui_obj *gui;
 };
 
 

@@ -32,9 +32,17 @@ struct tpe_gui {
 	} bb;
 };
 
+
+struct tpe_gui_obj {
+	Evas_Object *obj;
+
+	struct tpe_gui *gui;
+	struct object *object;
+};
+
 enum {
-	WIDTH = 1024,
-	HEIGHT = 800,
+	WIDTH = 640,
+	HEIGHT = 480,
 	DEFAULT_ZOOM = 8388608,
 };
 
@@ -46,6 +54,10 @@ static void tpe_gui_edje_splash_connect(void *data, Evas_Object *o,
 /* System event handlers */
 static int tpe_gui_time_remaining(void *data, int eventid, void *event);
 static int tpe_gui_object_update(void *data, int eventid, void *event);
+
+/* Gui event handlers */
+static void star_mouse_in(void *data, Evas *e, Evas_Object *obj, void *event);
+static void star_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event);
 
 
 struct tpe_gui *
@@ -60,7 +72,7 @@ tpe_gui_init(struct tpe *tpe){
 
 	gui->ee = ecore_evas_software_x11_new(NULL, 0,  0, 0, WIDTH, HEIGHT);
 	if (gui->ee == NULL) return 0;
-	ecore_evas_title_set(gui->ee, "Ecore Template");
+	ecore_evas_title_set(gui->ee, "Thousand Parsec (E-Client)");
 	ecore_evas_borderless_set(gui->ee, 0);
 	ecore_evas_show(gui->ee);
 	gui->e = ecore_evas_get(gui->ee);
@@ -161,6 +173,7 @@ static int
 tpe_gui_object_update(void *data, int eventid, void *event){
 	struct tpe_gui *gui;
 	struct object *obj;
+	struct tpe_gui_obj *go;
 	int changed = 0;
 	Evas_Coord x,y;
 	int width,height;
@@ -188,12 +201,31 @@ tpe_gui_object_update(void *data, int eventid, void *event){
 	ecore_evas_geometry_get(gui->ee, 0,0,&width,&height);
 	printf("Putting %s at %d,%d\n",obj->name, x + width / 2,y + height / 2);
 
-	if (obj->obj == NULL){
+	/* FIXME: Should allocate for:
+	 * 	- Ships without parents
+	 * 	- Systems 
+	 */
+	/* FIXME: Should be a nice function for this */
+	if (obj->type == OBJTYPE_SYSTEM && obj->gui == NULL){
 		printf("New obj\n");
-		obj->obj = evas_object_rectangle_add(gui->e);
-		evas_object_resize(obj->obj,5,5);
-		evas_object_show(obj->obj);
-		evas_object_move(obj->obj,x + width / 2,y + height / 2);
+		go = calloc(1,sizeof(struct tpe_gui_obj));
+		go->object = obj;
+		go->gui = gui;
+		obj->gui = go;
+
+		go->obj = edje_object_add(gui->e);
+		edje_object_file_set(go->obj,"edje/basic.edj","Star");
+		evas_object_resize(go->obj,8,8);
+		evas_object_show(go->obj);
+		evas_object_move(go->obj,x + width / 2,y + height / 2);
+
+		edje_object_part_text_set(go->obj,"label", obj->name);
+
+		evas_object_event_callback_add(go->obj,EVAS_CALLBACK_MOUSE_IN,
+				star_mouse_in, go);
+		evas_object_event_callback_add(go->obj,EVAS_CALLBACK_MOUSE_OUT,
+				star_mouse_out, go);
+
 	}
 
 	if (obj->type == OBJTYPE_SYSTEM){
@@ -204,4 +236,19 @@ tpe_gui_object_update(void *data, int eventid, void *event){
 
 	return 1;
 }
+
+static void
+star_mouse_in(void *data, Evas *e, Evas_Object *eo, void *event){
+	struct tpe_gui_obj *go;
+
+	go = data;
+
+	printf("Mouse over: %s\n",go->object->name);
+}
+
+static void
+star_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event){
+	printf("Mouse out\n");
+}
+
 

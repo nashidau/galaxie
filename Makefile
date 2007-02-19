@@ -17,10 +17,10 @@ OBJECTS=	\
 
 
 EDJE=	edje/basic.edj edje/background.edj
-
+EDJE_FLAGS=-id edje/images
 
 %.edj : %.edc
-	edje_cc $<
+	edje_cc ${EDJE_FLAGS} $<
 
 tpe: ${OBJECTS} 
 

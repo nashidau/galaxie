@@ -64,7 +64,6 @@ tpe_util_parse_packet(void *pdata, char *format, ...){
 	va_list ap;
 	
 	len = ntohl(*((int *)pdata + 3));
-	pdata = ((char *)pdata + 16);
 	parsed = 0;
 
 	va_start(ap,format);

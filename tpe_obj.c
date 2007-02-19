@@ -67,6 +67,9 @@ tpe_obj_object_list(void *data, int eventid, void *event){
 	obj = data;
 	oids = 0;
 
+	/* FIXME */
+	event = ((char *)event + 16);
+
 	tpe_util_parse_packet(event, "iiO", &seqkey, &more, &noids,&oids);
 	printf("Seqkey is %d\n",seqkey);
 	printf("# objects to go %d\n",more);
@@ -105,6 +108,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 	
 	obj = data;
 
+	edata = ((char *)edata + 16);
 	tpe_util_parse_packet(edata, "i", &id);
 
 	isnew = 0;
