@@ -31,6 +31,10 @@ struct tpe_gui {
 		int64_t minx,miny;
 		int64_t maxx,maxy;
 	} bb;
+
+	/* For mouse overs - may be more then one if they have a special
+	 * delete */
+	Evas_Object *popup;
 };
 
 
@@ -40,9 +44,6 @@ struct tpe_gui_obj {
 	struct tpe_gui *gui;
 	struct object *object;
 
-	/* For mouse overs - may be more then one if they have a special
-	 * delete */
-	Evas_Object *popup;
 };
 
 enum {
@@ -156,6 +157,11 @@ tpe_gui_edje_splash_connect(void *data, Evas_Object *o,
 	evas_object_show(gui->main);
 
 
+	gui->popup = edje_object_add(gui->e);
+	edje_object_file_set(gui->popup, "edje/basic.edj", "StarPopup");
+	edje_object_part_text_set(gui->popup, "text", "Random Star Info");
+	evas_object_resize(gui->popup,100,100);
+	evas_object_layer_set(gui->popup, 1);
 }
 
 
@@ -249,19 +255,30 @@ tpe_gui_object_update(void *data, int eventid, void *event){
 static void
 star_mouse_in(void *data, Evas *e, Evas_Object *eo, void *event){
 	struct tpe_gui_obj *go;
+	Evas_Coord x,y;
+	Evas_Coord w,h,sw,sh;
+	Evas_Coord px,py;
 
 	go = data;
 
 	printf("Mouse over: %s\n",go->object->name);
 
-	if (go->popup)
-		return;
+	evas_object_geometry_get(eo,&x,&y,NULL,NULL);
+	evas_object_geometry_get(go->gui->popup,NULL,NULL, &w, &h);
+	ecore_evas_geometry_get(go->gui->ee, NULL, NULL, &sw, &sh);
 
-//	go->popup = edje_object_add(go->gui->e);
-//	edje_object_file_set(go->popup, "edje/basic.edj", "StarPopup");
-//	edje_object_part_text_set(go->popup, "text", "Random Star Info");
-//	evas_object_move(go->popup,0,0);
-//	evas_object_show(go->popup);
+	px = x - w - 10;
+	if (px < 0)
+		px = x + 10;
+	py = y - w / 2;
+	if (py < 0)
+		py = 2;
+	else if (py + h > sh)
+		py = sh - h - 5;
+	
+
+	evas_object_move(go->gui->popup,px,py);
+	evas_object_show(go->gui->popup);
 
 
 }
@@ -273,9 +290,8 @@ star_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event){
 	go = data;
 	printf("Mouse out\n");
 
-	if (go->popup){
-		evas_object_del(go->popup);
-		go->popup = NULL;
+	if (go->gui->popup){
+		evas_object_hide(go->gui->popup);
 	}
 }
 

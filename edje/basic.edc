@@ -37,6 +37,20 @@ images {
     image: "starpopup-bg.png" COMP;
 }
 
+styles
+{
+   style {
+      name: "about_style";
+      base: "font=Edje-Vera font_size=10 align=left color=#fff style=shadow shadow_color=#ffffff80 wrap=word";
+
+      tag:  "br" "\n";
+      tag:  "hilight" "+ font=Edje-Vera-Bold style=glow color=#fff glow2_color=#fe87 glow_color=#fa14";
+      tag:  "title" "+ font_size=12 font=Edje-Vera-Bold style=soft_shadow color=#fff shadow_color=#00000020";
+      tag:  "/title" "- \n \n";
+   }
+}
+
+
 collections {
     group { 
 	name, 	"Splash";
@@ -196,6 +210,7 @@ collections {
 	    part {
 		name, "background";
 		type: IMAGE;
+		mouse_events: 0;
 		description {
 		    state: default 0.0;
 		    rel1 {
@@ -213,9 +228,12 @@ collections {
 	    }
 	    part {
 		name, "text";
+		mouse_events: 0;
 		type: TEXTBLOCK;
 		description {
 		    state: default 0.0;
+		    min: 200 0;
+		    max: 200 1000;
 		    rel1 {
 			relative: 0.0 0.0;
 			offset: 10 10;
@@ -225,6 +243,10 @@ collections {
 			relative: 1.0 1.0;
 			offset: -10 -10;
 			to: "background";
+		    }
+		    text {
+			style: "about_style";
+			min:	0 1;
 		    }
 		}
 	    }
