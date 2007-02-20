@@ -13,15 +13,13 @@
 #include "tpe_msg.h"
 #include "tpe_gui.h"
 #include "tpe_obj.h"
+#include "tpe_board.h"
 
 #define WIDTH	1024
 #define HEIGHT	768
 
 
 /* FIXME: These need to be sp;lit into different files */
-static int tpe_time_remaining(void *data, int type, void *event);
-static int tpe_board(void *data, int type, void *event);
-static int tpe_resource_description(void *data, int type, void *event);
 static int tpe_fail(void *data, int type, void *event);
 
 int
@@ -38,27 +36,12 @@ main(int argc, char **argv){
 	tpe->msg   = tpe_msg_init(tpe);
 	tpe->comm  = tpe_comm_init(tpe);
 	tpe->obj   = tpe_obj_init(tpe);
+	tpe->board = tpe_board_init(tpe);
 	tpe->gui   = tpe_gui_init(tpe);
 
 	ecore_main_loop_begin();
 
 	return 0;
-}
-
-
-static int 
-tpe_time_remaining(void *data, int type, void *event){
-	printf("Time remaining: %d\n", ntohl(*((int32_t*)event + 4)));
-	return 11;
-}
-static int 
-tpe_board(void *data, int type, void *event){
-	return 1;
-
-}
-static int 
-tpe_resource_description(void *data, int type, void *event){
-	return 1;
 }
 
 static int

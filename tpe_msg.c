@@ -55,8 +55,8 @@ struct msgname {
 	{ "MsgREMOVE_ORDER", 		13 },
 	{ "MsgGetTimeRemaining", 	14 },
 	{ "MsgTimeRemaining", 		15 },
-	{ "MsgGET_BOARDS", 		16 },
-	{ "MsgBOARD", 			17 },
+	{ "MsgGetBoards", 		16 },
+	{ "MsgBoard", 			17 },
 	{ "MsgGET_MESSAGE", 		18 },
 	{ "MsgMESSAGE", 		19 },
 	{ "MsgPOST_MESSAGE", 		20 },
@@ -75,7 +75,7 @@ struct msgname {
 	{ "MsgLIST_OF_ORDER_DESCRIPTION_IDS", 	33 },
 	{ "MsgPROBE_ORDER", 			34 },
 	{ "MsgGetBoardIDs", 			35 },
-	{ "MsgLIST_OF_BOARDS", 			36 },
+	{ "MsgListOfBoards", 			36 },
 	{ "MsgGetResourceIDs",	 		37 },
 	{ "MsgLIST_OF_RESOURCES_IDS", 		38 },
 	{ "MsgGET_PLAYER_DATA", 		39 },
@@ -250,36 +250,6 @@ static int tpe_msg_con_event_server_add(void *data, int type, void *edata){
 	return 0;
 }
 
-/* FIXME: These need to be moved elsewher */
-#if 0
-static void 
-tpe_connect_accept(void *msg, enum tpe_msg_type type, int len,
-		void *mdata){
-	tpe_msg_send_strings(msg, TPE_MSG_LOGIN,  tpe_connect_logged_in, msg,
-			"nash", "pass", 0);
-	tpe_msg_send(msg, TPE_MSG_GET_FEATURES, 0,0,0,0);
-}
-#endif 
-#if 0
-static void
-tpe_connect_logged_in(void *msg, enum tpe_msg_type type, int len, void *mdata){
-	int buf[3];
-	printf("Logged in - I hope\n");
-
-	tpe_msg_send(msg, TPE_MSG_GET_TIME_REMAINING, 0, 0,0,0);
-	
-	/* Fire of some sequences */
-	buf[0] = htonl(-1);	/* New seq */
-	buf[1] = htonl(0);	/* From 0 */
-	buf[2] = htonl(-1);	/* Get them all */
-
-	tpe_msg_send(msg, TPE_MSG_GET_BOARD_IDS, 0,0,buf,12);
-	tpe_msg_send(msg, TPE_MSG_GET_RESOURCES_IDS, 0,0,buf,12);
-	tpe_msg_send(msg, TPE_MSG_GET_OBJECT_IDS, 0,0,buf,12);
-}
-#endif
-
-
 static int 
 tpe_msg_receive(void *udata, int ecore_event_type, void *edata){
 	struct tpe_msg *msg;
@@ -287,6 +257,7 @@ tpe_msg_receive(void *udata, int ecore_event_type, void *edata){
 	unsigned int *header;
 	char *start;
 	unsigned int len, type, seq, remaining;
+	int magic;
 
 	msg = udata;
 	data = edata;
@@ -294,15 +265,21 @@ tpe_msg_receive(void *udata, int ecore_event_type, void *edata){
 	if (msg->buf.size){
 		start = realloc(msg->buf.data, msg->buf.size + data->size);
 		remaining = msg->buf.size + data->size;
-		memcpy(start + data->size, data->data, data->size);
+		memcpy(start + msg->buf.size, data->data, data->size);
 		msg->buf.data = start; /* Save it to free later */
 	} else {
 		start = data->data;
 		remaining = data->size;
+		msg->buf.data = NULL; /* Just to check */
 	}
 
 	while (remaining > 16){
 		header = (uint32_t *)start;
+		magic = header[0];
+		if (strncmp("TP03", (char *)&magic, 4) != 0){
+			printf("Invalid magic ;%.4s;\n",(char *)&magic);
+			exit(1);
+		}
 		seq = ntohl(header[1]);
 		type = ntohl(header[2]);
 		len = ntohl(header[3]);
@@ -313,11 +290,19 @@ tpe_msg_receive(void *udata, int ecore_event_type, void *edata){
 		remaining -= len + 16;
 	}
 
-	if (remaining)
-		printf("Untested: %d bytes remain\n", remaining);
-	msg->buf.data = realloc(msg->buf.data, remaining);
-	msg->buf.size = remaining;
+	if (remaining){
+		/* Malloc a new buffer to save it in */
+		char *tmp;
+		tmp = malloc(remaining);
+		memcpy(tmp, start, remaining);
+		free(msg->buf.data);
 
+		msg->buf.data = tmp;
+		msg->buf.size = remaining;
+	} else {
+		msg->buf.data = realloc(msg->buf.data,0);
+		msg->buf.size = 0;
+	}
 	return 1;
 }
 

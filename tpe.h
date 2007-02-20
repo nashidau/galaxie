@@ -7,6 +7,7 @@ struct tpe {
 	struct tpe_comm *comm;
 	struct tpe_gui *gui;
 	struct tpe_obj *obj;
+	struct tpe_board *board;
 };
 
 

@@ -123,7 +123,8 @@ tpe_gui_edje_splash_connect(void *data, Evas_Object *o,
 	gui = tpe->gui;
 
 	//tpe_comm_connect(tpe->comm, "localhost", 6923, "nash", "password");
-	tpe_comm_connect(tpe->comm, "10.0.0.1", 6923, "nash", "password");
+	//tpe_comm_connect(tpe->comm, "10.0.0.1", 6923, "nash", "password");
+	tpe_comm_connect(tpe->comm, "tranquillity.nash.id.au", 6923, "nash", "password");
 
 	/* General errors */
 /*	tpe_msg_event_handler_add(tpe->msg, TPE_MSG_FAIL,

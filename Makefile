@@ -6,8 +6,9 @@ LDFLAGS+=`${PKGCONFIG} --libs ${PKGS}`
 
 TARGETS: tpe ${EDJE}
 
-OBJECTS=	\
-	tpe.o	\
+OBJECTS=		\
+	tpe.o		\
+	tpe_board.o	\
 	tpe_comm.o	\
 	tpe_event.o	\
 	tpe_gui.o	\
