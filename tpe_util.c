@@ -136,9 +136,13 @@ tpe_util_parse_packet(void *pdata, char *format, ...){
 
 				if (cdest) *cdest = len;
 
-				*adest = realloc(*adest, (len + 1)* sizeof(int));
-				for (i = 0 ; i < len ; i ++){
-					(*adest)[i] = ntohl(*idata ++);
+				if (adest){
+					*adest = realloc(*adest, (len + 1)* sizeof(int));
+					for (i = 0 ; i < len ; i ++){
+						(*adest)[i] = ntohl(*idata ++);
+					}
+				} else {
+					idata += len;
 				}
 
 				pdata = (char *)idata;

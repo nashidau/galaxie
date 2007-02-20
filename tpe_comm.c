@@ -9,8 +9,10 @@
 
 /* TPE Comm can only call tpe, tpe_msg, tpe_event */
 #include "tpe.h"
+#include "tpe_comm.h"
 #include "tpe_msg.h"
 #include "tpe_event.h"
+#include "tpe_util.h"
 
 struct features {
 	int id;
@@ -42,10 +44,11 @@ int tpe_comm_connect(struct tpe_comm *comm, const char *server, int port,
 static int tpe_comm_socket_connect(void *data, struct tpe_msg_connection *);
 static int tpe_comm_may_login(void *data, const char *msgtype, int len, void *mdata);
 static int tpe_comm_logged_in(void *data, const char *msgtype, int len, void *mdata);
+static int tpe_comm_msg_fail(void *udata, int type, void *event);
 
 
 /* Generic handlers */
-static int tpe_comm_available_features_msg(void *udata, const char *type, void *event);
+static int tpe_comm_available_features_msg(void *udata, int type, void *event);
 
 struct tpe_comm *
 tpe_comm_init(struct tpe *tpe){
@@ -56,6 +59,8 @@ tpe_comm_init(struct tpe *tpe){
 
 	tpe_event_handler_add(tpe->event, "MsgAvailableFeatures", 
 			tpe_comm_available_features_msg, comm);
+	tpe_event_handler_add(tpe->event, "MsgFail",
+			tpe_comm_msg_fail, tpe);
 
 
 	return comm;
@@ -150,7 +155,7 @@ printf("Sending lots of stuff\n");
  * Currently jsut prints out the data
  */
 static int 
-tpe_comm_available_features_msg(void *udata, const char *type, void *event){
+tpe_comm_available_features_msg(void *udata, int type, void *event){
 	uint32_t *data;
 	int i,j,len,feature;
 
@@ -171,4 +176,20 @@ tpe_comm_available_features_msg(void *udata, const char *type, void *event){
 
 	return 1;
 
+}
+
+static int
+tpe_comm_msg_fail(void *udata, int etype, void *event){
+	int magic, type, seq, len;
+	int rv;
+	char *str = 0;
+
+	rv = tpe_util_parse_packet(event, "iiiis", &magic, &seq, &type, 
+				&len, &str);
+
+	printf("** Error: Response to %d [%d bytes]{%d}: %p %d %s\n",seq,len,rv,str,strlen(str),str);
+	str = event;
+	str += 16;
+	printf("%08x %08x\n", *str, *(str + 4));
+	return 1;
 }

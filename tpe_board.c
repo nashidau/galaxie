@@ -126,7 +126,7 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
 	char *body;
 	struct board *board;
 	int32_t id;
-	int get[2];
+	int get[8];
 
 	tpe = data;
 	body = event;
@@ -147,9 +147,12 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
 
 	/* Okay - get the messages */
 	get[0] = htonl(id);
-	get[1] = htonl(0); /* purity */
+	/* FIXME: Need to report a bug for an empty message not woring */
+	get[1] = htonl(2); /* purity */
+	get[2] = htonl(0); /* purity */
+	get[3] = htonl(1); /* purity */
 
-	tpe_msg_send(tpe->msg, "MsgMessageGet", NULL, NULL, get, 4);
+	tpe_msg_send(tpe->msg, "MsgMessageGet", NULL, NULL, get, 16);
 
 	return 1;
 }

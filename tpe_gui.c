@@ -9,6 +9,7 @@
 #include <Edje.h>
 
 #include "tpe.h"
+#include "tpe_gui.h"
 #include "tpe_comm.h"
 #include "tpe_event.h"
 #include "tpe_obj.h"
@@ -58,6 +59,7 @@ static int tpe_gui_object_update(void *data, int eventid, void *event);
 /* Gui event handlers */
 static void star_mouse_in(void *data, Evas *e, Evas_Object *obj, void *event);
 static void star_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event);
+static void star_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event);
 
 
 struct tpe_gui *
@@ -123,8 +125,8 @@ tpe_gui_edje_splash_connect(void *data, Evas_Object *o,
 	gui = tpe->gui;
 
 	//tpe_comm_connect(tpe->comm, "localhost", 6923, "nash", "password");
-	//tpe_comm_connect(tpe->comm, "10.0.0.1", 6923, "nash", "password");
-	tpe_comm_connect(tpe->comm, "tranquillity.nash.id.au", 6923, "nash", "password");
+	tpe_comm_connect(tpe->comm, "10.0.0.1", 6923, "nash", "password");
+	//tpe_comm_connect(tpe->comm, "tranquillity.nash.id.au", 6923, "nash", "password");
 
 	/* General errors */
 /*	tpe_msg_event_handler_add(tpe->msg, TPE_MSG_FAIL,
@@ -226,6 +228,8 @@ tpe_gui_object_update(void *data, int eventid, void *event){
 				star_mouse_in, go);
 		evas_object_event_callback_add(go->obj,EVAS_CALLBACK_MOUSE_OUT,
 				star_mouse_out, go);
+		evas_object_event_callback_add(go->obj,EVAS_CALLBACK_MOUSE_DOWN,
+				star_mouse_down, go);
 
 	}
 
@@ -252,4 +256,11 @@ star_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event){
 	printf("Mouse out\n");
 }
 
+static void
+star_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
+	struct tpe_gui_obj *go;
 
+	go = data;
+
+
+}
