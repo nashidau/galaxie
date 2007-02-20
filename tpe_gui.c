@@ -39,6 +39,10 @@ struct tpe_gui_obj {
 
 	struct tpe_gui *gui;
 	struct object *object;
+
+	/* For mouse overs - may be more then one if they have a special
+	 * delete */
+	Evas_Object *popup;
 };
 
 enum {
@@ -249,11 +253,30 @@ star_mouse_in(void *data, Evas *e, Evas_Object *eo, void *event){
 	go = data;
 
 	printf("Mouse over: %s\n",go->object->name);
+
+	if (go->popup)
+		return;
+
+//	go->popup = edje_object_add(go->gui->e);
+//	edje_object_file_set(go->popup, "edje/basic.edj", "StarPopup");
+//	edje_object_part_text_set(go->popup, "text", "Random Star Info");
+//	evas_object_move(go->popup,0,0);
+//	evas_object_show(go->popup);
+
+
 }
 
 static void
 star_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event){
+	struct tpe_gui_obj *go;
+
+	go = data;
 	printf("Mouse out\n");
+
+	if (go->popup){
+		evas_object_del(go->popup);
+		go->popup = NULL;
+	}
 }
 
 static void
@@ -262,5 +285,6 @@ star_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 
 	go = data;
 
+	printf("Mouse down\n");
 
 }

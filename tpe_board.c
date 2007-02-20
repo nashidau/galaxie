@@ -126,7 +126,8 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
 	char *body;
 	struct board *board;
 	int32_t id;
-	int get[8];
+	int32_t *toget;
+	int i;
 
 	tpe = data;
 	body = event;
@@ -141,18 +142,19 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
 			&board->description, &board->nmessages,
 			&board->updated);
 
-
 	printf("Board %d is: %s\n%s\n%d messages\n",id, board->name,
 			board->description, board->nmessages);
 
-	/* Okay - get the messages */
-	get[0] = htonl(id);
-	/* FIXME: Need to report a bug for an empty message not woring */
-	get[1] = htonl(2); /* purity */
-	get[2] = htonl(0); /* purity */
-	get[3] = htonl(1); /* purity */
+	toget = malloc(sizeof(int32_t) * (board->nmessages + 2));
 
-	tpe_msg_send(tpe->msg, "MsgMessageGet", NULL, NULL, get, 16);
+	/* Okay - get the messages */
+	toget[0] = htonl(id);
+	toget[1] = htonl(board->nmessages);
+	for (i = 0 ; i < board->nmessages ; i ++)
+		toget[i + 2] = htonl(i);
+
+	tpe_msg_send(tpe->msg, "MsgMessageGet", NULL, NULL, 
+			toget, (board->nmessages + 2) * 4);
 
 	return 1;
 }
