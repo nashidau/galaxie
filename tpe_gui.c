@@ -66,6 +66,7 @@ static void star_mouse_in(void *data, Evas *e, Evas_Object *obj, void *event);
 static void star_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event);
 static void star_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event);
 
+static const char *star_summary(struct tpe *tpe, struct object *object);
 
 struct tpe_gui *
 tpe_gui_init(struct tpe *tpe){
@@ -130,8 +131,8 @@ tpe_gui_edje_splash_connect(void *data, Evas_Object *o,
 	gui = tpe->gui;
 
 	//tpe_comm_connect(tpe->comm, "localhost", 6923, "nash", "password");
-	tpe_comm_connect(tpe->comm, "10.0.0.1", 6923, "nash", "password");
-	//tpe_comm_connect(tpe->comm, "tranquillity.nash.id.au", 6923, "nash", "password");
+	//tpe_comm_connect(tpe->comm, "10.0.0.1", 6923, "nash", "password");
+	tpe_comm_connect(tpe->comm, "tranquillity.nash.id.au", 6923, "nash", "password");
 
 	/* General errors */
 /*	tpe_msg_event_handler_add(tpe->msg, TPE_MSG_FAIL,
@@ -159,7 +160,6 @@ tpe_gui_edje_splash_connect(void *data, Evas_Object *o,
 
 	gui->popup = edje_object_add(gui->e);
 	edje_object_file_set(gui->popup, "edje/basic.edj", "StarPopup");
-	edje_object_part_text_set(gui->popup, "text", "Random Star Info");
 	evas_object_resize(gui->popup,100,100);
 	evas_object_layer_set(gui->popup, 1);
 }
@@ -261,7 +261,9 @@ star_mouse_in(void *data, Evas *e, Evas_Object *eo, void *event){
 
 	go = data;
 
-	printf("Mouse over: %s\n",go->object->name);
+	/* FIXME: Layout correctly - always */
+	edje_object_part_text_set(go->gui->popup, "text",
+			star_summary(go->gui->tpe, go->object));
 
 	evas_object_geometry_get(eo,&x,&y,NULL,NULL);
 	evas_object_geometry_get(go->gui->popup,NULL,NULL, &w, &h);
@@ -280,8 +282,42 @@ star_mouse_in(void *data, Evas *e, Evas_Object *eo, void *event){
 	evas_object_move(go->gui->popup,px,py);
 	evas_object_show(go->gui->popup);
 
+	
+
 
 }
+
+static const char *
+star_summary(struct tpe *tpe, struct object *object){
+	static char buf[BUFSIZ];
+	int pos;
+	int i,oid;
+	struct object *child;
+
+	pos = snprintf(buf,BUFSIZ,"<title>%s</title>",object->name);
+	/* Planets first */
+	for (i = 0 ; i < object->nchildren ; i ++){
+		oid = object->children[i];
+		child = tpe_obj_obj_get_by_id(tpe->obj, oid);
+		if (!child) continue;
+		if (child->type != OBJTYPE_PLANET) continue;
+		pos += snprintf(buf + pos,BUFSIZ - pos, 
+				"<planet>%s</planet>",child->name);
+	}
+
+	/* Now fleets */
+	for (i = 0 ; i < object->nchildren ; i ++){
+		oid = object->children[i];
+		child = tpe_obj_obj_get_by_id(tpe->obj, oid);
+		if (!child) continue;
+		if (child->type != OBJTYPE_FLEET) continue;
+		pos += snprintf(buf + pos,BUFSIZ - pos, 
+				"<fleet>%s</fleet>",child->name);
+	}
+
+	return buf;	
+}
+
 
 static void
 star_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event){

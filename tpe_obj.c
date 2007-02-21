@@ -129,7 +129,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 			&o->norders,
 			&o->updated);
 
-	tpe_obj_obj_dump(o);
+//	tpe_obj_obj_dump(o);
 
 	tpe_event_send(obj->tpe->event, isnew ? "ObjectNew" : "ObjectChange",
 				o, tpe_event_nofree, NULL);
@@ -140,8 +140,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 struct object *
 tpe_obj_obj_get_by_id(struct tpe_obj *obj, int oid){
 	struct object *o;
-
-	ecore_list_first(obj->objs);
+	ecore_list_goto_first(obj->objs);
 	while ((o = ecore_list_next(obj->objs)))
 		if (o->oid == oid)
 			return o;
@@ -154,8 +153,8 @@ tpe_obj_obj_add(struct tpe_obj *obj, int oid){
 	struct object *o;
 
 	o = calloc(1,sizeof(struct object));
-	ecore_list_insert(obj->objs, o);
-
+	o->oid = oid;
+	ecore_list_append(obj->objs, o);
 	return o;	
 }
 
