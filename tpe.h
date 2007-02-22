@@ -8,6 +8,7 @@ struct tpe {
 	struct tpe_gui *gui;
 	struct tpe_obj *obj;
 	struct tpe_board *board;
+	struct tpe_ship *ship;
 };
 
 

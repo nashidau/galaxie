@@ -14,6 +14,7 @@
 #include "tpe_gui.h"
 #include "tpe_obj.h"
 #include "tpe_board.h"
+#include "tpe_ship.h"
 
 #define WIDTH	1024
 #define HEIGHT	768
@@ -32,12 +33,13 @@ main(int argc, char **argv){
 	tpe = calloc(1,sizeof(struct tpe));
 	if (tpe == NULL) exit(1);
 
-	tpe->event = tpe_event_init(tpe);
-	tpe->msg   = tpe_msg_init(tpe);
-	tpe->comm  = tpe_comm_init(tpe);
-	tpe->obj   = tpe_obj_init(tpe);
-	tpe->board = tpe_board_init(tpe);
-	tpe->gui   = tpe_gui_init(tpe);
+	tpe->event 	= tpe_event_init(tpe);
+	tpe->msg   	= tpe_msg_init(tpe);
+	tpe->comm  	= tpe_comm_init(tpe);
+	tpe->obj   	= tpe_obj_init(tpe);
+	tpe->board 	= tpe_board_init(tpe);
+	tpe->gui	= tpe_gui_init(tpe);
+	tpe->ship	= tpe_ship_init(tpe);
 
 	ecore_main_loop_begin();
 

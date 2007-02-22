@@ -14,6 +14,7 @@ OBJECTS=		\
 	tpe_gui.o	\
 	tpe_msg.o	\
 	tpe_obj.o	\
+	tpe_ship.o	\
 	tpe_util.o	\
 
 

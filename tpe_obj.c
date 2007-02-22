@@ -72,6 +72,7 @@ tpe_obj_object_list(void *data, int eventid, void *event){
 
 	tpe_util_parse_packet(event, "iiO", &seqkey, &more, &noids,&oids);
 	printf("Seqkey is %d\n",seqkey);
+	/* FIXME: handle 'more' */
 	printf("# objects to go %d\n",more);
 	printf("# objects to go %d\n",noids);
 
@@ -105,6 +106,8 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 	struct object *o;
 	int id,n;
 	int isnew;
+	int unused;
+	void *end;
 	
 	obj = data;
 
@@ -119,7 +122,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		o = tpe_obj_obj_add(obj,id);
 	}
 
-	n = tpe_util_parse_packet(edata, "iislllllllaail",
+	n = tpe_util_parse_packet(edata, "iislllllllaailiip",
 			&o->oid, &o->type, &o->name,
 			&o->size, 
 			&o->pos.x,&o->pos.y,&o->pos.z,
@@ -127,9 +130,48 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 			&o->nchildren, &o->children, 
 			&o->nordertypes, &o->ordertypes,
 			&o->norders,
-			&o->updated);
+			&o->updated,&unused,&unused, &end);
 
-//	tpe_obj_obj_dump(o);
+	/* Handle extra data for different types */
+	switch (o->type){
+	case OBJTYPE_UNIVERSE:{
+		uint32_t turn;
+	
+		tpe_util_parse_packet(end, "i", &turn);
+
+		/* FIXME: Do something with it */
+		
+		break;
+	}
+	case OBJTYPE_GALAXY:
+		break;
+	case OBJTYPE_SYSTEM:
+		break;
+	case OBJTYPE_PLANET:
+		/* FIXME: Also do resources */
+		if (o->planet == NULL)
+			o->planet = calloc(1,sizeof(struct object_planet));
+
+		tpe_util_parse_packet(end, "iR",
+				&o->owner, 
+				&o->planet->nresources, &o->planet->resources);
+
+		break;
+	case OBJTYPE_FLEET:
+		if (o->fleet == NULL)
+			o->fleet = calloc(1,sizeof(struct object_fleet));
+
+		tpe_util_parse_packet(end, "iSi",
+				&o->owner, 
+				&o->fleet->nships, &o->fleet->ships,
+				&o->fleet->damage);
+		break;
+	default:
+		printf("Unknown object type: %d\n",o->type);
+		exit(1);
+	}
+
+	//tpe_obj_obj_dump(o);
 
 	tpe_event_send(obj->tpe->event, isnew ? "ObjectNew" : "ObjectChange",
 				o, tpe_event_nofree, NULL);

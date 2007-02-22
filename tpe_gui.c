@@ -13,6 +13,7 @@
 #include "tpe_comm.h"
 #include "tpe_event.h"
 #include "tpe_obj.h"
+#include "tpe_ship.h"
 
 struct tpe_gui {
 	struct tpe *tpe;
@@ -291,7 +292,7 @@ static const char *
 star_summary(struct tpe *tpe, struct object *object){
 	static char buf[BUFSIZ];
 	int pos;
-	int i,oid;
+	int i,j,oid;
 	struct object *child;
 
 	pos = snprintf(buf,BUFSIZ,"<title>%s</title>",object->name);
@@ -313,6 +314,13 @@ star_summary(struct tpe *tpe, struct object *object){
 		if (child->type != OBJTYPE_FLEET) continue;
 		pos += snprintf(buf + pos,BUFSIZ - pos, 
 				"<fleet>%s</fleet>",child->name);
+		for (j = 0 ; j < child->fleet->nships ; j ++){
+			pos += snprintf(buf + pos,BUFSIZ - pos,
+				"<ship>%dx%s</ship>",
+				child->fleet->ships[j].count,
+				tpe_ship_design_name_get(tpe, 
+					child->fleet->ships[j].design));
+		}
 	}
 
 	return buf;	

@@ -6,6 +6,8 @@
 
 #include "tpe_util.h"
 
+#include "tpe_obj.h" /* Only for types */
+
 /**
  * tpe_util_string_extract
  *
@@ -55,7 +57,9 @@ tpe_util_dump_packet(void *pdata){
  *  l: long long int - 64 bit int
  *  a: Array of ints
  *  O: Array of Oids
-
+ *  S: Array of ships
+ *  R: Array of resources
+ *  p: Save a pointer to the current offset
  */
 int
 tpe_util_parse_packet(void *pdata, char *format, ...){
@@ -182,6 +186,81 @@ tpe_util_parse_packet(void *pdata, char *format, ...){
 				parsed ++;
 				break;
 
+			}
+			case 'p':{
+				int **adest;
+				format ++;
+				adest = va_arg(ap, int **);
+				if (adest == NULL){
+					break;
+				} 
+				*adest = pdata;
+				break;
+			}
+			/* Array of resources */
+			case 'R':{
+				struct planet_resource **adest;
+				int len;
+				int *idata;
+				int *cdest;
+				int i;
+				
+				idata = pdata;
+				len = ntohl(*idata);
+				idata++;
+
+				cdest = va_arg(ap, int *);
+				adest = va_arg(ap, struct planet_resource **);
+
+				if (cdest) *cdest = len;
+	
+				*adest = realloc(*adest, (len+1)*
+						sizeof(struct planet_resource));
+				
+				for (i = 0 ; i < len ; i ++){
+					(*adest)[i].rid = ntohl(*idata ++);
+					(*adest)[i].surface = ntohl(*idata ++);
+					(*adest)[i].minable = ntohl(*idata ++);
+					(*adest)[i].inaccessable = 
+							ntohl(*idata ++);
+				}
+
+				pdata = (char *)idata;
+				format ++;
+				parsed ++;
+				break;
+			}
+
+			/* Array of ships */
+			case 'S':{
+				struct fleet_ship **adest;
+				int len;
+				int *idata;
+				int *cdest;
+				int i;
+				
+				idata = pdata;
+				len = ntohl(*idata);
+				idata++;
+
+				cdest = va_arg(ap, int *);
+				adest = va_arg(ap, struct fleet_ship **);
+
+				if (cdest) *cdest = len;
+	
+				*adest = realloc(*adest, (len+1)*
+						sizeof(struct fleet_ship));
+				
+				for (i = 0 ; i < len ; i ++){
+					(*adest)[i].design = ntohl(*idata ++);
+					(*adest)[i].count = ntohl(*idata ++);
+					idata += 2;
+				}
+
+				pdata = (char *)idata;
+				format ++;
+				parsed ++;
+				break;
 			}
 			default: 
 				printf("Unhandled code %c\n",*format);

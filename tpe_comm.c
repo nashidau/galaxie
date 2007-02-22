@@ -143,6 +143,7 @@ printf("Sending lots of stuff\n");
 	tpe_msg_send(msg, "MsgGetBoardIDs", 0,0,buf,12);
 	tpe_msg_send(msg, "MsgGetResourceIDs", 0,0,buf,12);
 	tpe_msg_send(msg, "MsgGetObjectIDs", 0,0,buf,12);
+	tpe_msg_send(msg, "MsgGetDesignIDs", 0,0,buf,12);
 
 	return 0;
 }

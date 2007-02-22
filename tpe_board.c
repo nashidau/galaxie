@@ -65,7 +65,6 @@ tpe_board_msg_board_list(void *data, int type, void *event){
 
 	/* FIXME: Should parse the header too */
 	event = (char *)event + 16;		
-printf("Board list!\n");
 
 	oids = NULL;
 	tpe_util_parse_packet(event, "iiO", &seqkey, &more, &noids, &oids);
@@ -80,13 +79,10 @@ printf("Board list!\n");
 	}
           
 	if (n){
-		printf("Getting %d boards\n",n);
 		toget[0] = htonl(n);
 		tpe_msg_send(tpe->msg, "MsgGetBoards",NULL, NULL,
 				toget, n * 4 + 4);
-	} else {
-		printf("No boards! %d %d\n",noids, more);
-	}
+	} 
 
 	free(toget);
 	free(oids);
