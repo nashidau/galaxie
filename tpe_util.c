@@ -7,6 +7,7 @@
 #include "tpe_util.h"
 
 #include "tpe_obj.h" /* Only for types */
+#include "tpe_orders.h" /* Only for types */
 
 /**
  * tpe_util_string_extract
@@ -59,6 +60,7 @@ tpe_util_dump_packet(void *pdata){
  *  O: Array of Oids
  *  S: Array of ships
  *  R: Array of resources
+ *  Q: Array of order description args
  *  p: Save a pointer to the current offset
  */
 int
@@ -197,6 +199,44 @@ tpe_util_parse_packet(void *pdata, char *format, ...){
 				*adest = pdata;
 				break;
 			}
+			/* Array of order arguments */
+			case 'Q':{
+				struct order_arg **adest;
+				int len;
+				int *idata;
+				int *cdest;
+				int i;
+				
+				idata = pdata;
+				len = ntohl(*idata);
+				idata++;
+
+				cdest = va_arg(ap, int *);
+				adest = va_arg(ap, struct order_arg **);
+
+				if (cdest) *cdest = len;
+	
+				*adest = realloc(*adest, (len+1)*
+						sizeof(struct order_arg));
+
+				for (i = 0 ; i < len ; i ++){
+					(*adest)[i].name = 
+						tpe_util_string_extract(idata, 
+								NULL, 
+								(void *)&idata);
+					(*adest)[i].arg_type = ntohl(*idata ++);
+					(*adest)[i].description = 
+						tpe_util_string_extract(idata, 
+								NULL, 
+								(void *)&idata);
+				}
+
+				pdata = (char *)idata;
+				format ++;
+				parsed ++;
+				break;
+			}
+
 			/* Array of resources */
 			case 'R':{
 				struct planet_resource **adest;

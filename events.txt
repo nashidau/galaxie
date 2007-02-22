@@ -1,0 +1,8 @@
+Format:
+ * Name(EventData): Description
+
+From tpe_obj:
+ * ObjectNew(struct object *): A new object we haven't seen before.
+ * ObjectChanged(struct object *): An object that has changed.
+ * PlanetNoOrders(struct object *): An object can be orderd, but has no orders
+ * FleetNoOrders(struct object *): An object can be orderd, but has no orders

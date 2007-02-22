@@ -14,8 +14,12 @@ OBJECTS=		\
 	tpe_gui.o	\
 	tpe_msg.o	\
 	tpe_obj.o	\
+	tpe_orders.o	\
 	tpe_ship.o	\
 	tpe_util.o	\
+
+AIS=			\
+	ai_smith.o
 
 
 EDJE=	edje/basic.edj edje/background.edj
@@ -24,7 +28,7 @@ EDJE_FLAGS=-id edje/images
 %.edj : %.edc
 	edje_cc ${EDJE_FLAGS} $<
 
-tpe: ${OBJECTS} 
+tpe: ${OBJECTS} ${AIS}
 
 edje/basic.edj : edje/basic.edc
 

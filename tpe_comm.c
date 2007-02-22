@@ -132,14 +132,16 @@ tpe_comm_logged_in(void *data, const char *msgtype, int len, void *mdata){
 	comm = data;
 	tpe = comm->tpe;
 	msg = tpe->msg;
-printf("Sending lots of stuff\n");
+
 	tpe_msg_send(msg, "MsgGetTimeRemaining", 0, 0,0,0);
-	
+
+	/* FIXME: These don't really belong here */
 	/* Fire of some sequences */
 	buf[0] = htonl(-1);	/* New seq */
 	buf[1] = htonl(0);	/* From 0 */
 	buf[2] = htonl(-1);	/* Get them all */
 
+	tpe_msg_send(msg, "MsgGetOrderDescriptionIDs", 0,0,buf,12);
 	tpe_msg_send(msg, "MsgGetBoardIDs", 0,0,buf,12);
 	tpe_msg_send(msg, "MsgGetResourceIDs", 0,0,buf,12);
 	tpe_msg_send(msg, "MsgGetObjectIDs", 0,0,buf,12);

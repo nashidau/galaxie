@@ -47,11 +47,11 @@ struct msgname {
 	{ "MsgGetObjectsByID",		 5 },
 	{ "MsgUNUSED1", 		 6 },
 	{ "MsgObject", 			 7 },
-	{ "MsgGET_ORDER_DESCRIPTION",    8 },
-	{ "MsgORDER_DESCRIPTION", 	 9 },
+	{ "MsgGetOrderDescription",	 8 },
+	{ "MsgOrderDescription",	 9 },
 	{ "MsgGET_ORDER", 		10 },
 	{ "MsgORDER", 			11 },
-	{ "MsgINSERT_ORDER", 		12 },
+	{ "MsgInsertOrder", 		12 },
 	{ "MsgREMOVE_ORDER", 		13 },
 	{ "MsgGetTimeRemaining", 	14 },
 	{ "MsgTimeRemaining", 		15 },
@@ -61,18 +61,18 @@ struct msgname {
 	{ "MsgMessage", 		19 },
 	{ "MsgPOST_MESSAGE", 		20 },
 	{ "MsgREMOVE_MESSAGE", 		21 },
-	{ "MsgGET_RESOURCE_DESCRIPTION",22 },
-	{ "MsgRESOURCE_DESCRIPTION", 	23 },
-	{ "MsgREDIRECT", 		24 },
-	{ "MsgGetFeatures", 		25 },
-	{ "MsgAvailableFeatures", 	26 },
-	{ "MsgPING", 			27 },
+	{ "MsgGET_RESOURCE_DESCRIPTION",	22 },
+	{ "MsgRESOURCE_DESCRIPTION", 		23 },
+	{ "MsgREDIRECT", 			24 },
+	{ "MsgGetFeatures", 			25 },
+	{ "MsgAvailableFeatures", 		26 },
+	{ "MsgPING", 				27 },
 	{ "MsgGetObjectIDs", 			28 },
 	{ "MsgGET_OBJECT_IDS_BY_POSITION", 	29 },
 	{ "MsgGET_OBJECT_IDS_BY_CONTAINER", 	30 },
 	{ "MsgListOfObjectIDs", 		31 },
-	{ "MsgGET_ORDER_DESCRIPTION_IDS", 	32 },
-	{ "MsgLIST_OF_ORDER_DESCRIPTION_IDS", 	33 },
+	{ "MsgGetOrderDescriptionIDs",	 	32 },
+	{ "MsgOrderDescriptionIDs", 		33 },
 	{ "MsgPROBE_ORDER", 			34 },
 	{ "MsgGetBoardIDs", 			35 },
 	{ "MsgListOfBoards", 			36 },
@@ -349,7 +349,7 @@ tpe_msg_handle_packet(struct tpe_msg *msg, int seq, int type,
 				break;
 			}
 		}
-		printf("Handling a %s (%d)\n",event,type);
+		printf("Handling a %s (%d) (response: %d)\n",event,type,seq);
 
 		edata = malloc(16 + len);
 		memcpy(edata,data,16+len);
@@ -394,7 +394,7 @@ tpe_msg_send(struct tpe_msg *msg, const char *msgtype,
 	buf[2] = htonl(type);
 	buf[3] = htonl(len);
 	memcpy(buf + 4, data, len);
-printf("Sending %d/%d/%d [%p]\n",msg->seq,type,len,cb);
+printf("Sending Seq %d Type %d Len: %d [%p]\n",msg->seq,type,len,cb);
 	ecore_con_server_send(msg->svr, buf, len + HEADER_SIZE);
 
 	return tpe_msg_cb_add(msg, msg->seq, cb, userdata);

@@ -44,6 +44,8 @@ tpe_obj_init(struct tpe *tpe){
 
 	tpe_event_type_add(event, "ObjectNew");
 	tpe_event_type_add(event, "ObjectChanged");
+	tpe_event_type_add(event, "PlanetNoOrders");
+	tpe_event_type_add(event, "FleetNoOrders");
 
 	obj->objs = ecore_list_new();
 
@@ -80,7 +82,6 @@ tpe_obj_object_list(void *data, int eventid, void *event){
 	for (i  = 0 , n = 0; i < noids; i ++){
 		o = tpe_obj_obj_get_by_id(obj,oids[i].oid);
 		if (o == NULL || o->updated < oids[i].updated){
-			printf("\tGetting %d\n",oids[i].oid);
 			toget[n + 1] = htonl(oids[i].oid);
 			n ++;
 		}
@@ -173,8 +174,22 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 
 	//tpe_obj_obj_dump(o);
 
-	tpe_event_send(obj->tpe->event, isnew ? "ObjectNew" : "ObjectChange",
+	tpe_event_send(obj->tpe->event, isnew ? "ObjectNew" : "ObjectChanged",
 				o, tpe_event_nofree, NULL);
+
+	/* Check to see if we need to emit a planet or fleet 'no orders'
+	 * message */
+	if (o->nordertypes != 0 && o->norders == 0){
+		if (o->type == OBJTYPE_PLANET)
+			tpe_event_send(obj->tpe->event, "PlanetNoOrders", o,
+					tpe_event_nofree, NULL);
+		else if (o->type == OBJTYPE_FLEET)
+			tpe_event_send(obj->tpe->event, "FleetNoOrders", o,
+					tpe_event_nofree, NULL);
+		else 
+			printf("A %d can take orders???\n", o->type);
+	}
+
 
 	return 1;
 }

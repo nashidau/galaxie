@@ -16,6 +16,8 @@
 #include "tpe_board.h"
 #include "tpe_ship.h"
 
+#include "ai_smith.h"
+
 #define WIDTH	1024
 #define HEIGHT	768
 
@@ -36,10 +38,13 @@ main(int argc, char **argv){
 	tpe->event 	= tpe_event_init(tpe);
 	tpe->msg   	= tpe_msg_init(tpe);
 	tpe->comm  	= tpe_comm_init(tpe);
+	tpe->orders  	= tpe_orders_init(tpe);
 	tpe->obj   	= tpe_obj_init(tpe);
 	tpe->board 	= tpe_board_init(tpe);
 	tpe->gui	= tpe_gui_init(tpe);
 	tpe->ship	= tpe_ship_init(tpe);
+
+	tpe->ai 	= ai_smith_init(tpe);
 
 	ecore_main_loop_begin();
 
