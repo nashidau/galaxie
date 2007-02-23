@@ -45,6 +45,7 @@ static int tpe_comm_socket_connect(void *data, struct tpe_msg_connection *);
 static int tpe_comm_may_login(void *data, const char *msgtype, int len, void *mdata);
 static int tpe_comm_logged_in(void *data, const char *msgtype, int len, void *mdata);
 static int tpe_comm_msg_fail(void *udata, int type, void *event);
+static int tpe_comm_time_remaining(void *udata, int type, void *event);
 
 
 /* Generic handlers */
@@ -61,6 +62,8 @@ tpe_comm_init(struct tpe *tpe){
 			tpe_comm_available_features_msg, comm);
 	tpe_event_handler_add(tpe->event, "MsgFail",
 			tpe_comm_msg_fail, tpe);
+	tpe_event_handler_add(tpe->event, "MsgTimeRemaining",
+			tpe_comm_time_remaining, tpe);
 
 
 	return comm;
@@ -194,5 +197,36 @@ tpe_comm_msg_fail(void *udata, int etype, void *event){
 	str = event;
 	str += 16;
 	printf("%08x %08x\n", *str, *(str + 4));
+	return 1;
+}
+
+
+
+
+static int 
+tpe_comm_time_remaining(void *udata, int type, void *event){
+	struct tpe *tpe;
+	struct tpe_msg *msg;
+	int magic,etype,seq;
+	int seqs[3];
+
+	tpe = udata;
+	msg = tpe->msg;
+
+	tpe_util_parse_packet(event, "iii",&magic, &seq, &etype);
+
+	if (seq != 0) return 1;
+
+	printf("New Turn!!\n");
+	seqs[0] = htonl(-1);	/* New seq */
+	seqs[1] = htonl(0);	/* From 0 */
+	seqs[2] = htonl(-1);	/* Get them all */
+
+	tpe_msg_send(msg, "MsgGetOrderDescriptionIDs", 0,0,seqs,12);
+	tpe_msg_send(msg, "MsgGetBoardIDs", 0,0,seqs,12);
+	tpe_msg_send(msg, "MsgGetResourceIDs", 0,0,seqs,12);
+	tpe_msg_send(msg, "MsgGetObjectIDs", 0,0,seqs,12);
+	tpe_msg_send(msg, "MsgGetDesignIDs", 0,0,seqs,12);
+
 	return 1;
 }

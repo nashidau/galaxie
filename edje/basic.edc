@@ -17,7 +17,8 @@ styles
       tag:  "/planet" "- \n";
       tag:  "fleet" "+ color=#8f8";
       tag:  "/fleet" "- \n";
-
+      tag:  "ship" "+ color=#f88";
+      tag:  "/ship" "- \n";
    }
 }
 

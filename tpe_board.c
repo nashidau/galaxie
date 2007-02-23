@@ -59,7 +59,7 @@ tpe_board_msg_board_list(void *data, int type, void *event){
 	struct tpe *tpe = data;
 	int seqkey, more;
 	int noids;
-	struct ObjectSeqID *oids;
+	struct ObjectSeqID *oids = NULL;
 	struct board *board; 
 	int *toget, i, n;
 

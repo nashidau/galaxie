@@ -64,7 +64,7 @@ tpe_ship_msg_design_list(void *data, int eventid, void *event){
 	struct tpe *tpe;
 	int seqkey, more;
 	int noids;
-	struct ObjectSeqID *oids;
+	struct ObjectSeqID *oids = 0;
 	int *toget;
 	int i,n;
 	const char *name;

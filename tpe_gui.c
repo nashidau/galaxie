@@ -132,8 +132,8 @@ tpe_gui_edje_splash_connect(void *data, Evas_Object *o,
 	gui = tpe->gui;
 
 	//tpe_comm_connect(tpe->comm, "localhost", 6923, "nash", "password");
-	//tpe_comm_connect(tpe->comm, "10.0.0.1", 6923, "nash", "password");
-	tpe_comm_connect(tpe->comm, "tranquillity.nash.id.au", 6923, "nash", "password");
+	tpe_comm_connect(tpe->comm, "10.0.0.1", 6923, "nash", "password");
+	//tpe_comm_connect(tpe->comm, "tranquillity.nash.id.au", 6923, "nash", "password");
 
 	/* General errors */
 /*	tpe_msg_event_handler_add(tpe->msg, TPE_MSG_FAIL,
@@ -292,19 +292,11 @@ static const char *
 star_summary(struct tpe *tpe, struct object *object){
 	static char buf[BUFSIZ];
 	int pos;
-	int i,j,oid;
-	struct object *child;
+	int i,j,k,oid;
+	struct object *child, *gchild;
 
 	pos = snprintf(buf,BUFSIZ,"<title>%s</title>",object->name);
-	/* Planets first */
-	for (i = 0 ; i < object->nchildren ; i ++){
-		oid = object->children[i];
-		child = tpe_obj_obj_get_by_id(tpe->obj, oid);
-		if (!child) continue;
-		if (child->type != OBJTYPE_PLANET) continue;
-		pos += snprintf(buf + pos,BUFSIZ - pos, 
-				"<planet>%s</planet>",child->name);
-	}
+	
 
 	/* Now fleets */
 	for (i = 0 ; i < object->nchildren ; i ++){
@@ -321,6 +313,32 @@ star_summary(struct tpe *tpe, struct object *object){
 				tpe_ship_design_name_get(tpe, 
 					child->fleet->ships[j].design));
 		}
+	}
+
+	/* Planets first */
+	for (k = 0 ; k < object->nchildren ; k ++){
+		oid = object->children[k];
+		child = tpe_obj_obj_get_by_id(tpe->obj, oid);
+		if (!child) continue;
+		if (child->type != OBJTYPE_PLANET) continue;
+		pos += snprintf(buf + pos,BUFSIZ - pos, 
+				"<planet>%s</planet>",child->name);
+		for (i = 0 ; i < child->nchildren ; i ++){
+			oid = child->children[i];
+			gchild = tpe_obj_obj_get_by_id(tpe->obj, oid);
+			if (!gchild) continue;
+			if (gchild->type != OBJTYPE_FLEET) continue;
+			pos += snprintf(buf + pos,BUFSIZ - pos, 
+					"<fleet>%s</fleet>",gchild->name);
+			for (j = 0 ; j < gchild->fleet->nships ; j ++){
+				pos += snprintf(buf + pos,BUFSIZ - pos,
+						"<ship>%dx%s</ship>",
+						gchild->fleet->ships[j].count,
+						tpe_ship_design_name_get(tpe, 
+							gchild->fleet->ships[j].design));
+			}
+	}
+
 	}
 
 	return buf;	

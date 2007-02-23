@@ -50,6 +50,7 @@ struct object {
 	struct vector pos;
 	struct vector vel;
 
+	int parent; 
 	int nchildren;
 	int *children;
 

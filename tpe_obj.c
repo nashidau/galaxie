@@ -62,7 +62,7 @@ tpe_obj_object_list(void *data, int eventid, void *event){
 	struct tpe_obj *obj;
 	int seqkey, more;
 	int noids;
-	struct ObjectSeqID *oids;
+	struct ObjectSeqID *oids = NULL;
 	struct object *o;
 	int *toget,i,n;
 
@@ -99,13 +99,12 @@ tpe_obj_object_list(void *data, int eventid, void *event){
 /**
  * Callback for the event of a object being discovered 
  *
- * FIXMEs: Actully look for existing objects, not just create one
  */
 static int
 tpe_obj_data_receive(void *data, int eventid, void *edata){
 	struct tpe_obj *obj;
-	struct object *o;
-	int id,n;
+	struct object *o,*child;
+	int id,n,i;
 	int isnew;
 	int unused;
 	void *end;
@@ -123,6 +122,13 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		o = tpe_obj_obj_add(obj,id);
 	}
 
+	/* Unlink children */
+	for (i = 0 ; i < o->nchildren ; o ++){
+		child = tpe_obj_obj_get_by_id(obj,o->children[i]);
+		if (child)
+			child->parent = 0;
+	}
+
 	n = tpe_util_parse_packet(edata, "iislllllllaailiip",
 			&o->oid, &o->type, &o->name,
 			&o->size, 
@@ -132,6 +138,14 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 			&o->nordertypes, &o->ordertypes,
 			&o->norders,
 			&o->updated,&unused,&unused, &end);
+
+	/* Link children */
+	for (i = 0 ; i < o->nchildren ; o ++){
+		child = tpe_obj_obj_get_by_id(obj,o->children[i]);
+		if (!child)
+			child = tpe_obj_obj_add(obj,o->children[i]);
+		child->parent = id;
+	}
 
 	/* Handle extra data for different types */
 	switch (o->type){
