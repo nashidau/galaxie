@@ -73,7 +73,7 @@ struct msgname {
 	{ "MsgListOfObjectIDs", 		31 },
 	{ "MsgGetOrderDescriptionIDs",	 	32 },
 	{ "MsgOrderDescriptionIDs", 		33 },
-	{ "MsgPROBE_ORDER", 			34 },
+	{ "MsgProbeOrder", 			34 },
 	{ "MsgGetBoardIDs", 			35 },
 	{ "MsgListOfBoards", 			36 },
 	{ "MsgGetResourceIDs",	 		37 },

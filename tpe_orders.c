@@ -61,9 +61,10 @@ int
 tpe_order_get_type_by_name(struct tpe *tpe, const char *name){
 	struct order_desc *od;
 	ecore_list_goto_first(tpe->orders->ordertypes);
-	while ((od = ecore_list_next(tpe->orders->ordertypes)))
+	while ((od = ecore_list_next(tpe->orders->ordertypes))){
 		if (strcmp(name, od->name) == 0)
 			return od->otype;
+	}
 	return -1;
 
 }

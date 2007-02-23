@@ -24,7 +24,7 @@ static int smith_order_insert_cb(void *userdata, const char *msgtype,
 		int len, void *edata);
 
 static const char *colonise_order = "Colonise";
-static const char *build_order = "Build Fleet";
+static const char *build_order = "BuildFleet";
 static const char *move_order = "Move";
 
 static int colonise_id = -1;
@@ -66,21 +66,29 @@ smith_order_planet(void *data, int type, void *event){
 
 	if (build_id == -1)
 		build_id = tpe_order_get_type_by_name(smith->tpe, build_order);
-
+printf("$ build id is %d  What is %d\n",build_id, o->oid);
 	buf[0] = htonl(o->oid);	 /* What */
 	buf[1] = htonl(-1);	 /* Slot */
 	buf[2] = htonl(build_id); /* Order type */
 	buf[3] = htonl(0);       /* Number of turns == 0 */
 	buf[4] = htonl(0);       /* Resource list */
 	buf[5] = htonl(0);      /* List : Possible selections */
-	buf[6] = htonl(1);	/* List: # items */
+	buf[6] = htonl(0);	/* List: # items */
+	buf[7] = htonl(0);	/* strlen */
+	buf[8] = htonl(0);
+#if 0
 	buf[7] = htonl(2);	  /* Type: Guessing 2 for frigate */
 	buf[8] = htonl(1);	  /* Count : 1 */
 	buf[9] = htonl(0);	/* Strlen */
-	
+#endif
+/*
 	tpe_msg_send(smith->tpe->msg, "MsgInsertOrder",
 			smith_order_insert_cb, smith,
 			buf, 10 * 4);
+*/
+	tpe_msg_send(smith->tpe->msg, "MsgProbeOrder",
+			smith_order_insert_cb, smith,
+			buf, 9 * 4);
 
 	return 1;
 }
