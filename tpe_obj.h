@@ -66,6 +66,11 @@ struct object {
 	struct tpe_gui_obj *gui;
 };
 
+/* Cost to build something : From orders */
+struct build_resources {
+	int rid;
+	int cost;
+};
 
 struct tpe_obj * tpe_obj_init(struct tpe *tpe);
 int tpe_obj_obj_dump(struct object *o);

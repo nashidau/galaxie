@@ -52,6 +52,8 @@ tpe_util_dump_packet(void *pdata){
 /**
  * tpe_util_parse_packet: Parses a packet into the specified data pointers.
  *
+ * FIXME: Need a more general way of parsing complex structures (lists)
+ *
  * Format string:
  *  s: A string - will be malloced into pointer
  *  i: int - 32 bit int
@@ -59,8 +61,10 @@ tpe_util_dump_packet(void *pdata){
  *  a: Array of ints
  *  O: Array of Oids
  *  S: Array of ships
- *  R: Array of resources
+ *  R: Array of Planet resources 
+ *  B: Arrya of build resouts { int resource id, #required }
  *  Q: Array of order description args
+ *  6: Arg type 6: An array of { int, string, int }
  *  p: Save a pointer to the current offset
  */
 int
@@ -236,7 +240,72 @@ tpe_util_parse_packet(void *pdata, char *format, ...){
 				parsed ++;
 				break;
 			}
+			/* Arg type '6'
+			 * 	An array returned when querying orders */
+			case '6':{
+				struct arg_type6 **adest;
+				int len;
+				int *idata;
+				int *cdest;
+				int i;
+				
+				idata = pdata;
+				len = ntohl(*idata);
+				idata++;
 
+				cdest = va_arg(ap, int *);
+				adest = va_arg(ap, struct arg_type6 **);
+
+				if (cdest) *cdest = len;
+	
+				*adest = realloc(*adest, (len+1)*
+						sizeof(struct arg_type6));
+
+				for (i = 0 ; i < len ; i ++){
+					(*adest)[i].id = ntohl(*idata ++);
+					(*adest)[i].name = 
+						tpe_util_string_extract(idata, 
+								NULL, 
+								(void *)&idata);
+					(*adest)[i].max = ntohl(*idata ++);
+				}
+
+				pdata = (char *)idata;
+				format ++;
+				parsed ++;
+				break;
+			}
+			/* Arg type '6'
+			 * 	An array returned when querying orders */
+			case 'B':{
+				struct build_resources **adest;
+				int len;
+				int *idata;
+				int *cdest;
+				int i;
+				
+				idata = pdata;
+				len = ntohl(*idata);
+				idata++;
+
+				cdest = va_arg(ap, int *);
+				adest = va_arg(ap, struct arg_type6 **);
+
+				if (cdest) *cdest = len;
+	
+				*adest = realloc(*adest, (len+1)*
+						sizeof(struct build_resources));
+
+				for (i = 0 ; i < len ; i ++){
+					(*adest)[i].rid = ntohl(*idata ++);
+					(*adest)[i].cost = ntohl(*idata ++);
+				}
+
+				pdata = (char *)idata;
+				format ++;
+				parsed ++;
+				break;
+			}
 			/* Array of resources */
 			case 'R':{
 				struct planet_resource **adest;

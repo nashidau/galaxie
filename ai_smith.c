@@ -12,6 +12,7 @@
 #include "tpe_orders.h"
 #include "tpe_obj.h"
 #include "tpe_msg.h"
+#include "tpe_util.h"
 
 struct ai {
 	struct tpe *tpe;
@@ -97,8 +98,38 @@ static int
 smith_order_insert_cb(void *userdata, const char *msgtype, 
 		int len, void *edata){
 	int *data = edata;
+	int oid, slot, type, turns, nbr, noptions;
+	struct build_resources *br = 0;
+	struct arg_type6 *options = 0;
+	const char *str = 0;
+	int i;
 
 	printf("$ smith: Response was %d\n", ntohl(data[2]));
+	
+	/* FIXME: Check result */
+
+	data += 4;
+	/* Evil hard coded-ness again: Here I assume the order type */
+	tpe_util_parse_packet(data, "iiii", /* B6s */
+			&oid, &slot,&type,&turns,
+			&nbr,&br,
+			&noptions,&options,
+			&str);
+
+	printf("%d %d %d %d\n", oid, slot, type, turns);
+#if 0
+	printf("Resources are:\n");
+	for (i = 0 ; i < nbr ; i ++){
+		printf("\t%d: '%d'\n",
+				br[i].rid, br[i].cost);
+	}
+	printf("Options are: \n");
+	for (i = 0 ; i < noptions ; i ++){
+		printf("\t%d: '%s' (max %d)\n",
+				options[i].id, options[i].name, options[i].max);
+	}
+	
+#endif
 
 	return 1;
 }
