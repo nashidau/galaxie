@@ -123,7 +123,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 	}
 
 	/* Unlink children */
-	for (i = 0 ; i < o->nchildren ; o ++){
+	for (i = 0 ; i < o->nchildren ; i ++){
 		child = tpe_obj_obj_get_by_id(obj,o->children[i]);
 		if (child)
 			child->parent = 0;
@@ -140,7 +140,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 			&o->updated,&unused,&unused, &end);
 
 	/* Link children */
-	for (i = 0 ; i < o->nchildren ; o ++){
+	for (i = 0 ; i < o->nchildren ; i ++){
 		child = tpe_obj_obj_get_by_id(obj,o->children[i]);
 		if (!child)
 			child = tpe_obj_obj_add(obj,o->children[i]);
@@ -252,3 +252,7 @@ tpe_obj_obj_dump(struct object *o){
 	return 0;
 }
 
+Ecore_List *
+tpe_obj_obj_list(struct tpe_obj *obj){
+	return obj->objs;
+}

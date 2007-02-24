@@ -47,7 +47,8 @@ static int tpe_comm_logged_in(void *data, const char *msgtype, int len, void *md
 static int tpe_comm_msg_fail(void *udata, int type, void *event);
 static int tpe_comm_time_remaining(void *udata, int type, void *event);
 
-
+static int tpe_comm_msg_player_id(void *userdata, const char *msgtype,
+                int len, void *edata);
 /* Generic handlers */
 static int tpe_comm_available_features_msg(void *udata, int type, void *event);
 
@@ -150,7 +151,23 @@ tpe_comm_logged_in(void *data, const char *msgtype, int len, void *mdata){
 	tpe_msg_send(msg, "MsgGetObjectIDs", 0,0,buf,12);
 	tpe_msg_send(msg, "MsgGetDesignIDs", 0,0,buf,12);
 
+	buf[0] = htonl(1);	/* One player to get */
+	buf[1] = htonl(0); 	/* 0 = Myself */
+	tpe_msg_send(msg, "MsgGetPlayerData", tpe_comm_msg_player_id, tpe, 
+			buf, 8);
+
 	return 0;
+}
+
+static int 
+tpe_comm_msg_player_id(void *userdata, const char *msgtype,
+                int len, void *edata){
+	struct tpe *tpe = userdata;
+	
+	tpe_util_parse_packet(edata, "iss", &tpe->player,
+			&tpe->racename, &tpe->playername);
+
+	return 1;
 }
 
 

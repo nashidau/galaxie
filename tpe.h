@@ -2,6 +2,10 @@
 
 
 struct tpe {
+	int player; /* My player ID */
+	char *playername;
+	char *racename;
+
 	struct tpe_event *event;
 	struct tpe_msg *msg;
 	struct tpe_comm *comm;

@@ -15,6 +15,7 @@
 #include "tpe_obj.h"
 #include "tpe_board.h"
 #include "tpe_ship.h"
+#include "tpe_orders.h"
 
 #include "ai_smith.h"
 
@@ -22,8 +23,6 @@
 #define HEIGHT	768
 
 
-/* FIXME: These need to be sp;lit into different files */
-static int tpe_fail(void *data, int type, void *event);
 
 int
 main(int argc, char **argv){
@@ -49,17 +48,6 @@ main(int argc, char **argv){
 	ecore_main_loop_begin();
 
 	return 0;
-}
-
-static int
-tpe_fail(void *data, int type, void *event){
-	int len;
-
-	len = ntohl((*((int32_t*)event + 4)));
-	printf("Error on message seq %d: %s\n",ntohl(*((int32_t*)event + 1)),
-			(char *)event + 20);
-
-	return 1;
 }
 
 

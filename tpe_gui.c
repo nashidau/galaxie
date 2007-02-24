@@ -5,6 +5,7 @@
 
 #include <Ecore.h>
 #include <Ecore_Evas.h>
+#include <Ecore_Data.h>
 #include <Evas.h>
 #include <Edje.h>
 

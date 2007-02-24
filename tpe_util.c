@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <Ecore_Data.h>
+
 #include "tpe_util.h"
 
 #include "tpe_obj.h" /* Only for types */
@@ -379,4 +381,20 @@ tpe_util_parse_packet(void *pdata, char *format, ...){
 
 
 	return parsed;
+}
+
+/*
+ * Returns distance between two objexct squared.
+ *
+ * FIXME: Should check for overflow.
+ */
+uint64_t 
+tpe_util_dist_calc2(struct object *obj1, struct object *obj2){
+	uint64_t x,y,z;
+
+	x = obj1->pos.x - obj2->pos.x;
+	y = obj1->pos.y - obj2->pos.y;
+	z = obj1->pos.z - obj2->pos.z;
+printf("Dist { %lld %lld  %lld %lld  %lld %lld}\n",x,x*x,y,y*y,z,z*z);
+	return x * x + y * y + z * z;
 }

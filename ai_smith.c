@@ -6,17 +6,25 @@
 
 #include <Evas.h>
 #include <Ecore.h>
+#include <Ecore_Data.h>
 
 #include "tpe.h"
 #include "ai_smith.h"
 #include "tpe_event.h"
+#include "tpe_msg.h"
 #include "tpe_orders.h"
 #include "tpe_obj.h"
-#include "tpe_msg.h"
+#include "tpe_ship.h"
 #include "tpe_util.h"
 
 struct ai {
 	struct tpe *tpe;
+};
+
+
+/* Structure embedded into Objects for AI usage */
+struct ai_obj {
+	int fleet;
 };
 
 static int smith_order_planet(void *data, int type, void *event);
@@ -145,12 +153,40 @@ smith_order_insert_cb(void *userdata, const char *msgtype,
 
 static int 
 smith_order_fleet(void *data, int type, void *event){
+	Ecore_List *all;
 	struct object *o = event;
 	struct object *parent;
-	struct object *dest;
+	struct object *dest,*cur;
+	uint64_t destdist, curdist;
+	struct object_fleet *fleet;
 	struct ai *smith = data;
+	const char *designtype;
+	int i;
 
 	printf("$ Smith: Fleet for %s\n",o->name);
+
+	if (colonise_id == -1)
+		colonise_id = tpe_order_get_type_by_name(smith->tpe, 
+				colonise_order);
+	if (move_id == -1)
+		move_id = tpe_order_get_type_by_name(smith->tpe, move_order);
+	if (colonise_id == -1 || move_id == -1) 
+		return 1;
+	/* Smith only cares about frigates... All others are beneath
+	 * 	his notice */
+	fleet = o->fleet;
+	if (fleet == NULL) return 1;
+
+	for (i = 0 ; i < fleet->nships ; i ++){
+		designtype = tpe_ship_design_name_get(smith->tpe, 
+				fleet->ships[i].design);
+		if (strcmp(designtype,"Frigate") == 0)
+			break;
+	}
+
+	/* Ignoring non-frigate fleet */
+	if (i == fleet->nships) return 1;
+	
 
 	parent = tpe_obj_obj_get_by_id(smith->tpe->obj, o->parent);
 	if (!parent) {
@@ -160,7 +196,7 @@ smith_order_fleet(void *data, int type, void *event){
 
 	if (parent->type == OBJTYPE_PLANET){
 		printf("$ Smith: A planet:  Can I colonise it?\n");
-		if (parent->owner == tpe->player){
+		if (parent->owner == smith->tpe->player){
 			printf("Owned by me...\n");
 		} else {
 			printf("$ smith: Fixme: Colonise this\n");
@@ -169,9 +205,38 @@ smith_order_fleet(void *data, int type, void *event){
 	}
 
 	/* If here - we need to find somewhere to colonise... */
+	
+	printf("$ Seaching for somewhere for %s to colonise\n", o->name);
+	all = tpe_obj_obj_list(smith->tpe->obj);
+	ecore_list_goto_first(all);
+	dest = NULL;
+	destdist = UINT64_MAX;
+	while ((cur = ecore_list_next(all))){
+		if (cur->type != OBJTYPE_PLANET) continue;
+		if (dest == NULL && cur->ai == NULL) {
+			dest = cur;
+			destdist = tpe_util_dist_calc2(dest,o);
+			continue;
+		}
+		if (cur->ai != NULL) continue;
+		if (cur->owner == smith->tpe->player) continue;
+		curdist = tpe_util_dist_calc2(cur,o);
+		if (curdist < destdist){
+			/* New target */
+			destdist = curdist;
+			dest = cur;
+		}
+	}
 
+	if (dest == NULL){
+		printf("$ Smith: No where to send them too!\n");
+		return 1;
+	}
 
-
-
+	printf("$: Sending %s(%d) to %s\n",o->name, o->oid,dest->name);	
+	/*
+	cur->ai = calloc(1,sizeof(struct ai_obj));
+			cur->ai->fleet = o->oid;
+	*/
 	return 1;
 }
