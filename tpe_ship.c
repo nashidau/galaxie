@@ -84,9 +84,14 @@ tpe_ship_msg_design_list(void *data, int eventid, void *event){
 			n ++;
 		}
 	}
-	toget[0] = htonl(n);
-	tpe_msg_send(tpe->msg, "MsgGetDesign",NULL, NULL, 
+
+	if (n != 0){ 
+		/* Get what we need */
+		toget[0] = htonl(n);
+
+		tpe_msg_send(tpe->msg, "MsgGetDesign",NULL, NULL, 
 				toget, n * 4 + 4);
+	}
 
 	free(toget);
 

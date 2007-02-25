@@ -1,4 +1,5 @@
 #include <arpa/inet.h>
+#include <assert.h>
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -77,6 +78,7 @@ smith_order_planet(void *data, int type, void *event){
 
 	if (build_id == -1)
 		build_id = tpe_order_get_type_by_name(smith->tpe, build_order);
+	assert(build_id != -1);
 
 	buf[0] = htonl(o->oid);	 /* What */
 	buf[1] = htonl(-1);	 /* Slot */
@@ -85,12 +87,20 @@ smith_order_planet(void *data, int type, void *event){
 	buf[4] = htonl(0);       /* Resource list */
 	buf[5] = htonl(0);      /* List : Possible selections */
 	buf[6] = htonl(0);	/* List: # items */
-	buf[7] = htonl(0);	/* strlen */
-	buf[8] = htonl(0);
+	buf[7] = htonl(0);	/* max len */
+	buf[8] = htonl(0);	/* Str: name */
+	/* FIXME: NFI what this is */
+	buf[9] = htonl(0);	/* Str: name */
+
+	{int i;
+		for (i = 0 ; i < 9 ; i ++)
+			printf("%08x ",ntohl(buf[i]));
+		printf("\n");
+	}
 
 	tpe_msg_send(smith->tpe->msg, "MsgProbeOrder",
 			smith_order_insert_cb, smith,
-			buf, 9 * 4);
+			buf,  9* 4);
 
 	return 1;
 }
