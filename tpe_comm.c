@@ -218,18 +218,15 @@ tpe_comm_available_features_msg(void *udata, int type, void *event){
 
 static int
 tpe_comm_msg_fail(void *udata, int etype, void *event){
-	int magic, type, seq, len;
+	int magic, type, seq, len, errcode;
 	int rv;
 	char *str = 0;
 
-	rv = tpe_util_parse_packet(event, "iiii", &magic, &seq, &type, &len);
+	rv = tpe_util_parse_packet(event, "iiiiis", &magic, &seq, &type, &len,
+			&errcode, &str);
 
-	printf("** Error: Response to %d [%d bytes]: %.*s\n",seq,len,len,(char *)((int *)event + 4));
-	str = event;
-	str += 16;
-	printf("%08x %08x\n", *str, *(str + 4));
-
-
+	printf("** Error: Seq %d: Err %d: %s\n",seq,errcode,str);
+	
 	return 1;
 }
 
