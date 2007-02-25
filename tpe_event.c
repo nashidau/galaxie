@@ -150,3 +150,7 @@ void
 tpe_event_nofree(void *x,void *y){
 
 }
+void 
+tpe_event_free(void *x,void *y){
+	free(y);
+}

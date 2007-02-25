@@ -356,7 +356,7 @@ tpe_msg_handle_packet(struct tpe_msg *msg, int seq, int type,
 		memcpy(edata,data,16+len);
 
 		/* Default cleanup will free buffer */
-		tpe_event_send(msg->tpe->event, event, edata, NULL, NULL);
+		tpe_event_send(msg->tpe->event, event, edata, tpe_event_free, NULL);
 	}
 
 }	

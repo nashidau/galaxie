@@ -96,6 +96,7 @@ tpe_orders_msg_order_description_ids(void *data, int type, void *edata){
 			toget, n * 4 + 4);
 
 	free(toget);
+	free(oids);
 
 	return 1;
 }
