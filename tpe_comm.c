@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <Ecore.h>
+
 /* TPE Comm can only call tpe, tpe_msg, tpe_event */
 #include "tpe.h"
 #include "tpe_comm.h"
@@ -49,12 +51,17 @@ static int tpe_comm_time_remaining(void *udata, int type, void *event);
 
 static int tpe_comm_msg_player_id(void *userdata, const char *msgtype,
                 int len, void *edata);
+
+static int tpe_comm_get_time(void *msg);
+
 /* Generic handlers */
 static int tpe_comm_available_features_msg(void *udata, int type, void *event);
 
 struct tpe_comm *
 tpe_comm_init(struct tpe *tpe){
 	struct tpe_comm *comm;
+
+	assert(tpe->comm == NULL);
 
 	comm = calloc(1,sizeof(struct tpe_comm));
 	comm->tpe = tpe;
@@ -156,7 +163,15 @@ tpe_comm_logged_in(void *data, const char *msgtype, int len, void *mdata){
 	tpe_msg_send(msg, "MsgGetPlayerData", tpe_comm_msg_player_id, tpe, 
 			buf, 8);
 
+	ecore_timer_add(5 , tpe_comm_get_time, msg);
+
 	return 0;
+}
+
+static int
+tpe_comm_get_time(void *msg){
+	tpe_msg_send(msg, "MsgGetTimeRemaining", 0,0,0,0);
+	return 1;
 }
 
 static int 
@@ -207,13 +222,14 @@ tpe_comm_msg_fail(void *udata, int etype, void *event){
 	int rv;
 	char *str = 0;
 
-	rv = tpe_util_parse_packet(event, "iiiis", &magic, &seq, &type, 
-				&len, &str);
+	rv = tpe_util_parse_packet(event, "iiii", &magic, &seq, &type, &len);
 
-	printf("** Error: Response to %d [%d bytes]{%d}: %p %d %s\n",seq,len,rv,str,strlen(str),str);
+	printf("** Error: Response to %d [%d bytes]: %.*s\n",seq,len,len,(char *)((int *)event + 4));
 	str = event;
 	str += 16;
 	printf("%08x %08x\n", *str, *(str + 4));
+
+
 	return 1;
 }
 
@@ -225,25 +241,27 @@ tpe_comm_time_remaining(void *udata, int type, void *event){
 	struct tpe *tpe;
 	struct tpe_msg *msg;
 	int magic,etype,seq;
+	int unused, remain;
 	int seqs[3];
 
 	tpe = udata;
 	msg = tpe->msg;
 
-	tpe_util_parse_packet(event, "iii",&magic, &seq, &etype);
+	tpe_util_parse_packet(event, "iiiii",&magic, &seq, &etype, &unused, 
+			&remain);
 
 	if (seq != 0) return 1;
+	if (seq == 0 && remain == 0) {
+		seqs[0] = htonl(-1);	/* New seq */
+		seqs[1] = htonl(0);	/* From 0 */
+		seqs[2] = htonl(-1);	/* Get them all */
 
-	printf("New Turn!!\n");
-	seqs[0] = htonl(-1);	/* New seq */
-	seqs[1] = htonl(0);	/* From 0 */
-	seqs[2] = htonl(-1);	/* Get them all */
-
-	tpe_msg_send(msg, "MsgGetOrderDescriptionIDs", 0,0,seqs,12);
-	tpe_msg_send(msg, "MsgGetBoardIDs", 0,0,seqs,12);
-	tpe_msg_send(msg, "MsgGetResourceIDs", 0,0,seqs,12);
-	tpe_msg_send(msg, "MsgGetObjectIDs", 0,0,seqs,12);
-	tpe_msg_send(msg, "MsgGetDesignIDs", 0,0,seqs,12);
+		tpe_msg_send(msg, "MsgGetOrderDescriptionIDs", 0,0,seqs,12);
+		tpe_msg_send(msg, "MsgGetBoardIDs", 0,0,seqs,12);
+		tpe_msg_send(msg, "MsgGetResourceIDs", 0,0,seqs,12);
+		tpe_msg_send(msg, "MsgGetObjectIDs", 0,0,seqs,12);
+		tpe_msg_send(msg, "MsgGetDesignIDs", 0,0,seqs,12);
+	}
 
 	return 1;
 }

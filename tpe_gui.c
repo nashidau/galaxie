@@ -187,7 +187,7 @@ tpe_gui_time_remaining(void *guip, int type, void *eventd){
 static int 
 tpe_gui_object_update(void *data, int eventid, void *event){
 	struct tpe_gui *gui;
-	struct object *obj;
+	struct object *obj,*parent;
 	struct tpe_gui_obj *go;
 	int changed = 0;
 	Evas_Coord x,y;
@@ -214,7 +214,6 @@ tpe_gui_object_update(void *data, int eventid, void *event){
 	y = obj->pos.y / gui->zoom;
 
 	ecore_evas_geometry_get(gui->ee, 0,0,&width,&height);
-	printf("Putting %s at %d,%d\n",obj->name, x + width / 2,y + height / 2);
 
 	/* FIXME: Should allocate for:
 	 * 	- Ships without parents
@@ -222,7 +221,6 @@ tpe_gui_object_update(void *data, int eventid, void *event){
 	 */
 	/* FIXME: Should be a nice function for this */
 	if (obj->type == OBJTYPE_SYSTEM && obj->gui == NULL){
-		printf("New obj\n");
 		go = calloc(1,sizeof(struct tpe_gui_obj));
 		go->object = obj;
 		go->gui = gui;
@@ -244,11 +242,31 @@ tpe_gui_object_update(void *data, int eventid, void *event){
 				star_mouse_down, go);
 
 	}
+	if (obj->type == OBJTYPE_FLEET){
+		parent = tpe_obj_obj_get_by_id(gui->tpe->obj, obj->parent);
+		if (parent != NULL && (parent->type == OBJTYPE_SYSTEM ||
+					parent->type == OBJTYPE_PLANET)){
+			if (obj->gui){
+				evas_object_del(obj->gui->obj);
+				obj->gui = realloc(obj->gui, 0);
+			}
+		} else {
+	
+			if (obj->gui == NULL){
+				go = calloc(1,sizeof(struct tpe_gui_obj));
+				go->object = obj;
+				go->gui = gui;
+				obj->gui = go;
 
-	if (obj->type == OBJTYPE_SYSTEM){
-			
-	} else if (obj->type == OBJTYPE_FLEET){
+				go->obj = edje_object_add(gui->e);
+			}
+			go = obj->gui;
 
+			edje_object_file_set(go->obj,"edje/basic.edj","Fleet");
+			evas_object_resize(go->obj,8,8);
+			evas_object_show(go->obj);
+			evas_object_move(go->obj,x + width / 2,y + height / 2);
+		}
 	}
 
 	return 1;

@@ -395,6 +395,6 @@ tpe_util_dist_calc2(struct object *obj1, struct object *obj2){
 	x = obj1->pos.x - obj2->pos.x;
 	y = obj1->pos.y - obj2->pos.y;
 	z = obj1->pos.z - obj2->pos.z;
-printf("Dist { %lld %lld  %lld %lld  %lld %lld}\n",x,x*x,y,y*y,z,z*z);
+	
 	return x * x + y * y + z * z;
 }
