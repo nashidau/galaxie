@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <Ecore.h>
 #include <Ecore_Evas.h>
@@ -26,7 +27,11 @@ struct tpe_gui {
 
 	Evas_Object *background;
 
-	int zoom;
+	struct {
+		uint64_t zoom;
+		int top,left;
+		int w,h;
+	} map;
 
 	/* Bounding box of the universe */
 	struct {
@@ -37,6 +42,8 @@ struct tpe_gui {
 	/* For mouse overs - may be more then one if they have a special
 	 * delete */
 	Evas_Object *popup;
+
+	Ecore_List *visible;
 };
 
 
@@ -69,6 +76,12 @@ static void star_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event);
 static void star_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event);
 static void fleet_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event);
 
+static void map_key_down(void *data, Evas *e, Evas_Object *obj, void *event);
+
+static void window_resize(Ecore_Evas *ee);
+static void tpe_gui_redraw(struct tpe_gui *gui);
+
+
 static const char *star_summary(struct tpe *tpe, struct object *object);
 
 struct tpe_gui *
@@ -77,7 +90,9 @@ tpe_gui_init(struct tpe *tpe){
 
 	gui = calloc(1,sizeof(struct tpe_gui));
 	gui->tpe = tpe;
-	gui->zoom = DEFAULT_ZOOM;
+	gui->map.zoom = DEFAULT_ZOOM;
+	gui->map.left = WIDTH / 2;
+	gui->map.top = HEIGHT / 2;
 	
 	/* FIXME: Should check for --nogui option */
 
@@ -117,6 +132,11 @@ tpe_gui_init(struct tpe *tpe){
 	tpe_event_handler_add(gui->tpe->event, "ObjectChanged",
 			tpe_gui_object_update, gui);
 
+	gui->visible = ecore_list_new();
+
+	ecore_evas_data_set(gui->ee, "TPEGUI", gui);
+	ecore_evas_callback_resize_set(gui->ee, window_resize);
+	
 	return gui;
 }
 
@@ -160,6 +180,9 @@ tpe_gui_edje_splash_connect(void *data, Evas_Object *o,
 	evas_object_resize(gui->main,WIDTH,HEIGHT);
 	evas_object_show(gui->main);
 
+	evas_object_event_callback_add(gui->main, EVAS_CALLBACK_KEY_DOWN,
+				map_key_down, gui);
+	evas_object_focus_set(gui->main, 1);
 
 	gui->popup = edje_object_add(gui->e);
 	edje_object_file_set(gui->popup, "edje/basic.edj", "StarPopup");
@@ -190,9 +213,7 @@ tpe_gui_object_update(void *data, int eventid, void *event){
 	struct tpe_gui *gui;
 	struct object *obj,*parent;
 	struct tpe_gui_obj *go;
-	int changed = 0;
 	Evas_Coord x,y;
-	int width,height;
 	
 	gui = data;
 	obj = event;
@@ -201,25 +222,10 @@ tpe_gui_object_update(void *data, int eventid, void *event){
 		return 1;
 	}
 
-	/* First update scaling factors */
-	if (obj->pos.x > gui->bb.maxx) {changed ++;gui->bb.maxx = obj->pos.x;}
-	if (obj->pos.y > gui->bb.maxy) {changed ++;gui->bb.maxy = obj->pos.y;}
-	if (obj->pos.x < gui->bb.minx) {changed ++;gui->bb.minx = obj->pos.x;}
-	if (obj->pos.y < gui->bb.miny) {changed ++;gui->bb.miny = obj->pos.y;}
-
-	if (changed){
-	}
-
 	/* work out where to put it on screen */
-	x = obj->pos.x / gui->zoom;
-	y = obj->pos.y / gui->zoom;
+	x = obj->pos.x / gui->map.zoom;
+	y = obj->pos.y / gui->map.zoom;
 
-	ecore_evas_geometry_get(gui->ee, 0,0,&width,&height);
-
-	/* FIXME: Should allocate for:
-	 * 	- Ships without parents
-	 * 	- Systems 
-	 */
 	/* FIXME: Should be a nice function for this */
 	if (obj->type == OBJTYPE_SYSTEM && obj->gui == NULL){
 		go = calloc(1,sizeof(struct tpe_gui_obj));
@@ -231,7 +237,7 @@ tpe_gui_object_update(void *data, int eventid, void *event){
 		edje_object_file_set(go->obj,"edje/basic.edj","Star");
 		evas_object_resize(go->obj,8,8);
 		evas_object_show(go->obj);
-		evas_object_move(go->obj,x + width / 2,y + height / 2);
+		evas_object_move(go->obj,x + gui->map.left,y + gui->map.top);
 
 		edje_object_part_text_set(go->obj,"label", obj->name);
 
@@ -241,6 +247,8 @@ tpe_gui_object_update(void *data, int eventid, void *event){
 				star_mouse_out, go);
 		evas_object_event_callback_add(go->obj,EVAS_CALLBACK_MOUSE_DOWN,
 				star_mouse_down, go);
+
+		ecore_list_append(gui->visible, obj);
 
 	}
 	if (obj->type == OBJTYPE_FLEET){
@@ -266,11 +274,14 @@ tpe_gui_object_update(void *data, int eventid, void *event){
 			edje_object_file_set(go->obj,"edje/basic.edj","Fleet");
 			evas_object_resize(go->obj,8,8);
 			evas_object_show(go->obj);
-			evas_object_move(go->obj,x + width / 2,y + height / 2);
+			evas_object_move(go->obj,x + gui->map.left,
+					y + gui->map.top);
 
 			evas_object_event_callback_add(go->obj,
 				EVAS_CALLBACK_MOUSE_DOWN,
 				fleet_mouse_down, obj);
+
+			ecore_list_append(gui->visible, obj);
 		}
 	}
 
@@ -388,8 +399,7 @@ star_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 
 	go = data;
 
-	printf("Mouse down\n");
-
+	tpe_obj_obj_dump(go->object);
 }
 static void
 fleet_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
@@ -397,3 +407,70 @@ fleet_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 
 }
 
+static void 
+map_key_down(void *data, Evas *e, Evas_Object *obj, void *event){
+	Evas_Event_Key_Down *key = event;
+	struct tpe_gui *gui = data;
+
+	if (strcmp(key->keyname, "equal") == 0)
+		gui->map.zoom /= 2; /* FIXME: Sanity check */
+	else if (strcmp(key->keyname, "minus") == 0)
+		gui->map.zoom *= 2; /* FIXME: Sanity check */
+	else if (strcmp(key->keyname, "Left") == 0)
+		gui->map.left += 100;	
+	else if (strcmp(key->keyname, "Right") == 0)
+		gui->map.left -= 100;	
+	else if (strcmp(key->keyname, "Up") == 0)
+		gui->map.top += 100;	
+	else if (strcmp(key->keyname, "Down") == 0)
+		gui->map.top -= 100;	
+	else if (strcmp(key->keyname, "Home") == 0){
+		/* FIXME: Find homeworld, and center map */
+	} else {
+		return;
+	}
+
+	tpe_gui_redraw(gui);
+}
+
+
+
+static void 
+window_resize(Ecore_Evas *ee){
+	struct tpe_gui *gui;
+	int neww, newh;
+	int dw,dh;
+
+	gui = ecore_evas_data_get(ee, "TPEGUI");
+	if (gui == NULL) return;
+
+	ecore_evas_geometry_get(ee, NULL, NULL, &neww, &newh);
+	dw = neww - gui->map.w;
+	dh = newh - gui->map.h;
+
+	gui->map.left += dw / 2;
+	gui->map.top += dh / 2;
+	gui->map.w = neww;
+	gui->map.h = newh;
+
+	evas_object_resize(gui->main, gui->map.w, gui->map.h);
+
+	tpe_gui_redraw(gui);
+}
+
+
+static void
+tpe_gui_redraw(struct tpe_gui *gui){
+	struct object *obj;
+	int x,y;
+
+	ecore_list_goto_first(gui->visible);
+	while ((obj = ecore_list_next(gui->visible))){
+		x = obj->pos.x / gui->map.zoom;
+		y = obj->pos.y / gui->map.zoom;
+		evas_object_move(obj->gui->obj,x + gui->map.left,y + gui->map.top);
+	}
+
+	//gui->redraw = 0;
+
+}
