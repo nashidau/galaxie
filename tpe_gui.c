@@ -67,6 +67,7 @@ static int tpe_gui_object_update(void *data, int eventid, void *event);
 static void star_mouse_in(void *data, Evas *e, Evas_Object *obj, void *event);
 static void star_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event);
 static void star_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event);
+static void fleet_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event);
 
 static const char *star_summary(struct tpe *tpe, struct object *object);
 
@@ -266,6 +267,10 @@ tpe_gui_object_update(void *data, int eventid, void *event){
 			evas_object_resize(go->obj,8,8);
 			evas_object_show(go->obj);
 			evas_object_move(go->obj,x + width / 2,y + height / 2);
+
+			evas_object_event_callback_add(go->obj,
+				EVAS_CALLBACK_MOUSE_DOWN,
+				fleet_mouse_down, obj);
 		}
 	}
 
@@ -341,7 +346,8 @@ star_summary(struct tpe *tpe, struct object *object){
 		if (!child) continue;
 		if (child->type != OBJTYPE_PLANET) continue;
 		pos += snprintf(buf + pos,BUFSIZ - pos, 
-				"<planet>%s</planet>",child->name);
+				"<planet>%s%s</planet>",child->name,
+				(child->owner != -1) ? " *": "");
 		for (i = 0 ; i < child->nchildren ; i ++){
 			oid = child->children[i];
 			gchild = tpe_obj_obj_get_by_id(tpe->obj, oid);
@@ -385,3 +391,9 @@ star_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 	printf("Mouse down\n");
 
 }
+static void
+fleet_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
+	tpe_obj_obj_dump(data);
+
+}
+
