@@ -278,7 +278,6 @@ order_move(struct tpe *tpe, struct object *o, struct object *dest){
 int
 order_colonise(struct tpe *tpe, struct object *o, struct object *dest){
 	int buf[20];
-	int i;
 
 	buf[0] = htonl(o->oid);		/* Who are are ordering */
 	buf[1] = htonl(-1);		/* Slot */
@@ -291,4 +290,6 @@ order_colonise(struct tpe *tpe, struct object *o, struct object *dest){
 	tpe_msg_send(tpe->msg, "MsgInsertOrder",
 			NULL, NULL,
 			buf, 6 * 4);
+
+	return 0;
 }
