@@ -92,11 +92,11 @@ smith_order_planet(void *data, int type, void *event){
 	/* FIXME: NFI what this is */
 	buf[9] = htonl(0);	/* Str: name */
 
-	{int i;
-		for (i = 0 ; i < 9 ; i ++)
-			printf("%08x ",ntohl(buf[i]));
-		printf("\n");
-	}
+//	{int i;
+//		for (i = 0 ; i < 9 ; i ++)
+//			printf("%08x ",ntohl(buf[i]));
+//		printf("\n");
+//	}
 
 	tpe_msg_send(smith->tpe->msg, "MsgProbeOrder",
 			smith_order_insert_cb, smith,

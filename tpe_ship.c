@@ -94,6 +94,7 @@ tpe_ship_msg_design_list(void *data, int eventid, void *event){
 	}
 
 	free(toget);
+	free(oids);
 
 	return 1;
 
@@ -115,6 +116,8 @@ tpe_ship_msg_design(void *data, int eventid, void *event){
 			&design->name,
 			&design->description);
 	ecore_list_append(tpe->ship->designs, design);
+
+	free(cats);
 
 	return 1;
 }

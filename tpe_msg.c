@@ -300,7 +300,8 @@ tpe_msg_receive(void *udata, int ecore_event_type, void *edata){
 		msg->buf.data = tmp;
 		msg->buf.size = remaining;
 	} else {
-		msg->buf.data = realloc(msg->buf.data,0);
+		free(msg->buf.data);
+		msg->buf.data = NULL;
 		msg->buf.size = 0;
 	}
 	return 1;
@@ -354,8 +355,8 @@ tpe_msg_handle_packet(struct tpe_msg *msg, int seq, int type,
 		edata = malloc(16 + len);
 		memcpy(edata,data,16+len);
 
-		/* FIXME: Do I need a cleanup function */
-		tpe_event_send(msg->tpe->event, event, edata, tpe_event_nofree, NULL);
+		/* Default cleanup will free buffer */
+		tpe_event_send(msg->tpe->event, event, edata, NULL, NULL);
 	}
 
 }	
@@ -396,6 +397,8 @@ tpe_msg_send(struct tpe_msg *msg, const char *msgtype,
 	memcpy(buf + 4, data, len);
 printf("Sending Seq %d Type %d Len: %d [%p]\n",msg->seq,type,len,cb);
 	ecore_con_server_send(msg->svr, buf, len + HEADER_SIZE);
+
+	free(buf);
 
 	return tpe_msg_cb_add(msg, msg->seq, cb, userdata);
 }

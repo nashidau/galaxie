@@ -92,6 +92,7 @@ tpe_obj_object_list(void *data, int eventid, void *event){
 				toget, n * 4 + 4);
 
 	free(toget);
+	free(oids);
 
 	return 1;
 }

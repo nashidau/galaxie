@@ -179,6 +179,8 @@ tpe_board_msg_message_receive(void *data, int type, void *event){
 			message->board,message->slot,message->turn,
 			message->title, message->body);
 
+	/* FIXME: Store these somewhere!! */
+
 	
 	return 1;
 }
