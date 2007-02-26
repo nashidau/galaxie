@@ -43,6 +43,10 @@ struct order {
 	int turns;
 	int nresources;
 	struct build_resources *resources;
+
+	union {
+		int colonise;
+	} extra;
 	
 };
 
@@ -195,14 +199,25 @@ tpe_orders_msg_order(void *data, int type, void *event){
 	struct tpe *tpe = data;
 	struct object *object;
 	struct order *order;
+	const char *tname;
+	void *end;
 
 	order = calloc(1,sizeof(struct order));
 
 	event = (char *)event + 16;
-	tpe_util_parse_packet(event, "iiiiB",
+	tpe_util_parse_packet(event, "iiiiBp",
 			&order->oid, &order->slot,
 			&order->type, &order->turns,
-			&order->nresources, &order->resources);
+			&order->nresources, &order->resources,
+			&end);
+
+	tname = tpe_order_get_name_by_type(tpe, order->type);
+	if (tname == NULL){
+		printf("Unknown order type %d\n",order->type);
+	} else if (strcmp(tname,"Colonise") == 0){
+		tpe_util_parse_packet(end, "i", &order->extra.colonise);
+	} 
+	/* FIXME: Handle all order types - and use order desc to do parsing */
 
 	if (order->slot == -1){
 		/* Free it */
@@ -234,6 +249,8 @@ tpe_orders_order_free(struct order *order){
 
 int
 tpe_orders_order_print(struct tpe *tpe, struct order *order){
+	struct object *target;
+
 	if (order == NULL){
 		printf("\tNo order data\n");
 		return 1;
@@ -246,6 +263,13 @@ tpe_orders_order_print(struct tpe *tpe, struct order *order){
 			order->turns,
 			order->nresources);
 	/* FIXME: Print resources */
+
+	if (order->type == 3){
+		printf("Colonising object %d:\n", order->extra.colonise);
+		target = tpe_obj_obj_get_by_id(tpe->obj, order->extra.colonise);
+		tpe_obj_obj_dump(target);
+		printf("End col\n");
+	}
 
 	return 0;
 }

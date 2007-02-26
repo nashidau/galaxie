@@ -268,6 +268,12 @@ tpe_gui_object_update(void *data, int eventid, void *event){
 				obj->gui = go;
 
 				go->obj = edje_object_add(gui->e);
+				evas_object_event_callback_add(go->obj,
+						EVAS_CALLBACK_MOUSE_DOWN,
+						fleet_mouse_down, obj);
+
+				ecore_list_append(gui->visible, obj);
+
 			}
 			go = obj->gui;
 
@@ -277,11 +283,6 @@ tpe_gui_object_update(void *data, int eventid, void *event){
 			evas_object_move(go->obj,x + gui->map.left,
 					y + gui->map.top);
 
-			evas_object_event_callback_add(go->obj,
-				EVAS_CALLBACK_MOUSE_DOWN,
-				fleet_mouse_down, obj);
-
-			ecore_list_append(gui->visible, obj);
 		}
 	}
 
