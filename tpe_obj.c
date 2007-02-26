@@ -13,6 +13,7 @@
 
 #include "tpe.h"
 #include "tpe_obj.h"
+#include "tpe_orders.h"
 #include "tpe_event.h"
 #include "tpe_msg.h"
 #include "tpe_util.h"
@@ -148,6 +149,11 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		child->parent = id;
 	}
 
+	/* Add slots for the orders */
+	/* FIXME: Leak! */
+	free(o->orders);
+	o->orders = calloc(o->norders, sizeof(struct order *));
+
 	/* Handle extra data for different types */
 	switch (o->type){
 	case OBJTYPE_UNIVERSE:{
@@ -226,6 +232,7 @@ tpe_obj_obj_add(struct tpe_obj *obj, int oid){
 
 	o = calloc(1,sizeof(struct object));
 	o->oid = oid;
+	o->tpe = obj->tpe;
 	ecore_list_append(obj->objs, o);
 	return o;	
 }
@@ -249,6 +256,9 @@ tpe_obj_obj_dump(struct object *o){
 		printf("%d ",o->ordertypes[i]);
 	}
 	printf("\n\t%d current orders\n",o->norders);
+	for (i = 0 ; i < o->norders ; i ++){
+		tpe_orders_order_print(o->tpe, o->orders[i]);
+	}
 
 	return 0;
 }

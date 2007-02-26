@@ -2,6 +2,7 @@
  * Very low level system for dealing with order types
  */
 #include <arpa/inet.h>
+#include <assert.h>
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,6 +15,7 @@
 #include "tpe_msg.h"
 #include "tpe_util.h"
 #include "tpe_orders.h"
+#include "tpe_obj.h"
 
 struct tpe_orders {
 	struct tpe *tpe;
@@ -34,8 +36,21 @@ struct order_desc {
 	uint64_t updated;
 };
 
+struct order {
+	int oid;
+	int slot;
+	int type;
+	int turns;
+	int nresources;
+	struct build_resources *resources;
+	
+};
+
 static int tpe_orders_msg_order_description_ids(void *, int type, void *data);
 static int tpe_orders_msg_order_description(void *, int type, void *data);
+static int tpe_orders_msg_order(void *, int type, void *data);
+
+static int tpe_orders_object_update(void *, int type, void *data);
 
 struct tpe_orders *
 tpe_orders_init(struct tpe *tpe){
@@ -49,9 +64,16 @@ tpe_orders_init(struct tpe *tpe){
 			tpe_orders_msg_order_description, tpe);
 	tpe_event_handler_add(tpe->event, "MsgOrderDescriptionIDs", /* 33 */
 			tpe_orders_msg_order_description_ids, tpe);
+	tpe_event_handler_add(tpe->event, "MsgOrder", 
+			tpe_orders_msg_order, tpe);
 
 	/* Register some events?? */
-	
+
+
+	tpe_event_handler_add(tpe->event, "ObjectChanged", 
+			tpe_orders_object_update, tpe);
+	tpe_event_handler_add(tpe->event, "ObjectNew", 
+			tpe_orders_object_update, tpe);
 	
 
 	return orders;
@@ -67,6 +89,17 @@ tpe_order_get_type_by_name(struct tpe *tpe, const char *name){
 	}
 	return -1;
 
+}
+
+const char * 
+tpe_order_get_name_by_type(struct tpe *tpe, int type){
+	struct order_desc *od;
+	ecore_list_goto_first(tpe->orders->ordertypes);
+	while ((od = ecore_list_next(tpe->orders->ordertypes))){
+		if (type == od->otype)
+			return od->name;
+	}
+	return NULL;
 }
 
 static int
@@ -129,4 +162,90 @@ tpe_orders_msg_order_description(void *data, int type, void *edata){
 	ecore_list_append(tpe->orders->ordertypes, od);
 
 	return 1;
+}
+
+
+/* Update the order list for this object */
+static int 
+tpe_orders_object_update(void *tpev, int type, void *objv){
+	struct object *o = objv;
+	struct tpe *tpe = tpev;
+	int *toget,i;
+
+	assert(o);
+	assert(tpe);
+
+	if (o->norders == 0) return 1;
+
+	toget = malloc((o->norders + 2) * sizeof(uint32_t));
+	toget[0] = htonl(o->oid);
+	toget[1] = htonl(o->norders);
+
+	for (i = 0 ; i < o->norders ; i ++)
+		toget[i + 2] = htonl(i);
+	
+	tpe_msg_send(tpe->msg, "MsgGetOrder", NULL, NULL,
+			toget, (o->norders + 2) * sizeof(uint32_t));
+
+	return 1;
+}
+
+static int 
+tpe_orders_msg_order(void *data, int type, void *event){
+	struct tpe *tpe = data;
+	struct object *object;
+	struct order *order;
+
+	order = calloc(1,sizeof(struct order));
+
+	event = (char *)event + 16;
+	tpe_util_parse_packet(event, "iiiiB",
+			&order->oid, &order->slot,
+			&order->type, &order->turns,
+			&order->nresources, &order->resources);
+
+	if (order->slot == -1){
+		/* Free it */
+		tpe_orders_order_free(order);
+	} else {
+		object = tpe_obj_obj_get_by_id(tpe->obj, order->oid);
+		if (object == NULL){
+			tpe_orders_order_free(order);
+			return 1;
+		}
+		if (object->norders < order->slot){
+			printf("Weird -order too low\n");
+			exit(1);
+		}
+		if (object->orders[order->slot])
+			tpe_orders_order_free(object->orders[order->slot]);
+		object->orders[order->slot] = order;
+	}
+
+	return 1;
+}
+
+int
+tpe_orders_order_free(struct order *order){
+	free(order->resources);
+	free(order);
+	return 0;
+}
+
+int
+tpe_orders_order_print(struct tpe *tpe, struct order *order){
+	if (order == NULL){
+		printf("\tNo order data\n");
+		return 1;
+	}
+
+	printf("\tOrderSlot %d Type[%2d]: %s\n"
+		"\tTurns: %d  Resources: %d\n",
+			order->slot, order->type, 
+			tpe_order_get_name_by_type(tpe, order->type),
+			order->turns,
+			order->nresources);
+	/* FIXME: Print resources */
+
+	return 0;
 }

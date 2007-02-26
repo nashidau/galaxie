@@ -40,6 +40,8 @@ struct object_fleet {
 
 /* Represents an object in the system */
 struct object {
+	struct tpe *tpe;
+
 	uint32_t oid;	/* Unique ID */
 	enum objtype type;
 	char *name;
@@ -58,6 +60,7 @@ struct object {
 	int *ordertypes;
 
 	int norders;
+	struct order **orders;
 
 	uint64_t updated;
 

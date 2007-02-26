@@ -37,8 +37,8 @@ main(int argc, char **argv){
 	tpe->event 	= tpe_event_init(tpe);
 	tpe->msg   	= tpe_msg_init(tpe);
 	tpe->comm  	= tpe_comm_init(tpe);
-	tpe->orders  	= tpe_orders_init(tpe);
 	tpe->obj   	= tpe_obj_init(tpe);
+	tpe->orders  	= tpe_orders_init(tpe);
 	tpe->board 	= tpe_board_init(tpe);
 	tpe->gui	= tpe_gui_init(tpe);
 	tpe->ship	= tpe_ship_init(tpe);
