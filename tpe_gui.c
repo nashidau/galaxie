@@ -257,7 +257,11 @@ tpe_gui_object_update(void *data, int eventid, void *event){
 					parent->type == OBJTYPE_PLANET)){
 			if (obj->gui){
 				evas_object_del(obj->gui->obj);
-				obj->gui = realloc(obj->gui, 0);
+				free(obj->gui);
+				obj->gui = 0;
+				/* Remove it from the list of visible items */
+				if (ecore_list_goto(gui->visible, obj))
+					ecore_list_remove(gui->visible);
 			}
 		} else {
 	
@@ -374,7 +378,7 @@ star_summary(struct tpe *tpe, struct object *object){
 						tpe_ship_design_name_get(tpe, 
 							gchild->fleet->ships[j].design));
 			}
-	}
+		}
 
 	}
 

@@ -34,6 +34,7 @@ static int smith_order_fleet(void *data, int type, void *event);
 static int smith_order_insert_cb(void *userdata, const char *msgtype, 
 		int len, void *edata);
 int order_move(struct tpe *tpe, struct object *o, struct object *dest);
+int order_colonise(struct tpe *tpe, struct object *o, struct object *dest);
 
 static const char *colonise_order = "Colonise";
 static const char *build_order = "BuildFleet";
@@ -191,6 +192,9 @@ smith_order_fleet(void *data, int type, void *event){
 	for (i = 0 ; i < fleet->nships ; i ++){
 		designtype = tpe_ship_design_name_get(smith->tpe, 
 				fleet->ships[i].design);
+		/* FIXME: Need to requeue this item */
+		if (designtype == NULL)
+			continue;
 		if (strcmp(designtype,"Frigate") == 0)
 			break;
 	}
