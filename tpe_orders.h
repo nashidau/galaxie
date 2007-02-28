@@ -2,6 +2,9 @@ struct order;
 struct object;
 struct tpe_orders;
 
+enum {
+	SLOT_LAST = -1,
+};
 
 struct order_arg {
 	char *name;

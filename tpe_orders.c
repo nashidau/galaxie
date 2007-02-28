@@ -315,7 +315,7 @@ tpe_orders_object_colonise(struct tpe *tpe, struct object *obj, int slot,
 		struct object *what){
 	int colorder;
 
-	colorder = tpe_order_get_type_by_name(tpe,"Move");
+	colorder = tpe_order_get_type_by_name(tpe,"Colonise");
 	if (colorder == -1)
 		return -1; /* FIXME: Temp unavail - should job it to retry */
 

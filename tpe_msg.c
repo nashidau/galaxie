@@ -526,6 +526,7 @@ format_msg(int32_t *buf, const char *format, va_list ap){
 			break;
 			
 		}
+		format ++;
 	}
 
 	return pos;

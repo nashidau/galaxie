@@ -12,7 +12,7 @@ enum objtype {
 };
 
 struct vector {
-	uint64_t x,y,z;
+	int64_t x,y,z;
 };
 
 struct planet_resource {

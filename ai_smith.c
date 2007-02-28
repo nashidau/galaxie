@@ -36,13 +36,9 @@ static int smith_order_insert_cb(void *userdata, const char *msgtype,
 int order_move(struct tpe *tpe, struct object *o, struct object *dest);
 int order_colonise(struct tpe *tpe, struct object *o, struct object *dest);
 
-static const char *colonise_order = "Colonise";
 static const char *build_order = "BuildFleet";
-static const char *move_order = "Move";
 
-static int colonise_id = -1;
 static int build_id = -1;
-static int move_id = -1;
 
 /* Move:
  * 	pos : Absoluate space coords <int64,int64,int64>
@@ -79,9 +75,6 @@ smith_order_planet(void *data, int type, void *event){
 
 	if (build_id == -1)
 		build_id = tpe_order_get_type_by_name(smith->tpe, build_order);
-	else 
-#warning Limited to 1 ship ever for debugging purposes
-		return 1;
 	assert(build_id != -1);
 
 	buf[0] = htonl(o->oid);	 /* What */
@@ -178,15 +171,9 @@ smith_order_fleet(void *data, int type, void *event){
 
 	printf("$ Smith: Fleet for %s\n",o->name);
 
-	if (colonise_id == -1)
-		colonise_id = tpe_order_get_type_by_name(smith->tpe, 
-				colonise_order);
-	if (move_id == -1)
-		move_id = tpe_order_get_type_by_name(smith->tpe, move_order);
-	if (colonise_id == -1 || move_id == -1) 
-		return 1;
 	/* Smith only cares about frigates... All others are beneath
 	 * 	his notice */
+	/* FIXME: This needs to be done better */
 	fleet = o->fleet;
 	if (fleet == NULL) return 1;
 
@@ -251,14 +238,15 @@ smith_order_fleet(void *data, int type, void *event){
 
 	printf("$: Sending %s(%d) to %s\n",o->name, o->oid,dest->name);	
 
-	order_move(smith->tpe,o,dest);
-	order_colonise(smith->tpe,o,dest);
+	tpe_orders_object_move_object(smith->tpe, o, SLOT_LAST, dest);
+	tpe_orders_object_colonise(smith->tpe, o, SLOT_LAST, dest);
+	
 	dest->ai = calloc(1,sizeof(struct ai_obj));
 	dest->ai->fleet = o->oid;
 	return 1;
 }
 
-
+#if 0
 int
 order_move(struct tpe *tpe, struct object *o, struct object *dest){
 	int buf[20];
@@ -308,3 +296,4 @@ order_colonise(struct tpe *tpe, struct object *o, struct object *dest){
 
 	return 0;
 }
+#endif
