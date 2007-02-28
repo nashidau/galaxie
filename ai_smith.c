@@ -79,6 +79,9 @@ smith_order_planet(void *data, int type, void *event){
 
 	if (build_id == -1)
 		build_id = tpe_order_get_type_by_name(smith->tpe, build_order);
+	else 
+#warning Limited to 1 ship ever for debugging purposes
+		return 1;
 	assert(build_id != -1);
 
 	buf[0] = htonl(o->oid);	 /* What */
@@ -90,8 +93,6 @@ smith_order_planet(void *data, int type, void *event){
 	buf[6] = htonl(0);	/* List: # items */
 	buf[7] = htonl(0);	/* max len */
 	buf[8] = htonl(0);	/* Str: name */
-	/* FIXME: NFI what this is */
-	buf[9] = htonl(0);	/* Str: name */
 
 	{int i;
 		for (i = 0 ; i < 9 ; i ++)
