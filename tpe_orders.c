@@ -273,3 +273,55 @@ tpe_orders_order_print(struct tpe *tpe, struct order *order){
 
 	return 0;
 }
+
+
+/**
+ * Appends a order to move to a particular location.
+ *
+ * FIXME: Document
+ */
+int 
+tpe_orders_object_move(struct tpe *tpe, struct object *obj, int slot,
+		int64_t x,int64_t y, int64_t z){
+	int moveorder;
+	
+	/* FIXME: Arg check */
+
+	moveorder = tpe_order_get_type_by_name(tpe,"Move");
+	if (moveorder == -1)
+		return -1; /* FIXME: Temp unavail - should job it to retry */
+
+	return tpe_msg_send_format(tpe->msg, "MsgInsertOrder",
+			NULL, NULL,
+			"iii00lll",
+			obj->oid, slot, moveorder, 
+			x,y,z);
+}
+
+/**
+ * As tpe_orders_object_move, but takes another object as it's destimation.
+ *
+ * Note that if the destination moves, the order will NOT be updated.
+ */
+int 
+tpe_orders_object_move_object(struct tpe *tpe, struct object *obj, int slot,
+		struct object *dest){
+	/* FIXME: Arg check */
+	return tpe_orders_object_move(tpe, obj, slot, 
+			dest->pos.x,dest->pos.y,dest->pos.z);
+}
+int 
+tpe_orders_object_colonise(struct tpe *tpe, struct object *obj, int slot,
+		struct object *what){
+	int colorder;
+
+	colorder = tpe_order_get_type_by_name(tpe,"Move");
+	if (colorder == -1)
+		return -1; /* FIXME: Temp unavail - should job it to retry */
+
+	return tpe_msg_send_format(tpe->msg, "MsgInsertOrder",
+			NULL, NULL,
+			"iii00i",
+			obj->oid, slot, colorder, what->oid);
+}
+

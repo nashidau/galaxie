@@ -8,6 +8,7 @@
 
 #include "tpe_util.h"
 
+#include "tpe_msg.h" /* for the htonll */
 #include "tpe_obj.h" /* Only for types */
 #include "tpe_orders.h" /* Only for types */
 

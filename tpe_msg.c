@@ -165,6 +165,7 @@ static int tpe_msg_cb_add(struct tpe_msg *msg, int seq, msgcb cb, void *userdata
 static void tpe_msg_handle_packet(struct tpe_msg *msg, int seq, int type, 
 			int len, void *data);
 
+static int format_msg(int32_t *buf, const char *format, va_list ap);
 
 struct tpe_msg *
 tpe_msg_init(struct tpe *tpe){
@@ -445,6 +446,91 @@ tpe_msg_send_strings(struct tpe_msg *msg, const char *msgtype,
 	free(buf);
 	return rv;
 }
+
+/* 
+ *
+ * Format options:
+ *  i : Integer (one arg: int32_t)
+ *  l : Long integer (one arg: uint64_t)
+ *  0 : A zero (no arg)
+ *  s : String (one arg: char *)
+ */
+int 
+tpe_msg_send_format(struct tpe_msg *msg, const char *type,
+		msgcb cb, void *userdata,
+		const char *format, ...){
+	va_list ap;
+	int32_t *buf;
+	int len;
+
+	buf = NULL;
+	va_start(ap, format);
+	len = format_msg(buf, format, ap);
+	va_end(ap);
+
+	if (len > 0){
+		buf = malloc(sizeof(int32_t) * len);
+		va_start(ap, format);
+		format_msg(buf, format, ap);
+		va_end(ap);
+	}
+
+	return tpe_msg_send(msg, type, cb, userdata, buf, len*sizeof(int32_t));
+}
+
+static int
+format_msg(int32_t *buf, const char *format, va_list ap){
+	int32_t val;
+	int64_t val64;
+	char *str;
+	int pos,extra;
+
+	pos = 0;
+
+	while (*format){
+		switch (*format){
+		case '0':
+			if (buf)
+				buf[pos] = 0;
+			pos ++;
+			break;
+		case 'i':
+			val = va_arg(ap, int32_t);
+			if (buf)
+				buf[pos] = htonl(val);
+			pos ++;
+			break;
+		case 'l':
+			val64 = htonll(va_arg(ap, int64_t));
+			if (buf)
+				memcpy(buf + pos,&val64,sizeof(int64_t));
+			pos += 2;
+			break;
+		case 's':
+			str = va_arg(ap, char *);
+			if (str)
+				val = strlen(str);
+			else
+				val = 0;
+			/* We pad with '\0' */
+			if (val % 4)
+				extra = 4 - val % 4;
+			else
+				extra = 0;
+			if (buf)
+				buf[pos] = htonl(val + extra);
+			pos ++;
+			if (buf)
+				strncpy((char*)(buf + pos),str,val+extra);
+			pos += (val + extra) % 4;
+			break;
+			
+		}
+	}
+
+	return pos;
+}
+
 
 static int
 tpe_msg_cb_add(struct tpe_msg *msg, int seq, msgcb cb, void *userdata){
