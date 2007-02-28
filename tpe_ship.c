@@ -21,7 +21,7 @@ struct tpe_ship {
 	Ecore_List *designs;
 };	
 struct design {
-	int did;
+	uint32_t did;
 	const char *name;
 	const char *description;
 };

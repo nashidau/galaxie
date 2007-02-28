@@ -216,7 +216,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 }
 
 struct object *
-tpe_obj_obj_get_by_id(struct tpe_obj *obj, int oid){
+tpe_obj_obj_get_by_id(struct tpe_obj *obj, uint32_t oid){
 	struct object *o;
 	ecore_list_goto_first(obj->objs);
 	while ((o = ecore_list_next(obj->objs)))

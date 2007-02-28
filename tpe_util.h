@@ -1,7 +1,7 @@
 struct object;
 struct ObjectSeqID {
 	int oid;
-	int64_t updated;
+	uint64_t updated;
 };
 
 char *tpe_util_string_extract(const char *src, int *lenp, const char **endp);

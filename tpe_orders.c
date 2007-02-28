@@ -96,7 +96,7 @@ tpe_order_get_type_by_name(struct tpe *tpe, const char *name){
 }
 
 const char * 
-tpe_order_get_name_by_type(struct tpe *tpe, int type){
+tpe_order_get_name_by_type(struct tpe *tpe, uint32_t type){
 	struct order_desc *od;
 	ecore_list_goto_first(tpe->orders->ordertypes);
 	while ((od = ecore_list_next(tpe->orders->ordertypes))){

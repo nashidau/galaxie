@@ -93,7 +93,7 @@ tpe_board_msg_board_list(void *data, int type, void *event){
 
 
 struct board *
-tpe_board_board_get_by_id(struct tpe *tpe, int oid){
+tpe_board_board_get_by_id(struct tpe *tpe, uint32_t oid){
         struct board *board;
 
         ecore_list_first(tpe->board->boards);
@@ -105,7 +105,7 @@ tpe_board_board_get_by_id(struct tpe *tpe, int oid){
 }
 
 struct board *
-tpe_board_board_add(struct tpe *tpe, int oid){
+tpe_board_board_add(struct tpe *tpe, uint32_t oid){
         struct board *board;
 
         board = calloc(1,sizeof(struct board));

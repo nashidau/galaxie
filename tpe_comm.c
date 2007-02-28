@@ -195,7 +195,8 @@ tpe_comm_msg_player_id(void *userdata, const char *msgtype,
 static int 
 tpe_comm_available_features_msg(void *udata, int type, void *event){
 	uint32_t *data;
-	int i,j,len,feature;
+	int feature;
+	uint32_t i,j,len;
 
 	data = (uint32_t *)event + 4;
 	len = ntohl(*data);
