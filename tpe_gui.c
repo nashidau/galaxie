@@ -98,7 +98,7 @@ tpe_gui_init(struct tpe *tpe){
 
 	gui->ee = ecore_evas_software_x11_new(NULL, 0,  0, 0, WIDTH, HEIGHT);
 	if (gui->ee == NULL) {
-		printf("COuld not create ecore_evas_xll.\n");
+		printf("Could not create ecore_evas_xll.\n");
 		printf("Check you built evas and ecore with x11 support\n");
 		return 0;
 	}
