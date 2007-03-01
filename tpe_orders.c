@@ -290,7 +290,6 @@ tpe_orders_object_move(struct tpe *tpe, struct object *obj, int slot,
 	moveorder = tpe_order_get_type_by_name(tpe,"Move");
 	if (moveorder == -1)
 		return -1; /* FIXME: Temp unavail - should job it to retry */
-
 	return tpe_msg_send_format(tpe->msg, "MsgInsertOrder",
 			NULL, NULL,
 			"iii00lll",

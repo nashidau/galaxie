@@ -501,7 +501,8 @@ format_msg(int32_t *buf, const char *format, va_list ap){
 			pos ++;
 			break;
 		case 'l':
-			val64 = htonll(va_arg(ap, int64_t));
+			val64 = va_arg(ap, int64_t);
+			val64 = htonll(val64);
 			if (buf)
 				memcpy(buf + pos,&val64,sizeof(int64_t));
 			pos += 2;
