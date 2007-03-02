@@ -228,7 +228,8 @@ tpe_gui_object_update(void *data, int eventid, void *event){
 
 	/* work out where to put it on screen */
 	x = obj->pos.x / gui->map.zoom;
-	y = obj->pos.y / gui->map.zoom;
+	/* Y is flipped - it's cartesian */
+	y = -obj->pos.y / gui->map.zoom;
 
 	/* FIXME: Should be a nice function for this */
 	if (obj->type == OBJTYPE_SYSTEM && obj->gui == NULL){
@@ -476,7 +477,7 @@ tpe_gui_redraw(struct tpe_gui *gui){
 	ecore_list_goto_first(gui->visible);
 	while ((obj = ecore_list_next(gui->visible))){
 		x = obj->pos.x / gui->map.zoom;
-		y = obj->pos.y / gui->map.zoom;
+		y = -obj->pos.y / gui->map.zoom;
 		evas_object_move(obj->gui->obj,x + gui->map.left,y + gui->map.top);
 	}
 
