@@ -1,4 +1,5 @@
 #include <arpa/inet.h>
+#include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -102,14 +103,15 @@ tpe_util_parse_packet(void *pdata, char *format, ...){
 				 break;
 			 }
 			case 'l':{ /* Single 64 bit int */
-				 int val;
+				 int64_t val;
 				 int64_t *idata;
 				 int64_t *dest;
 
 				 dest = va_arg(ap,int64_t *);	
 
 				 idata = pdata;
-				 val = ntohll(*idata);
+				 val = *idata;
+				 val = ntohll(val);
 				 idata ++;
 
 				 if (dest) *dest = val;
@@ -396,6 +398,7 @@ tpe_util_dist_calc2(struct object *obj1, struct object *obj2){
 	x = obj1->pos.x - obj2->pos.x;
 	y = obj1->pos.y - obj2->pos.y;
 	z = obj1->pos.z - obj2->pos.z;
-	
-	return x * x + y * y + z * z;
+
+	return (uint64_t)hypotl(x,hypotl(y,z));
+	//return x * x + y * y + z * z;
 }
