@@ -83,6 +83,18 @@ tpe_orders_init(struct tpe *tpe){
 	return orders;
 }
 
+struct order_desc *
+tpe_order_orders_get_desc_by_id(struct tpe *tpe, uint32_t type){
+	struct order_desc *od;
+	ecore_list_goto_first(tpe->orders->ordertypes);
+	while ((od = ecore_list_next(tpe->orders->ordertypes))){
+		if (type == od->otype)
+			return od;
+	}
+	return NULL;
+
+}
+
 int
 tpe_order_get_type_by_name(struct tpe *tpe, const char *name){
 	struct order_desc *od;
@@ -109,6 +121,7 @@ tpe_order_get_name_by_type(struct tpe *tpe, uint32_t type){
 static int
 tpe_orders_msg_order_description_ids(void *data, int type, void *edata){
 	struct tpe *tpe = data;
+	struct order_desc *od;
 	int *event = edata;
 	int noids;
 	struct ObjectSeqID *oids = 0;
@@ -124,13 +137,17 @@ tpe_orders_msg_order_description_ids(void *data, int type, void *edata){
 
 	toget = malloc(noids * sizeof(int) + 4);
 	for (i  = 0 , n = 0; i < noids; i ++){
-		toget[n + 1] = htonl(oids[i].oid);
-		n ++;
+		od = tpe_order_orders_get_desc_by_id(tpe,oids[i].oid);
+		if (od == NULL || od->updated < oids[i].updated)
+			toget[++n] = htonl(oids[i].oid);
 	}
-	toget[0] = htonl(n);
-	
-	tpe_msg_send(tpe->msg, "MsgGetOrderDescription" /* 8 */, NULL, NULL, 
-			toget, n * 4 + 4);
+
+	if (n > 0){
+		toget[0] = htonl(n);
+		tpe_msg_send(tpe->msg, "MsgGetOrderDescription" /* 8 */, 
+				NULL, NULL, 
+				toget, (n + 1) * sizeof(uint32_t));
+	}
 
 	free(toget);
 	free(oids);
@@ -146,22 +163,11 @@ tpe_orders_msg_order_description(void *data, int type, void *edata){
 
 	od = calloc(1,sizeof(struct order_desc));
 
-	printf("An order description\n");
-
 	event += 4;
 
 	tpe_util_parse_packet(event, "issQl",
 			&od->otype,&od->name, &od->description, 
 			&od->nargs, &od->args, &od->updated);
-
-
-	printf("order %d is %s\n\t%s\n",od->otype, od->name,od->description);
-	{ int i;
-	for (i = 0 ; i < od->nargs ; i ++){
-		printf("\tArg: %s  A type %d\n\t%s\n",od->args[i].name,
-				od->args[i].arg_type, od->args[i].description);
-	}
-	}
 
 	ecore_list_append(tpe->orders->ordertypes, od);
 
