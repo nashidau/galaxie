@@ -252,7 +252,7 @@ tpe_comm_time_remaining(void *udata, int type, void *event){
 			&remain);
 
 	if (seq == 0 && remain == 0)
-		tpe_event_send(tpe->event, "NewTurn", "pants", NULL, NULL);
+		tpe_event_send(tpe->event, "NewTurn", strdup("pants"), NULL, NULL);
 
 	return 1;
 }

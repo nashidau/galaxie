@@ -1,4 +1,5 @@
 #include <arpa/inet.h>
+#include <float.h>
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -394,11 +395,12 @@ tpe_util_parse_packet(void *pdata, char *format, ...){
 uint64_t 
 tpe_util_dist_calc2(struct object *obj1, struct object *obj2){
 	uint64_t x,y,z;
+	int64_t llabs(int64_t);
+	int64_t llrintl(long double);
 
-	x = obj1->pos.x - obj2->pos.x;
-	y = obj1->pos.y - obj2->pos.y;
-	z = obj1->pos.z - obj2->pos.z;
+	x = llabs(obj1->pos.x - obj2->pos.x);
+	y = llabs(obj1->pos.y - obj2->pos.y);
+	z = llabs(obj1->pos.z - obj2->pos.z);
 
-	return (uint64_t)hypotl(x,hypotl(y,z));
-	//return x * x + y * y + z * z;
+	return llrintl(hypotl(x,hypotl(y,z)));
 }
