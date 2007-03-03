@@ -1,0 +1,8 @@
+ * Smith: Why doesn't it pick the closest planet!?
+ * Colour coded planets (stars)
+ * Colour coded fleets
+ * UI for messages
+ * Command line:
+ 	- Disable AI
+	- Disable GUI
+ * Handle Resources
