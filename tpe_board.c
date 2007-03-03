@@ -18,8 +18,11 @@ struct board {
 	uint32_t oid;
 	char *name;
 	char *description;
-	int32_t nmessages;
+	uint32_t nmessages;
 	uint64_t updated;
+
+	struct message **messages;
+	int nalloced;
 };
 
 struct message {
@@ -96,10 +99,11 @@ struct board *
 tpe_board_board_get_by_id(struct tpe *tpe, uint32_t oid){
         struct board *board;
 
-        ecore_list_first(tpe->board->boards);
-        while ((board = ecore_list_next(tpe->board->boards)))
+        ecore_list_goto_first(tpe->board->boards);
+        while ((board = ecore_list_next(tpe->board->boards))){
                 if (board->oid == oid)
                         return board;
+	}
 
         return NULL;
 }
@@ -107,11 +111,10 @@ tpe_board_board_get_by_id(struct tpe *tpe, uint32_t oid){
 struct board *
 tpe_board_board_add(struct tpe *tpe, uint32_t oid){
         struct board *board;
-
         board = calloc(1,sizeof(struct board));
-        ecore_list_insert(tpe->board->boards, board);
+        if (ecore_list_append(tpe->board->boards, board) == 0)
+		printf("Error appending list\n");
 	board->oid = oid;
-
         return board;
 }
 
@@ -123,6 +126,7 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
 	struct board *board;
 	int32_t id;
 	int32_t *toget;
+	int ntoget;
 	int i;
 
 	tpe = data;
@@ -130,6 +134,7 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
 	body += 16;
 
 	tpe_util_parse_packet(body, "i", &id);
+
 	board = tpe_board_board_get_by_id(tpe, id);
 	if (board == NULL)
 		board = tpe_board_board_add(tpe, id);
@@ -138,25 +143,44 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
 			&board->description, &board->nmessages,
 			&board->updated);
 
-	printf("Board %d is: %s\n%s\n%d messages\n",id, board->name,
-			board->description, board->nmessages);
+	if (board->nmessages == board->nalloced)
+		return 1;
 
-	toget = malloc(sizeof(int32_t) * (board->nmessages + 2));
 
-	/* Okay - get the messages */
+	/* FIXME: Realloc can fail (and leak) */
+	board->messages = realloc(board->messages, 
+			sizeof(struct message) * board->nmessages);
+
+	ntoget = board->nmessages - board->nalloced;
+	toget = malloc(sizeof(int32_t) * (ntoget + 2));
 	toget[0] = htonl(id);
 	toget[1] = htonl(board->nmessages);
-	for (i = 0 ; i < board->nmessages ; i ++)
+
+	for (i = board->nalloced ; i < board->nmessages ; i ++){
+		board->messages[i] = NULL;
 		toget[i + 2] = htonl(i);
+	}
 
 	tpe_msg_send(tpe->msg, "MsgMessageGet", NULL, NULL, 
-			toget, (board->nmessages + 2) * 4);
+			toget, (ntoget + 2) * sizeof(uint32_t));
+
+	board->nalloced = board->nmessages;
+
+	free(toget);
 
 	return 1;
 }
 
+/**
+ * Callback handler for receiving a Message.
+ *
+ * Saves the new message in the boards list of messages.
+ *
+ * FIXME: Need to clean up at all exit paths 
+ */
 static int 
 tpe_board_msg_message_receive(void *data, int type, void *event){
+	struct board *board;
 	struct message *message;
 	struct tpe *tpe;
 	char *body;
@@ -179,8 +203,21 @@ tpe_board_msg_message_receive(void *data, int type, void *event){
 			message->board,message->slot,message->turn,
 			message->title, message->body);
 
-	/* FIXME: Store these somewhere!! */
+	board = tpe_board_board_get_by_id(tpe, message->board);
+	if (board == NULL){
+		printf("Weird - No board %d\n", message->board);
+		return 1;
+	}
 
-	
+	if (board->messages[message->slot]){
+		printf("Strange - I have this message Bord %d Slot %d\n",
+			message->board, message->slot);
+		return 1;
+	}
+
+	board->messages[message->slot] = message;
+
+	/* FIXME: Appropriate Notification */
+
 	return 1;
 }
