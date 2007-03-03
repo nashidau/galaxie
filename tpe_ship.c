@@ -15,6 +15,7 @@
 #include "tpe_event.h"
 #include "tpe_msg.h"
 #include "tpe_util.h"
+#include "tpe_sequence.h"
 #include "tpe_ship.h"
 
 struct tpe_ship {
@@ -24,6 +25,7 @@ struct design {
 	uint32_t did;
 	const char *name;
 	const char *description;
+	uint64_t updated;
 };
 
 static int tpe_ship_msg_design_list(void *data, int eventid, void *event);
@@ -38,12 +40,30 @@ tpe_ship_init(struct tpe *tpe){
 
 	ships = calloc(1,sizeof(struct tpe_ship));
 	ships->designs = ecore_list_new();
+
+	tpe_sequence_register(tpe, "MsgGetDesignIDs",
+			"MsgListOfDesignIDs",
+			"MsgGetDesign",
+			tpe_ship_design_updated_get);
+
 	tpe_event_handler_add(event, "MsgListOfDesignIDs",
 			tpe_ship_msg_design_list, tpe);
 	tpe_event_handler_add(event, "MsgDesign",
 			tpe_ship_msg_design, tpe);
 
 	return ships;
+}
+
+struct design *
+tpe_ship_design_get(struct tpe *tpe, uint32_t design){
+	struct design *d;
+	ecore_list_goto_first(tpe->ship->designs);
+	while ((d = ecore_list_next(tpe->ship->designs)))
+		if (d->did == design)
+			return d;
+
+	return NULL;
+
 }
 
 const char *
@@ -57,6 +77,16 @@ tpe_ship_design_name_get(struct tpe *tpe, uint32_t design){
 	return NULL;
 }
 
+
+uint64_t 
+tpe_ship_design_updated_get(struct tpe *tpe, uint32_t design){
+	struct design *d;
+
+	d = tpe_ship_design_get(tpe,design);
+	if (d)
+		return d->updated;
+	return 0;
+}
 
 /* FIXME: This is cut and paste */
 static int 
@@ -102,7 +132,6 @@ tpe_ship_msg_design_list(void *data, int eventid, void *event){
 static int 
 tpe_ship_msg_design(void *data, int eventid, void *event){
 	struct design *design = 0;
-	int64_t unusedl;
 	int32_t *cats = 0,ncats;
 	struct tpe *tpe = data;
 
@@ -112,7 +141,7 @@ tpe_ship_msg_design(void *data, int eventid, void *event){
 	event = ((char *)event + 16);
 
 	tpe_util_parse_packet(event, "ilass", &design->did, 
-			&unusedl, &ncats,&cats, 
+			&design->updated, &ncats,&cats, 
 			&design->name,
 			&design->description);
 	ecore_list_append(tpe->ship->designs, design);

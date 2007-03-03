@@ -252,21 +252,8 @@ tpe_comm_time_remaining(void *udata, int type, void *event){
 	tpe_util_parse_packet(event, "iiiii",&magic, &seq, &etype, &unused, 
 			&remain);
 
-	if (seq != 0) return 1;
-	if (seq == 0 && remain == 0) {
-		printf("New turn!!\n");
+	if (seq == 0 && remain == 0)
 		tpe_event_send(tpe->event, "NewTurn", "pants", NULL, NULL);
-
-		seqs[0] = htonl(-1);	/* New seq */
-		seqs[1] = htonl(0);	/* From 0 */
-		seqs[2] = htonl(-1);	/* Get them all */
-
-	//	tpe_msg_send(msg, "MsgGetOrderDescriptionIDs", 0,0,seqs,12);
-		tpe_msg_send(msg, "MsgGetBoardIDs", 0,0,seqs,12);
-		tpe_msg_send(msg, "MsgGetResourceIDs", 0,0,seqs,12);
-	//	tpe_msg_send(msg, "MsgGetObjectIDs", 0,0,seqs,12);
-		tpe_msg_send(msg, "MsgGetDesignIDs", 0,0,seqs,12);
-	}
 
 	return 1;
 }

@@ -8,6 +8,7 @@
 #include "tpe_board.h"
 #include "tpe_event.h"
 #include "tpe_msg.h"
+#include "tpe_sequence.h"
 #include "tpe_util.h"
 
 struct tpe_board {
@@ -34,7 +35,6 @@ struct message {
 	int turn;
 };
 
-static int tpe_board_msg_board_list(void *data, int type, void *event);
 static int tpe_board_msg_board_receive(void *data, int type, void *event);
 static int tpe_board_msg_message_receive(void *data, int type, void *event);
 
@@ -47,56 +47,20 @@ tpe_board_init(struct tpe *tpe){
 
 	board->boards = ecore_list_new();
 
-	tpe_event_handler_add(tpe->event, "MsgListOfBoards", 
-			tpe_board_msg_board_list, tpe);
 	tpe_event_handler_add(tpe->event, "MsgBoard",
                         tpe_board_msg_board_receive, tpe);
 	tpe_event_handler_add(tpe->event, "MsgMessage",
                         tpe_board_msg_message_receive, tpe);
 
+	tpe_sequence_register(tpe, "MsgGetBoardIDs",
+				"MsgListOfBoards", 
+				"MsgGetBoards",
+				tpe_board_board_updated_get);
 	msglog = fopen("msglog.txt","w");
 	board->msglog = msglog;
 
 	return board;
 }
-
-
-static int
-tpe_board_msg_board_list(void *data, int type, void *event){
-	struct tpe *tpe = data;
-	int seqkey, more;
-	int noids;
-	struct ObjectSeqID *oids = NULL;
-	struct board *board; 
-	int *toget, i, n;
-
-	/* FIXME: Should parse the header too */
-	event = (char *)event + 16;		
-
-	oids = NULL;
-	tpe_util_parse_packet(event, "iiO", &seqkey, &more, &noids, &oids);
-
-	toget = malloc(noids * sizeof(int) + 4);
-	for (i = 0, n = 0 ; i < noids ; i ++){
-		board = tpe_board_board_get_by_id(tpe, oids[i].oid);
-		if (board == NULL || board->updated < oids[i].updated){
-			toget[n + 1] = htonl(oids[i].oid);
-			n ++;
-		}
-	}
-          
-	if (n){
-		toget[0] = htonl(n);
-		tpe_msg_send(tpe->msg, "MsgGetBoards",NULL, NULL,
-				toget, n * 4 + 4);
-	} 
-
-	free(toget);
-	free(oids);
-
-	return 1;
-}
-
 
 
 struct board *
@@ -111,6 +75,18 @@ tpe_board_board_get_by_id(struct tpe *tpe, uint32_t oid){
 
         return NULL;
 }
+
+uint64_t 
+tpe_board_board_updated_get(struct tpe *tpe, uint32_t oid){
+	struct board *board;
+
+	board = tpe_board_board_get_by_id(tpe, oid);
+	if (board)
+		return board->updated;
+	else
+		return 0;
+}
+
 
 struct board *
 tpe_board_board_add(struct tpe *tpe, uint32_t oid){
