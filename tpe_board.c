@@ -154,11 +154,11 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
 	ntoget = board->nmessages - board->nalloced;
 	toget = malloc(sizeof(int32_t) * (ntoget + 2));
 	toget[0] = htonl(id);
-	toget[1] = htonl(board->nmessages);
+	toget[1] = htonl(ntoget);
 
 	for (i = board->nalloced ; i < board->nmessages ; i ++){
 		board->messages[i] = NULL;
-		toget[i + 2] = htonl(i);
+		toget[i - board->nalloced + 2] = htonl(i);
 	}
 
 	tpe_msg_send(tpe->msg, "MsgMessageGet", NULL, NULL, 
