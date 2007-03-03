@@ -11,6 +11,7 @@
 #include "tpe_util.h"
 
 struct tpe_board {
+	FILE *msglog;
 	Ecore_List *boards;
 };
 
@@ -40,6 +41,7 @@ static int tpe_board_msg_message_receive(void *data, int type, void *event);
 struct tpe_board *
 tpe_board_init(struct tpe *tpe){
 	struct tpe_board *board;
+	FILE *msglog;
 
 	board = calloc(1,sizeof(struct tpe_board));
 
@@ -52,6 +54,8 @@ tpe_board_init(struct tpe *tpe){
 	tpe_event_handler_add(tpe->event, "MsgMessage",
                         tpe_board_msg_message_receive, tpe);
 
+	msglog = fopen("msglog.txt","w");
+	board->msglog = msglog;
 
 	return board;
 }
@@ -198,7 +202,7 @@ tpe_board_msg_message_receive(void *data, int type, void *event){
 			&message->body,
 			&message->turn);
 
-	printf("Message is: Board %d Slot %d Turn %d\n"
+	fprintf(tpe->board->msglog,"Message is: Board %d Slot %d Turn %d\n"
 		"  Subject: %s\n  Body: %s\n",
 			message->board,message->slot,message->turn,
 			message->title, message->body);
