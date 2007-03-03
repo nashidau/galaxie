@@ -14,6 +14,7 @@ struct tpe {
 	struct tpe_obj *obj;
 	struct tpe_board *board;
 	struct tpe_ship *ship;
+	struct tpe_sequence *sequence;
 
 	struct ai *ai;
 };

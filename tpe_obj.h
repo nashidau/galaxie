@@ -82,5 +82,7 @@ int tpe_obj_obj_dump(struct object *o);
 struct object *tpe_obj_obj_get_by_id(struct tpe_obj *obj, uint32_t oid);
 struct object *tpe_obj_obj_add(struct tpe_obj *obj, int );
 
+uint64_t tpe_obj_object_updated(struct tpe *, uint32_t oid);
+
 /* Really for the AI use only... */
 Ecore_List *tpe_obj_obj_list(struct tpe_obj *obj);

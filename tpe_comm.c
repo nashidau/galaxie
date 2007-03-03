@@ -73,6 +73,8 @@ tpe_comm_init(struct tpe *tpe){
 	tpe_event_handler_add(tpe->event, "MsgTimeRemaining",
 			tpe_comm_time_remaining, tpe);
 
+	tpe_event_type_add(tpe->event, "NewTurn");
+
 
 	return comm;
 }
@@ -252,14 +254,17 @@ tpe_comm_time_remaining(void *udata, int type, void *event){
 
 	if (seq != 0) return 1;
 	if (seq == 0 && remain == 0) {
+		printf("New turn!!\n");
+		tpe_event_send(tpe->event, "NewTurn", "pants", NULL, NULL);
+
 		seqs[0] = htonl(-1);	/* New seq */
 		seqs[1] = htonl(0);	/* From 0 */
 		seqs[2] = htonl(-1);	/* Get them all */
 
-		tpe_msg_send(msg, "MsgGetOrderDescriptionIDs", 0,0,seqs,12);
+	//	tpe_msg_send(msg, "MsgGetOrderDescriptionIDs", 0,0,seqs,12);
 		tpe_msg_send(msg, "MsgGetBoardIDs", 0,0,seqs,12);
 		tpe_msg_send(msg, "MsgGetResourceIDs", 0,0,seqs,12);
-		tpe_msg_send(msg, "MsgGetObjectIDs", 0,0,seqs,12);
+	//	tpe_msg_send(msg, "MsgGetObjectIDs", 0,0,seqs,12);
 		tpe_msg_send(msg, "MsgGetDesignIDs", 0,0,seqs,12);
 	}
 

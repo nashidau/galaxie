@@ -16,6 +16,7 @@
 #include "tpe_util.h"
 #include "tpe_orders.h"
 #include "tpe_obj.h"
+#include "tpe_sequence.h"
 
 struct tpe_orders {
 	struct tpe *tpe;
@@ -66,10 +67,14 @@ tpe_orders_init(struct tpe *tpe){
 
 	tpe_event_handler_add(tpe->event, "MsgOrderDescription", /* 9 */
 			tpe_orders_msg_order_description, tpe);
-	tpe_event_handler_add(tpe->event, "MsgOrderDescriptionIDs", /* 33 */
-			tpe_orders_msg_order_description_ids, tpe);
 	tpe_event_handler_add(tpe->event, "MsgOrder", 
 			tpe_orders_msg_order, tpe);
+
+	tpe_sequence_register(tpe, 
+				"MsgGetOrderDescriptionIDs",
+				"MsgOrderDescriptionIDs",
+				"MsgGetOrderDescription",
+				 tpe_orders_order_desc_updated);
 
 	/* Register some events?? */
 
@@ -81,6 +86,17 @@ tpe_orders_init(struct tpe *tpe){
 	
 
 	return orders;
+}
+
+uint64_t
+tpe_orders_order_desc_updated(struct tpe *tpe, uint32_t id){
+	struct order_desc *desc;
+
+	desc = tpe_order_orders_get_desc_by_id(tpe, id);
+	if (desc)
+		return desc->updated;
+	else
+		return 0;
 }
 
 struct order_desc *

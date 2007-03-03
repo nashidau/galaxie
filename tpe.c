@@ -8,14 +8,15 @@
 #include <Edje.h>
 
 #include "tpe.h"
-#include "tpe_event.h"
-#include "tpe_comm.h"
-#include "tpe_msg.h"
-#include "tpe_gui.h"
-#include "tpe_obj.h"
 #include "tpe_board.h"
-#include "tpe_ship.h"
+#include "tpe_comm.h"
+#include "tpe_event.h"
+#include "tpe_gui.h"
+#include "tpe_msg.h"
+#include "tpe_obj.h"
 #include "tpe_orders.h"
+#include "tpe_sequence.h"
+#include "tpe_ship.h"
 
 #include "ai_smith.h"
 
@@ -37,6 +38,8 @@ main(int argc, char **argv){
 	tpe->event 	= tpe_event_init(tpe);
 	tpe->msg   	= tpe_msg_init(tpe);
 	tpe->comm  	= tpe_comm_init(tpe);
+	tpe->sequence 	= tpe_sequence_init(tpe);
+
 	tpe->obj   	= tpe_obj_init(tpe);
 	tpe->orders  	= tpe_orders_init(tpe);
 	tpe->board 	= tpe_board_init(tpe);

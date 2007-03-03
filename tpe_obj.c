@@ -16,6 +16,7 @@
 #include "tpe_orders.h"
 #include "tpe_event.h"
 #include "tpe_msg.h"
+#include "tpe_sequence.h"
 #include "tpe_util.h"
 
 struct tpe_obj {
@@ -25,7 +26,6 @@ struct tpe_obj {
 
 
 
-static int tpe_obj_object_list(void *data, int eventid, void *event);
 static int tpe_obj_data_receive(void *data, int eventid, void *event);
 
 struct tpe_obj *
@@ -38,8 +38,6 @@ tpe_obj_init(struct tpe *tpe){
 	obj = calloc(1,sizeof(struct tpe_obj));
 	obj->tpe = tpe;
 
-	tpe_event_handler_add(event, "MsgListOfObjectIDs",
-			tpe_obj_object_list, obj);
 	tpe_event_handler_add(event, "MsgObject",
 			tpe_obj_data_receive, obj);
 
@@ -48,54 +46,15 @@ tpe_obj_init(struct tpe *tpe){
 	tpe_event_type_add(event, "PlanetNoOrders");
 	tpe_event_type_add(event, "FleetNoOrders");
 
+	tpe_sequence_register(tpe, 
+			"MsgGetObjectIDs", 
+			"MsgListOfObjectIDs",
+			"MsgGetObjectsByID",
+			tpe_obj_object_updated);
+
 	obj->objs = ecore_list_new();
 
 	return obj;
-}
-
-/* OID Seqence
- *
- * Handles message 31
- *
- */
-static int 
-tpe_obj_object_list(void *data, int eventid, void *event){
-	struct tpe_obj *obj;
-	int seqkey, more;
-	int noids;
-	struct ObjectSeqID *oids = NULL;
-	struct object *o;
-	int *toget,i,n;
-
-	obj = data;
-	oids = 0;
-
-	/* FIXME */
-	event = ((char *)event + 16);
-
-	tpe_util_parse_packet(event, "iiO", &seqkey, &more, &noids,&oids);
-	printf("Seqkey is %d\n",seqkey);
-	/* FIXME: handle 'more' */
-	printf("# objects to go %d\n",more);
-	printf("# objects to go %d\n",noids);
-
-	toget = malloc(noids * sizeof(int) + 4);
-	for (i  = 0 , n = 0; i < noids; i ++){
-		o = tpe_obj_obj_get_by_id(obj,oids[i].oid);
-		if (o == NULL || o->updated < oids[i].updated){
-			toget[n + 1] = htonl(oids[i].oid);
-			n ++;
-		}
-	}
-	toget[0] = htonl(n);
-
-	tpe_msg_send(obj->tpe->msg, "MsgGetObjectsByID",NULL, NULL, 
-				toget, n * 4 + 4);
-
-	free(toget);
-	free(oids);
-
-	return 1;
 }
 
 /**
@@ -266,4 +225,16 @@ tpe_obj_obj_dump(struct object *o){
 Ecore_List *
 tpe_obj_obj_list(struct tpe_obj *obj){
 	return obj->objs;
+}
+
+uint64_t 
+tpe_obj_object_updated(struct tpe *tpe, uint32_t oid){
+	struct object *obj;
+
+	obj = tpe_obj_obj_get_by_id(tpe->obj,oid);
+	if (obj == NULL)
+		return 0;
+	else
+		return obj->updated;
+
 }
