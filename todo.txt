@@ -6,3 +6,5 @@
  	- Disable AI
 	- Disable GUI
  * Handle Resources
+ * Sparse checks
+ * Start looking at TP04 support

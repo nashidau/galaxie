@@ -16,7 +16,7 @@
 #include "tpe_event.h"
 #include "tpe_util.h"
 
-struct features {
+static struct features {
 	int id;
 	const char *desc;
 } features[] =  {
@@ -244,7 +244,6 @@ tpe_comm_time_remaining(void *udata, int type, void *event){
 	struct tpe_msg *msg;
 	int magic,etype,seq;
 	int unused, remain;
-	int seqs[3];
 
 	tpe = udata;
 	msg = tpe->msg;

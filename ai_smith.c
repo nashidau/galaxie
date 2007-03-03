@@ -106,9 +106,9 @@ smith_order_insert_cb(void *userdata, const char *msgtype,
 	struct ai *smith = userdata;
 	int *data = edata;
 	int oid, slot, type, turns, nbr, noptions = 0;
-	struct build_resources *br = 0;
-	struct arg_type6 *options = 0;
-	const char *str = 0;
+	struct build_resources *br = NULL;
+	struct arg_type6 *options = NULL;
+	const char *str = NULL;
 	int frigate;
 	int i;
 	int buf[20];
@@ -246,54 +246,3 @@ smith_order_fleet(void *data, int type, void *event){
 	return 1;
 }
 
-#if 0
-int
-order_move(struct tpe *tpe, struct object *o, struct object *dest){
-	int buf[20];
-	uint64_t x,y,z;
-
-	buf[0] = htonl(o->oid);		/* Who are are ordering */
-	buf[1] = htonl(-1);		/* Slot */
-	buf[2] = htonl(move_id);	/* Order type */
-	buf[3] = htonl(0);		/* Turns */
-	buf[4] = htonl(0);		/* Resource list */
-	*(uint64_t *)(buf +5) = htonll(dest->pos.x);
-	*(uint64_t *)(buf +7) = htonll(dest->pos.y);
-	*(uint64_t *)(buf +9) = htonll(dest->pos.z);
-
-	tpe_util_parse_packet(buf +5,"lll",&x,&y,&z);
-	if (dest->pos.x != x || dest->pos.y != y || dest->pos.z != z){
-		printf("Error: %lld != %lld || %lld != %lld || %lld != %lld\n",
-				dest->pos.x,x,dest->pos.y,y,dest->pos.z,z);
-		exit(0);
-	}
-
-
-	
-
-	tpe_msg_send(tpe->msg, "MsgInsertOrder",
-			NULL, NULL,
-			buf, 11 * 4);
-
-	return 0;	
-}
-
-int
-order_colonise(struct tpe *tpe, struct object *o, struct object *dest){
-	int buf[20];
-
-	buf[0] = htonl(o->oid);		/* Who are are ordering */
-	buf[1] = htonl(-1);		/* Slot */
-	buf[2] = htonl(colonise_id);	/* Order type */
-	buf[3] = htonl(0);		/* Turns */
-	buf[4] = htonl(0);		/* Resource list */
-	buf[5] = htonl(dest->oid);	/* What to colonise */
-
-
-	tpe_msg_send(tpe->msg, "MsgInsertOrder",
-			NULL, NULL,
-			buf, 6 * 4);
-
-	return 0;
-}
-#endif
