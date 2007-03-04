@@ -12,6 +12,7 @@
 
 #include "tpe.h"
 #include "tpe_gui.h"
+#include "tpe_board.h"
 #include "tpe_comm.h"
 #include "tpe_event.h"
 #include "tpe_obj.h"
@@ -44,8 +45,11 @@ struct tpe_gui {
 	Evas_Object *popup;
 
 	Ecore_List *visible;
-};
 
+
+	/* FIXME: More then one board */
+	Evas_Object *board;
+};
 
 struct tpe_gui_obj {
 	Evas_Object *obj;
@@ -69,6 +73,12 @@ static void tpe_gui_edje_splash_connect(void *data, Evas_Object *o,
 /* System event handlers */
 static int tpe_gui_time_remaining(void *data, int eventid, void *event);
 static int tpe_gui_object_update(void *data, int eventid, void *event);
+
+
+static int tpe_gui_board_update(void *data, int eventid, void *event);
+static void board_mouse_in(void *data, Evas *e, Evas_Object *obj, void *event);
+static void board_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event);
+static void board_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event);
 
 /* Gui event handlers */
 static void star_mouse_in(void *data, Evas *e, Evas_Object *obj, void *event);
@@ -131,16 +141,21 @@ tpe_gui_init(struct tpe *tpe){
 	/* Some code to display the time remaining */
 	tpe_event_handler_add(gui->tpe->event, "MsgTimeRemaining",
 			tpe_gui_time_remaining, gui);
+
 	tpe_event_handler_add(gui->tpe->event, "ObjectNew",
 			tpe_gui_object_update, gui);
 	tpe_event_handler_add(gui->tpe->event, "ObjectChanged",
 			tpe_gui_object_update, gui);
 
+	tpe_event_handler_add(gui->tpe->event, "BoardChanged",
+			tpe_gui_board_update, gui);
+
 	gui->visible = ecore_list_new();
 
 	ecore_evas_data_set(gui->ee, "TPEGUI", gui);
 	ecore_evas_callback_resize_set(gui->ee, window_resize);
-	
+
+
 	return gui;
 }
 
@@ -160,21 +175,6 @@ tpe_gui_edje_splash_connect(void *data, Evas_Object *o,
 	//tpe_comm_connect(tpe->comm, "localhost", 6923, "nash", "password");
 	//tpe_comm_connect(tpe->comm, "10.0.0.1", 6923, "nash", "password");
 	tpe_comm_connect(tpe->comm, "tranquillity.nash.id.au", 6923, "nash", "password");
-
-	/* General errors */
-/*	tpe_msg_event_handler_add(tpe->msg, TPE_MSG_FAIL,
-			tpe_fail, tpe);
-*/
-	/* Feature frames */
-	/*
-	tpe_msg_event_handler_add(tpe->msg, TPE_MSG_AVAILABLE_FEATURES, 
-			tpe_features, tpe);
-	tpe_msg_event_handler_add(tpe->msg, TPE_MSG_TIME_REMAINING, 
-			tpe_time_remaining, tpe);
-	tpe_msg_event_handler_add(tpe->msg, TPE_MSG_LIST_OF_BOARDS, tpe_board, tpe);
-	tpe_msg_event_handler_add(tpe->msg, TPE_MSG_LIST_OF_RESOURCES_IDS,
-			tpe_resource_description, tpe);
-	*/	
 
 	/* Create the map screen */
 	evas_object_del(gui->main);
@@ -465,6 +465,8 @@ window_resize(Ecore_Evas *ee){
 
 	evas_object_resize(gui->main, gui->map.w, gui->map.h);
 
+	/* FIXME: Move message icons */
+
 	tpe_gui_redraw(gui);
 }
 
@@ -484,3 +486,60 @@ tpe_gui_redraw(struct tpe_gui *gui){
 	//gui->redraw = 0;
 
 }
+
+/**
+ * Handles for the GUI Board display 
+ */
+
+static int 
+tpe_gui_board_update(void *data, int eventid, void *event){
+	struct tpe_gui *gui = data;
+	struct board_update *board = event;
+	Evas_Object *o;
+	char buf[20];
+
+	if (gui->board == NULL){
+		gui->board = o = edje_object_add(gui->e);
+		evas_object_event_callback_add(o, 
+				EVAS_CALLBACK_MOUSE_DOWN,
+				board_mouse_down, gui);
+		evas_object_event_callback_add(o, 
+				EVAS_CALLBACK_MOUSE_IN,
+				board_mouse_in, gui);
+		evas_object_event_callback_add(o, 
+				EVAS_CALLBACK_MOUSE_OUT,
+				board_mouse_out, gui);
+
+		edje_object_file_set(o,"edje/basic.edj","Board");
+		evas_object_show(o);
+		evas_object_move(o, 0,20); /* FIXME */
+		evas_object_resize(o,20,20);
+	}
+	o = gui->board;
+
+	snprintf(buf,20, "%d/%d",board->unread, board->messages);
+	edje_object_part_text_set(o, "Text", buf);
+
+	return 1;
+}
+
+
+static void board_mouse_in(void *data, Evas *e, Evas_Object *obj, void *event){
+
+}
+static void board_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event){
+
+}
+
+/**
+ * Handler for someone clicking on a MsgBoard Icon
+ *
+ * Opens on first unread message 
+ */
+static void 
+board_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
+
+
+}
+
+

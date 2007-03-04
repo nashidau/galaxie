@@ -2,25 +2,33 @@ images {
     image: "star.png" COMP;
     image: "starpopup-bg.png" COMP;
     image: "fleet.png" COMP;
+    image: "mailbox.png" COMP;
+    image: "messagebox-bg.png" COMP;
 }
 
 styles
 {
-   style {
-      name: "popup_style";
-      base: "font=Edje-Vera font_size=10 align=left color=#fff style=shadow shadow_color=#ffffff80 wrap=none";
+    style {
+	name: "popup_style";
+	base: "font=Edje-Vera font_size=10 align=left color=#fff style=shadow shadow_color=#ffffff80 wrap=none";
 
-      tag:  "br" "\n";
-      tag:  "hilight" "+ font=Edje-Vera-Bold style=glow color=#fff glow2_color=#fe87 glow_color=#fa14";
-      tag:  "title" "+ font_size=12 font=Edje-Vera-Bold style=soft_shadow color=#fff shadow_color=#00000020";
-      tag:  "/title" "- \n";
-      tag:  "planet" "+ color=#88f";
-      tag:  "/planet" "- \n";
-      tag:  "fleet" "+ color=#8f8";
-      tag:  "/fleet" "- \n";
-      tag:  "ship" "+ color=#f88";
-      tag:  "/ship" "- \n";
-   }
+	tag:  "br" "\n";
+	tag:  "hilight" "+ font=Edje-Vera-Bold style=glow color=#fff glow2_color=#fe87 glow_color=#fa14";
+	tag:  "title" "+ font_size=12 font=Edje-Vera-Bold style=soft_shadow color=#fff shadow_color=#00000020";
+	tag:  "/title" "- \n";
+	tag:  "planet" "+ color=#88f";
+	tag:  "/planet" "- \n";
+	tag:  "fleet" "+ color=#8f8";
+	tag:  "/fleet" "- \n";
+	tag:  "ship" "+ color=#f88";
+	tag:  "/ship" "- \n";
+    }
+
+    style {
+	name: "message_style";
+	base: "font=Edje-Vera font_size=10 align=left color=#fff style=shadow shadow_color=#ffffff80 wrap=none";
+	tag:  "br" "\n";
+    }
 }
 
 
@@ -176,7 +184,7 @@ collections {
     /* The Information about a single Star 
 	Appears as a popup on mouse-over */
     group {
-	name: "StarPopup";
+	name, "StarPopup";
 	min: 50 50;
 	max: 100 100;
 	parts {
@@ -274,6 +282,158 @@ collections {
 	}
     }
 
+      /* Message Box
+	Displays a single message.
+	    < Title Turn %d >
+	    Body
+	    Links...
+
+	Window contains:
+	    Title   Text title (evas_text)
+	    Turn:   Integer - the turn the message was sent on
+	    Body:   A textbox for the message body
+	Should also contain links to referenced objects 
+
+	Can emit:
+	    MessageNext
+	    MessagePrev
+    */
+    group {
+	name: "MessageBox";
+	min: 50 50;
+	max: 1000 1000;
+	parts {
+	    part {
+		name: "background";
+		type: IMAGE;
+		description {
+		    state: "default" 0.0;
+		    image {
+			normal: "messagebox-bg.png";
+		    }
+		}
+	    }
+	    part {
+		name: "Title";
+		type: TEXT;
+		description {
+		    state: "default" 0.0;
+		    rel1 {
+			relative: 0.0 0.0;
+			offset: 10 2;
+			to: "background";
+		    }
+		    text {
+			text:     "<No Title>";
+			font:     "Vera";
+			size:     10;
+			min:      1 1;
+			align:    0.5 1.0;
+		    }
+		}
+	    }
+	    part {
+		name: "Body";
+		type: TEXTBLOCK;
+		description {
+		    state: "default" 0.0;
+		    rel1 { 
+			relative: 0.0 0.0;
+			offset: 10 15;
+			to: "background";
+		    }
+		    rel2 {
+			relative: 1.0 1.0;
+			offset: -10 -15;
+			to: "background";
+		    }
+		    text {
+			style: "message_style";
+			min:	0 1;
+		    }
+		}
+	    }
+	}
+    }
+
+
+    /*
+     * The message board: Has two states:
+	- Normal (default)
+	- New Messaages (NewMessage)
+     */
+    group {
+	name: "Board";
+	min: 10 10;
+	max: 20 20;
+	parts {
+	    part {
+		name: "mailbox";
+		type: IMAGE;
+		description {
+		    state: "default" 0.0;
+		    rel1 {
+			relative: 0 0;
+			offset: 0 0;
+		    }
+		    rel2 {
+			relative: 1.0 1.0;
+			offset: -1 -1;
+		    }
+		    image {
+			normal: "mailbox.png";
+		    }
+		}
+
+		description {
+		    state: "NewMessage" 0.0;
+		    inherit: "default" 0.0;
+		}
+		description {
+		    state: "NewMessage" 1.0;
+		    inherit: "default" 0.0;
+		    color: 255 0 0 255;
+		}
+	    } 
+	    part {
+		name: "Text";
+		type: TEXT;
+		effect: SOFT_SHADOW;
+		description {
+		    state: "default"  0.0;
+		    rel1 {
+			relative: 0.0 0.0;
+			offset: 0 0;
+		    }
+		    rel2 {
+			relative: 1.0 1.0;
+			offset: -1 -1;
+		    }
+		    color: 0 0 0 255;
+		    color3: 128 255 128 150;
+		    text {
+			text: "0/0
+			font: "Vera";
+			size: 16;
+			min: 1 1;
+			align: 1.0 1.0;
+		    }
+		}
+	    }
+
+	}
+
+    }
+
+
+  
+    	program {
+	    name, "animate_box";
+	    signal, "show";
+	    action, STATE_SET "NewMessage" 1.0;
+	    transition, LINEAR 5.0;
+	    target, "mailbox";
+	}
 }
 
 /* vim:set sw=4 sts=4 syn=c: */

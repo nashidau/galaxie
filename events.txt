@@ -6,3 +6,12 @@ From tpe_obj:
  * ObjectChanged(struct object *): An object that has changed.
  * PlanetNoOrders(struct object *): An object can be orderd, but has no orders
  * FleetNoOrders(struct object *): An object can be orderd, but has no orders
+
+From tpe_comm:
+ * NewTurn(nothing): A new turn has started
+
+From tpe_board:
+ * BoardUpdated(struct board_update): A messae board has supdated in some way
+ 		- Message has been read
+		- New message has been received
+

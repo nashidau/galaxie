@@ -25,6 +25,9 @@ struct board {
 
 	struct message **messages;
 	int nalloced;
+
+	int unread;
+	int received;
 };
 
 struct message {
@@ -46,6 +49,8 @@ tpe_board_init(struct tpe *tpe){
 	board = calloc(1,sizeof(struct tpe_board));
 
 	board->boards = ecore_list_new();
+
+	tpe_event_type_add(tpe->event, "BoardChanged");
 
 	tpe_event_handler_add(tpe->event, "MsgBoard",
                         tpe_board_msg_board_receive, tpe);
@@ -160,6 +165,7 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
  */
 static int 
 tpe_board_msg_message_receive(void *data, int type, void *event){
+	struct board_update *update;
 	struct board *board;
 	struct message *message;
 	struct tpe *tpe;
@@ -197,7 +203,18 @@ tpe_board_msg_message_receive(void *data, int type, void *event){
 
 	board->messages[message->slot] = message;
 
+	board->unread ++;
+	board->received ++;
+
 	/* FIXME: Appropriate Notification */
+	update = calloc(1,sizeof(struct board_update));
+	update->id = board->oid;
+	update->name = board->name;
+	update->desc = board->description;
+	update->messages = board->received;
+	update->unread = board->unread;
+
+	tpe_event_send(tpe->event, "BoardChanged", update, NULL, NULL);
 
 	return 1;
 }

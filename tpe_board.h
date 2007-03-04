@@ -1,4 +1,16 @@
 
+/**
+ * Event object for board changing
+ * 
+ */
+struct board_update {
+	uint32_t id;
+	const char *name;
+	const char *desc;
+
+	int unread;
+	int messages;
+};
 
 
 struct tpe_board *tpe_board_init(struct tpe *tpe);

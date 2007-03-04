@@ -1,10 +1,12 @@
  * Colour coded planets (stars)
  * Colour coded fleets
  * UI for messages
+ * Board/Messages: Handle object references
+ * AI Should name fleets
  * Command line:
  	- Disable AI
 	- Disable GUI
  * Handle Resources
  * MTSec support
  	- Design
- * Start looking at TP04 support
+ * Start looking at TP04 suppor
