@@ -49,6 +49,9 @@ struct tpe_gui {
 
 	/* FIXME: More then one board */
 	Evas_Object *board;
+
+	/* Window for message */
+	Evas_Object *messagebox;
 };
 
 struct tpe_gui_obj {
@@ -173,8 +176,8 @@ tpe_gui_edje_splash_connect(void *data, Evas_Object *o,
 	gui = tpe->gui;
 
 	//tpe_comm_connect(tpe->comm, "localhost", 6923, "nash", "password");
-	//tpe_comm_connect(tpe->comm, "10.0.0.1", 6923, "nash", "password");
-	tpe_comm_connect(tpe->comm, "tranquillity.nash.id.au", 6923, "nash", "password");
+	tpe_comm_connect(tpe->comm, "10.0.0.1", 6923, "nash", "password");
+	//tpe_comm_connect(tpe->comm, "tranquillity.nash.id.au", 6923, "nash", "password");
 
 	/* Create the map screen */
 	evas_object_del(gui->main);
@@ -538,7 +541,26 @@ static void board_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event){
  */
 static void 
 board_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
+	struct tpe_gui *gui = data;
+	struct message *message;
 
+	if (gui->messagebox == NULL){
+		Evas_Object *o;
+		gui->messagebox = o = edje_object_add(gui->e);
+		edje_object_file_set(o, "edje/basic.edj", "MessageBox");
+		evas_object_move(o, 20,20);
+		evas_object_resize(o, 200,150);
+	} 
+	evas_object_show(gui->messagebox);
+	/* FIXME: Check on screen */
+
+	message = tpe_board_board_message_unread_get(gui->tpe, 1);
+
+	/* FIXME: Handle no unread messages */
+	message->unread = 0;
+
+	edje_object_part_text_set(gui->messagebox, "Title", message->title);
+	edje_object_part_text_set(gui->messagebox, "Body", message->body);
 
 }
 

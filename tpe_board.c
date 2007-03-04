@@ -30,14 +30,6 @@ struct board {
 	int received;
 };
 
-struct message {
-	int board;
-	int slot;
-	char *title;
-	char *body;
-	int turn;
-};
-
 static int tpe_board_msg_board_receive(void *data, int type, void *event);
 static int tpe_board_msg_message_receive(void *data, int type, void *event);
 
@@ -176,6 +168,7 @@ tpe_board_msg_message_receive(void *data, int type, void *event){
 	body += 16;
 
 	message = calloc(1,sizeof(struct message));
+	message->unread = 1;
 
 	/* FIXME: Doesn't handle reference system */
 	tpe_util_parse_packet(body, "iiassi", &message->board,
@@ -217,4 +210,27 @@ tpe_board_msg_message_receive(void *data, int type, void *event){
 	tpe_event_send(tpe->event, "BoardChanged", update, NULL, NULL);
 
 	return 1;
+}
+
+/**
+ * Gets the first unread message on the specified board.
+ *
+ *
+ */
+struct message *
+tpe_board_board_message_unread_get(struct tpe *tpe, uint32_t id){
+	struct board *board;
+	int i;
+
+	if (tpe == NULL) return NULL;
+	
+	board = tpe_board_board_get_by_id(tpe, id);
+	if (board == NULL) return NULL;
+
+	for (i = 0 ; i < board->nmessages ; i ++){
+		if (board->messages[i] && board->messages[i]->unread)
+			return board->messages[i];
+	}
+
+	return NULL;
 }

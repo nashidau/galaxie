@@ -311,6 +311,7 @@ collections {
 		    image {
 			normal: "messagebox-bg.png";
 		    }
+		    color: 0 0 0 200;
 		}
 	    }
 	    part {
@@ -320,7 +321,12 @@ collections {
 		    state: "default" 0.0;
 		    rel1 {
 			relative: 0.0 0.0;
-			offset: 10 2;
+			offset: 10 5;
+			to: "background";
+		    }
+		    rel2 {
+			relative: 1.0 0.0;
+			offset: 2 22;
 			to: "background";
 		    }
 		    text {
