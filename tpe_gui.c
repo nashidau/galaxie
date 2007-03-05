@@ -413,6 +413,16 @@ star_update(struct tpe *tpe, struct object *object){
 	const char *state = NULL;
 	int i;
 
+	if (object->type == OBJTYPE_PLANET){
+		childid = object->parent;
+		child = tpe_obj_obj_get_by_id(tpe->obj, childid);
+		if (child == NULL) return;
+		object = child;
+	}
+
+	if (object->type != OBJTYPE_SYSTEM)
+		return;
+	
 	nchildren = nother = nowned = nfriendly = 0;
 
 	for (i = 0 ; i < object->nchildren ; i ++){
