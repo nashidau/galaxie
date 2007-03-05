@@ -60,6 +60,7 @@ struct tpe_gui_obj {
 	struct tpe_gui *gui;
 	struct object *object;
 
+	int nplanets;
 };
 
 enum {
@@ -87,6 +88,8 @@ static void board_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event)
 static void star_mouse_in(void *data, Evas *e, Evas_Object *obj, void *event);
 static void star_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event);
 static void star_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event);
+static void star_update(struct tpe *tpe, struct object *object);
+
 static void fleet_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event);
 
 static void map_key_down(void *data, Evas *e, Evas_Object *obj, void *event);
@@ -298,6 +301,8 @@ tpe_gui_object_update(void *data, int eventid, void *event){
 		}
 	}
 
+	star_update(gui->tpe, obj);
+
 	return 1;
 }
 
@@ -391,6 +396,54 @@ star_summary(struct tpe *tpe, struct object *object){
 	}
 
 	return buf;	
+}
+
+/**
+ * Updates the color and appearance of a star.
+ *
+ *
+ *
+ */
+static void
+star_update(struct tpe *tpe, struct object *object){
+	struct object *child;
+	int childid;
+	int nchildren;
+	int nowned, nother, nfriendly;
+	const char *state = NULL;
+	int i;
+
+	nchildren = nother = nowned = nfriendly = 0;
+
+	for (i = 0 ; i < object->nchildren ; i ++){
+		childid = object->children[i];
+		child = tpe_obj_obj_get_by_id(tpe->obj, childid);
+		if (child == NULL) continue;
+		if (child->type != OBJTYPE_PLANET) continue;
+		nchildren ++;
+		if (child->owner == tpe->player) 
+			nowned ++;
+		else if (child->owner != -1)
+			nother ++;
+	}
+
+	if (nowned > 0 && nother > 0)
+		state = "Contested";
+	else if (nother > 0)
+		state = "Enemy";
+	else if (nowned > 0 && nfriendly > 0)
+		state = "Shared";
+	else if (nfriendly > 0)
+		state = "Friendly";
+	else if (nowned > 0)
+		state = "Own";
+	
+	/* FIXME: Should only emit if not in the right state */
+	if (state){
+		printf("Emit %s\n",state);
+		edje_object_signal_emit(object->gui->obj, state, "app");
+	}
+	
 }
 
 

@@ -1,0 +1,100 @@
+images {
+    image: "star.png" COMP;
+    image: "starother.png" COMP;
+    image: "starown.png" COMP;
+    image: "starunknown.png" COMP;
+    image: "starshared.png" COMP;
+    image: "starcontested.png" COMP;
+}
+group {
+    name: "Star";
+    min: 4 4;
+    max: 32 32;
+    parts {
+	part {
+	    name, "image";
+	    type: IMAGE;
+	    description {
+		state: "default" 0.0;
+		rel1 {
+		    relative: 0.0 0.0;
+		    offset: 0 0;
+		}
+		rel2 {
+		    relative: 1.0 1.0;
+		    offset: -1 -1;
+		}
+		image {
+		    normal: "starunknown.png";
+		}
+	    }
+	    /* Allies and the like */
+	    description {
+		state: "Friendly" 0.0;
+		inherit: "default" 0.0;
+		image {
+		    normal: "star.png";
+		}
+	    }
+	    description {
+		state: "Own" 0.0;
+		inherit: "default" 0.0;
+		image {
+		    normal: "starown.png";
+		}
+	    }
+	    description {
+		state: "Enemy" 0.0;
+		inherit: "default" 0.0;
+		image {
+		    normal: "starother.png";
+		}
+	    }
+	    description {
+		state: "Shared" 0.0;
+		inherit: "default" 0.0;
+		image {
+		    normal: "starshared.png";
+		}
+	    }
+	    description {
+		state: "Contested" 0.0;
+		inherit: "default" 0.0;
+		image {
+		    normal: "starcontested.png";
+		}
+	    }
+	}
+	part {
+	    name, "label";
+	    type: TEXT;
+	    mouse_events: 0;
+	    description {
+		state: "default" 0.0;
+		rel1 {
+		    relative: 0.5 1.0;
+		    offset: 0 10;
+		    to: "image";
+		}
+		text {
+		    text:     "Unknown";
+		    font:     "Vera";
+		    size:     10;
+		    min:      1 1;
+		    align:    0.5 1.0;
+		}
+	    }
+	}
+    }
+    program {
+	name, "star_set_own";
+	signal, "Own";
+	source, "app";
+	action, STATE_SET "Own" 0.0;
+	transition, LINEAR 0.5;
+	target, "image";
+    }
+}
+
+/* vim:set sw=4 sts=4 syn=c: */
+

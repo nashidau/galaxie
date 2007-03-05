@@ -1,4 +1,7 @@
  * Colour coded planets (stars)
+ * New art for:
+ 	- Contested stars:	Yellow
+	- Friendly Shared:	Purple
  * Colour coded fleets
  * UI for messages
  * Board/Messages: Handle object references
