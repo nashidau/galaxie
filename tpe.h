@@ -5,6 +5,7 @@ struct tpe {
 	int player; /* My player ID */
 	char *playername;
 	char *racename;
+	int turn;
 
 	struct tpe_event *event;
 	struct tpe_msg *msg;

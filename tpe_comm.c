@@ -251,8 +251,10 @@ tpe_comm_time_remaining(void *udata, int type, void *event){
 	tpe_util_parse_packet(event, "iiiii",&magic, &seq, &etype, &unused, 
 			&remain);
 
-	if (seq == 0 && remain == 0)
+	if (seq == 0 && remain == 0){
+		tpe->turn ++;
 		tpe_event_send(tpe->event, "NewTurn", strdup("pants"), NULL, NULL);
+	}
 
 	return 1;
 }

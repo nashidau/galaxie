@@ -1,5 +1,4 @@
-/* 
- * General object related functions.
+/* * General object related functions.
  *
  * TODO: Better data structure then a linked list 
  */
@@ -120,7 +119,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 	
 		tpe_util_parse_packet(end, "i", &turn);
 
-		/* FIXME: Do something with it */
+		tpe->turn = turn;
 		
 		break;
 	}
