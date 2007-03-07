@@ -129,7 +129,7 @@ tpe_comm_may_login(void *data, const char *msgtype, int len, void *mdata){
 
 
 	tpe_msg_send_strings(msg, "MsgLogin",  tpe_comm_logged_in, comm,
-			"nash", "pass", 0);
+			comm->user, comm->pass, 0);
 	tpe_msg_send(msg, "MsgGetFeatures", 0,0,0,0);
 
 	return 0;

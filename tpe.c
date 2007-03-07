@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <Evas.h>
 #include <Ecore.h>
@@ -20,9 +21,17 @@
 
 #include "ai_smith.h"
 
-#define WIDTH	1024
-#define HEIGHT	768
 
+static void parse_args(int argc, char **argv);
+int parse_username(int i, char **args);
+
+struct args {
+	const char *arg;
+	int (*fn)(int i, char **args);
+} args[] = {
+	{ "--user",	parse_username },
+	{ "-u",		parse_username },
+};
 
 
 int
@@ -34,6 +43,8 @@ main(int argc, char **argv){
 
 	tpe = calloc(1,sizeof(struct tpe));
 	if (tpe == NULL) exit(1);
+
+	parse_args(argc, argv);
 
 	tpe->event 	= tpe_event_init(tpe);
 	tpe->msg   	= tpe_msg_init(tpe);
@@ -54,7 +65,22 @@ main(int argc, char **argv){
 }
 
 
+static void
+parse_args(int argc, char **argv){
+	int i,j;
+
+	for (i = 1 ; i < argc ; i ++){
+		for (j = 0 ; j < sizeof(args)/sizeof(args[0]) ; j ++)	
+			if (!strncmp(args[j].arg, argv[i],strlen(args[j].arg)))
+				i = args[j].fn(i,argv);
+	}
+
+}
 
 
 
+int 
+parse_username(int i, char **args){
+	return 0;	
 
+}

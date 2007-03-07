@@ -94,6 +94,23 @@ group {
 	transition, LINEAR 0.5;
 	target, "image";
     }
+    program {
+	name, "star_set_enemy";
+	signal, "Enemy";
+	source, "app";
+	action, STATE_SET "Enemy" 0.0;
+	transition, LINEAR 0.5;
+	target, "image";
+    }
+    program {
+	name, "star_set_contested";
+	signal, "Contested";
+	source, "app";
+	action, STATE_SET "Contested" 0.0;
+	transition, LINEAR 0.5;
+	target, "image";
+    }
+
 }
 
 /* vim:set sw=4 sts=4 syn=c: */

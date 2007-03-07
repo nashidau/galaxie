@@ -119,7 +119,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 	
 		tpe_util_parse_packet(end, "i", &turn);
 
-		tpe->turn = turn;
+		obj->tpe->turn = turn;
 		
 		break;
 	}
