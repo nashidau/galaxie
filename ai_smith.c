@@ -119,17 +119,19 @@ smith_order_insert_cb(void *userdata, const char *msgtype,
 	//data += 4;
 	/* Evil hard coded-ness again: Here I assume the order type */
 	/* FIXME: Re-enable */
-	tpe_util_parse_packet(data, "iiii", /* B6s", */
+	tpe_util_parse_packet(data, "iiiiB6", 
 			&oid, &slot,&type,&turns,
 			&nbr,&br,
 			&noptions,&options,
 			&str);
-	frigate = 2;
+
+	/* FIXME: Check for failure of finding frigate */
 	for (i = 0 ; i < noptions ; i ++){
 		if (strcmp(options[i].name,"Frigate") == 0)
 			frigate = options[i].id;
 	}
 
+	/* FIXME: Need to use a msg send statement */
 	buf[0] = htonl(oid);
 	buf[1] = htonl(-1);
 	buf[2] = htonl(build_id);
