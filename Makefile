@@ -37,6 +37,9 @@ TARGETS: tpe ${EDJE}
 
 tpe: ${OBJECTS} ${AIS}
 
+doc:
+	doxygen Doxygen.conf
+
 sparse: 
 	sparse -Wall *.c
 
