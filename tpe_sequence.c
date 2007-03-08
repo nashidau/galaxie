@@ -17,6 +17,8 @@ struct sequence {
 	const char *updatemsg;
 	const char *getmsg;
 	uint64_t (*lastupdatefn)(struct tpe *, uint32_t id);
+	void (*list_begin)(struct tpe *);
+	void (*list_end)(struct tpe *);
 };
 
 struct tpe_sequence {
@@ -50,7 +52,9 @@ tpe_sequence_register(struct tpe *tpe,
 		const char *updatemsg,
 		const char *oidlist,
 		const char *getmsg,
-		uint64_t (*lastupdatefn)(struct tpe *, uint32_t id)){
+		uint64_t (*lastupdatefn)(struct tpe *, uint32_t id),
+		void (*list_begin)(struct tpe *),
+		void (*list_end)(struct tpe *)){
 	struct sequence *seq;
 
 	if (tpe == NULL) return -1;
@@ -62,6 +66,8 @@ tpe_sequence_register(struct tpe *tpe,
 	seq->updatemsg = strdup(updatemsg);
 	seq->getmsg = strdup(getmsg);
 	seq->lastupdatefn = lastupdatefn;
+	seq->list_begin = list_begin;
+	seq->list_end = list_end;
 	seq->tpe = tpe;
 
 	ecore_list_append(tpe->sequence->seqs, seq);
@@ -90,6 +96,8 @@ tpe_sequence_new_turn(void *data, int eventid, void *event){
 	
 	seq = ecore_list_goto_first(seqs);
 	while ((seq = ecore_list_next(seqs))){
+		if (seq->list_begin)
+			seq->list_begin(tpe);
 		tpe_msg_send_format(tpe->msg, seq->updatemsg,
 				NULL, NULL,
 				"i0i", -1,-1);
@@ -147,7 +155,10 @@ tpe_sequence_handle_oids(void *udata, int type, void *event){
 
 	if (more > 0){
 		printf("FIXME: Need to handle more on sequences\n");
-
+		printf("MORE MORE MORE MORE\n");
+	} else {
+		if (seq->list_end)
+			seq->list_end(seq->tpe);
 	}
 
 	return 1;

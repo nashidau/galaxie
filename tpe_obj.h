@@ -69,6 +69,8 @@ struct object {
 
 	struct tpe_gui_obj *gui;
 	struct ai_obj *ai;
+
+	int ref;
 };
 
 /* Cost to build something : From orders */

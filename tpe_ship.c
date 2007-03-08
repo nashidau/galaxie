@@ -44,7 +44,8 @@ tpe_ship_init(struct tpe *tpe){
 	tpe_sequence_register(tpe, "MsgGetDesignIDs",
 			"MsgListOfDesignIDs",
 			"MsgGetDesign",
-			tpe_ship_design_updated_get);
+			tpe_ship_design_updated_get,
+			NULL, NULL);
 
 	tpe_event_handler_add(event, "MsgListOfDesignIDs",
 			tpe_ship_msg_design_list, tpe);

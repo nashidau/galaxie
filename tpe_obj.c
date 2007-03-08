@@ -21,11 +21,16 @@
 struct tpe_obj {
 	struct tpe *tpe;
 	Ecore_List *objs;
+	int check;
 };
 
 
 
 static int tpe_obj_data_receive(void *data, int eventid, void *event);
+static void tpe_obj_list_begin(struct tpe *tpe);
+static void tpe_obj_list_end(struct tpe *tpe);
+
+static void tpe_obj_cleanup(struct tpe *tpe, struct object *o);
 
 struct tpe_obj *
 tpe_obj_init(struct tpe *tpe){
@@ -42,6 +47,7 @@ tpe_obj_init(struct tpe *tpe){
 
 	tpe_event_type_add(event, "ObjectNew");
 	tpe_event_type_add(event, "ObjectChanged");
+	tpe_event_type_add(event, "ObjectDelete");
 	tpe_event_type_add(event, "PlanetNoOrders");
 	tpe_event_type_add(event, "FleetNoOrders");
 
@@ -49,7 +55,9 @@ tpe_obj_init(struct tpe *tpe){
 			"MsgGetObjectIDs", 
 			"MsgListOfObjectIDs",
 			"MsgGetObjectsByID",
-			tpe_obj_object_updated);
+			tpe_obj_object_updated,
+			tpe_obj_list_begin,
+			tpe_obj_list_end);
 
 	obj->objs = ecore_list_new();
 
@@ -233,7 +241,61 @@ tpe_obj_object_updated(struct tpe *tpe, uint32_t oid){
 	obj = tpe_obj_obj_get_by_id(tpe->obj,oid);
 	if (obj == NULL)
 		return 0;
-	else
-		return obj->updated;
 
+	if (tpe->obj->check)
+		obj->ref = tpe->obj->check;	
+
+	return obj->updated;
+}
+
+
+static void
+tpe_obj_list_begin(struct tpe *tpe){
+
+	do {
+		tpe->obj->check = rand();
+	} while (tpe->obj->check == 0);
+}
+
+static void
+tpe_obj_list_end(struct tpe *tpe){
+	struct object *o;
+	int check;
+
+	check = tpe->obj->check;
+
+	ecore_list_goto_first(tpe->obj->objs);
+	while ((o = ecore_list_next(tpe->obj->objs))){
+		if (check != o->ref){
+			tpe_event_send(tpe->event, "ObjectDelete", o,
+					(void(*)(void*,void*))tpe_obj_cleanup, tpe);
+		}
+	}
+}
+
+static void
+tpe_obj_cleanup(struct tpe *tpe, struct object *o){
+	int i;
+
+	ecore_list_goto(tpe->obj->objs,o);
+	ecore_list_remove(tpe->obj->objs);
+
+	o->tpe = 0;
+	o->oid = -1;
+	if (o->name) free(o->name);
+	if (o->children) free(o->children);
+	if (o->ordertypes) free(o->ordertypes);
+	for (i = 0 ; i < o->norders ; i ++)
+		free(o->orders[i]);
+	if (o->orders) free(o->orders);
+	
+	if (o->fleet){
+		if (o->fleet->ships) free(o->fleet->ships);
+		free(o->fleet);
+	}
+	if (o->planet){
+		if (o->planet->resources) free(o->planet->resources);
+		free(o->planet);
+	}
+	free(o);
 }

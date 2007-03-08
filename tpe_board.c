@@ -52,7 +52,7 @@ tpe_board_init(struct tpe *tpe){
 	tpe_sequence_register(tpe, "MsgGetBoardIDs",
 				"MsgListOfBoards", 
 				"MsgGetBoards",
-				tpe_board_board_updated_get);
+				tpe_board_board_updated_get, NULL, NULL);
 	msglog = fopen("msglog.txt","w");
 	board->msglog = msglog;
 

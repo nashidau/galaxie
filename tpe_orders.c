@@ -74,7 +74,8 @@ tpe_orders_init(struct tpe *tpe){
 				"MsgGetOrderDescriptionIDs",
 				"MsgOrderDescriptionIDs",
 				"MsgGetOrderDescription",
-				 tpe_orders_order_desc_updated);
+				 tpe_orders_order_desc_updated,
+				 NULL, NULL);
 
 	/* Register some events?? */
 

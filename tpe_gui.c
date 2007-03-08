@@ -76,7 +76,10 @@ static void tpe_gui_edje_splash_connect(void *data, Evas_Object *o,
 
 /* System event handlers */
 static int tpe_gui_time_remaining(void *data, int eventid, void *event);
+static int tpe_gui_new_turn(void *data, int eventid, void *event);
+
 static int tpe_gui_object_update(void *data, int eventid, void *event);
+
 
 
 static int tpe_gui_board_update(void *data, int eventid, void *event);
@@ -156,6 +159,9 @@ tpe_gui_init(struct tpe *tpe){
 	tpe_event_handler_add(gui->tpe->event, "BoardChanged",
 			tpe_gui_board_update, gui);
 
+	tpe_event_handler_add(gui->tpe->event, "NewTurn",
+			tpe_gui_new_turn, gui);
+
 	gui->visible = ecore_list_new();
 
 	ecore_evas_data_set(gui->ee, "TPEGUI", gui);
@@ -217,6 +223,20 @@ tpe_gui_time_remaining(void *guip, int type, void *eventd){
 	snprintf(buf,100,"%ds Remaining",ntohl(event[4]));
 
 	edje_object_part_text_set(gui->main, "counter", buf);
+
+	return 1;
+}
+
+
+
+static int 
+tpe_gui_new_turn(void *data, int eventid, void *event){
+	struct tpe_gui *gui = data;
+	char buf[200];
+
+	snprintf(buf,200,"Thousand Parsec :: %s :: Turn %d", 
+			gui->tpe->racename, gui->tpe->turn);
+	ecore_evas_title_set(gui->ee,buf);
 
 	return 1;
 }

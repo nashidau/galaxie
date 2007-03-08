@@ -6,6 +6,7 @@ From tpe_obj:
  * ObjectChanged(struct object *): An object that has changed.
  * PlanetNoOrders(struct object *): An object can be orderd, but has no orders
  * FleetNoOrders(struct object *): An object can be orderd, but has no orders
+ * ObjectDelete(struct object *): An object is being deleted
 
 From tpe_comm:
  * NewTurn(nothing): A new turn has started
