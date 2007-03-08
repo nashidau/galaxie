@@ -20,6 +20,8 @@
 
 struct ai {
 	struct tpe *tpe;
+
+	int shipid;
 };
 
 
@@ -54,6 +56,7 @@ ai_smith_init(struct tpe *tpe){
 
 	ai = calloc(1,sizeof(struct ai));
 	ai->tpe = tpe;
+	ai->shipid = 0;
 
 	tpe_event_handler_add(tpe->event, "PlanetNoOrders", 
 			smith_order_planet, ai);
@@ -69,7 +72,6 @@ static int
 smith_order_planet(void *data, int type, void *event){
 	struct object *o = event;
 	struct ai *smith = data;
-	int buf[100];
 
 	printf("$ Smith: Order for %s\n",o->name);
 
@@ -77,25 +79,9 @@ smith_order_planet(void *data, int type, void *event){
 		build_id = tpe_order_get_type_by_name(smith->tpe, build_order);
 	assert(build_id != -1);
 
-	buf[0] = htonl(o->oid);	 /* What */
-	buf[1] = htonl(-1);	 /* Slot */
-	buf[2] = htonl(build_id); /* Order type */
-	buf[3] = htonl(0);       /* Number of turns == 0 */
-	buf[4] = htonl(0);       /* Resource list */
-	buf[5] = htonl(0);      /* List : Possible selections */
-	buf[6] = htonl(0);	/* List: # items */
-	buf[7] = htonl(0);	/* max len */
-	buf[8] = htonl(0);	/* Str: name */
-
-	{int i;
-		for (i = 0 ; i < 9 ; i ++)
-			printf("%08x ",ntohl(buf[i]));
-		printf("\n");
-	}
-
-	tpe_msg_send(smith->tpe->msg, "MsgProbeOrder",
+	tpe_msg_send_format(smith->tpe->msg, "MsgProbeOrder",
 			smith_order_insert_cb, smith,
-			buf,  9* 4);
+			"iii000000", o->oid, -1, build_id);
 
 	return 1;
 }
@@ -108,46 +94,37 @@ smith_order_insert_cb(void *userdata, const char *msgtype,
 	int oid, slot, type, turns, nbr, noptions = 0;
 	struct build_resources *br = NULL;
 	struct arg_type6 *options = NULL;
-	const char *str = NULL;
+	int maxstr;
+	char *str = NULL;
 	int frigate;
 	int i;
-	int buf[20];
 
 	/* FIXME: Check result */
-	printf("Inserting\n");
 
-	//data += 4;
-	/* Evil hard coded-ness again: Here I assume the order type */
-	/* FIXME: Re-enable */
-	tpe_util_parse_packet(data, "iiiiB6", 
+	tpe_util_parse_packet(data, "iiiiB6i", 
 			&oid, &slot,&type,&turns,
 			&nbr,&br,
 			&noptions,&options,
-			&str);
+			&maxstr);
 
-	/* FIXME: Check for failure of finding frigate */
-	for (i = 0 ; i < noptions ; i ++){
-		if (strcmp(options[i].name,"Frigate") == 0)
+	for (i = 0, frigate = 0 ; i < noptions ; i ++){
+		if (strcmp(options[i].name,"Frigate") == 0){
 			frigate = options[i].id;
+			break;
+		}
+	}
+	if (i == noptions){
+		printf("Failed to find Frigate type - can't colonise\n");
+		return 0;
 	}
 
-	/* FIXME: Need to use a msg send statement */
-	buf[0] = htonl(oid);
-	buf[1] = htonl(-1);
-	buf[2] = htonl(build_id);
-	buf[3] = htonl(0); /* turns */
-	buf[4] = htonl(0); /* Resource list */
-	buf[5] = htonl(0);
-	buf[6] = htonl(1); /* No of items */
-	buf[7] = htonl(frigate); /* What */
-	buf[8] = htonl(1); /* how many */
-	buf[9] = htonl(0); /* Max String  (read only) */
-	buf[10] = htonl(0); /* String (name) */
+	str = malloc(maxstr);
+	snprintf(str, maxstr, "Spore #%x", smith->shipid ++);
 
-	tpe_msg_send(smith->tpe->msg, "MsgInsertOrder",
-			NULL, NULL,
-			buf, 11 * 4);
-
+	tpe_msg_send_format(smith->tpe->msg, "MsgInsertOrder",
+		NULL, NULL,
+		"iii000iii00",
+		oid, -1, build_id, 1, frigate, 1, str);
 
 	return 1;
 }
