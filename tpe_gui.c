@@ -79,6 +79,7 @@ static int tpe_gui_time_remaining(void *data, int eventid, void *event);
 static int tpe_gui_new_turn(void *data, int eventid, void *event);
 
 static int tpe_gui_object_update(void *data, int eventid, void *event);
+static int tpe_gui_object_delete(void *data, int eventid, void *event);
 
 
 
@@ -155,6 +156,8 @@ tpe_gui_init(struct tpe *tpe){
 			tpe_gui_object_update, gui);
 	tpe_event_handler_add(gui->tpe->event, "ObjectChanged",
 			tpe_gui_object_update, gui);
+	tpe_event_handler_add(gui->tpe->event, "ObjectDelete",
+			tpe_gui_object_delete, gui);
 
 	tpe_event_handler_add(gui->tpe->event, "BoardChanged",
 			tpe_gui_board_update, gui);
@@ -479,6 +482,43 @@ star_update(struct tpe *tpe, struct object *object){
 	}
 	
 }
+
+/**
+ * Event handler for object delete.
+ *
+ * Cleans up any GUI data for the object.
+ *
+ * @param date Gui pointer.
+ * @param eventid Ecore event type.
+ * @param event Object being deleted.
+ * @return 1 Always (propogate event).
+ */
+static int 
+tpe_gui_object_delete(void *data, int eventid, void *event){
+	struct object *obj;
+	struct tpe_gui_obj *go;
+
+	obj = event;
+	
+	/* Nothing to do */
+	if (obj->gui == NULL) return 1;
+
+	go = obj->gui;
+
+	ecore_list_goto(go->gui->visible, obj);
+	ecore_list_remove(go->gui->visible);
+
+	if (go->obj) evas_object_del(go->obj);
+	memset(go, 0, sizeof(struct tpe_gui_obj));
+
+	free(go);
+	obj->gui = NULL;
+
+	return 1;
+}
+
+
+
 
 
 static void
