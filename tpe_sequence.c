@@ -19,6 +19,7 @@ struct sequence {
 	uint64_t (*lastupdatefn)(struct tpe *, uint32_t id);
 	void (*list_begin)(struct tpe *);
 	void (*list_end)(struct tpe *);
+	int position;
 };
 
 struct tpe_sequence {
@@ -98,6 +99,7 @@ tpe_sequence_new_turn(void *data, int eventid, void *event){
 	while ((seq = ecore_list_next(seqs))){
 		if (seq->list_begin)
 			seq->list_begin(tpe);
+		seq->position = 0;
 		tpe_msg_send_format(tpe->msg, seq->updatemsg,
 				NULL, NULL,
 				"i0i", -1,-1);
@@ -105,6 +107,7 @@ tpe_sequence_new_turn(void *data, int eventid, void *event){
 
 	return 1;
 }
+
 
 /**
  * List of OIDS back...
@@ -135,6 +138,7 @@ tpe_sequence_handle_oids(void *udata, int type, void *event){
 
 	tpe_util_parse_packet(event, "iiiiiiO", NULL, NULL, NULL, NULL,
 			&seqkey, &more, &noids,&oids);
+	seq->position += noids;
 
 	toget = malloc((noids + 1) * sizeof(int));
 	for (i = 0 , n = 0; i < noids ; i ++){
@@ -154,8 +158,9 @@ tpe_sequence_handle_oids(void *udata, int type, void *event){
 	free(oids);
 
 	if (more > 0){
-		printf("FIXME: Need to handle more on sequences\n");
-		printf("MORE MORE MORE MORE\n");
+		tpe_msg_send_format(seq->tpe->msg, seq->updatemsg, 
+			NULL, NULL,
+			"iii", seqkey, seq->position, -1);
 	} else {
 		if (seq->list_end)
 			seq->list_end(seq->tpe);
