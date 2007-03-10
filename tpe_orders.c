@@ -192,7 +192,11 @@ tpe_orders_msg_order_description(void *data, int type, void *edata){
 }
 
 
-/* Update the order list for this object */
+/* Update the order list for this object 
+ *
+ * FIXME: Need to prepare to fragment this packet 
+ * 	There may me too many messages for one request 
+ */
 static int 
 tpe_orders_object_update(void *tpev, int type, void *objv){
 	struct object *o = objv;
@@ -214,9 +218,15 @@ tpe_orders_object_update(void *tpev, int type, void *objv){
 	tpe_msg_send(tpe->msg, "MsgGetOrder", NULL, NULL,
 			toget, (o->norders + 2) * sizeof(uint32_t));
 
+	free(toget);
+
 	return 1;
 }
 
+/*
+ * FIXME: Optimise - should peak at the end, can not parse an order unless I
+ * have to
+ */
 static int 
 tpe_orders_msg_order(void *data, int type, void *event){
 	struct tpe *tpe = data;
@@ -248,6 +258,9 @@ tpe_orders_msg_order(void *data, int type, void *event){
 	} else {
 		object = tpe_obj_obj_get_by_id(tpe->obj, order->oid);
 		if (object == NULL){
+			printf("! Have order for object I don't have: "
+					"Obj: %d Slot %d\n",
+					order->oid, order->slot);
 			tpe_orders_order_free(order);
 			return 1;
 		}

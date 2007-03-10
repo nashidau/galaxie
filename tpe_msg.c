@@ -461,7 +461,7 @@ tpe_msg_send_format(struct tpe_msg *msg, const char *type,
 		const char *format, ...){
 	va_list ap;
 	int32_t *buf;
-	int len;
+	int len,rv;
 
 	buf = NULL;
 	va_start(ap, format);
@@ -475,12 +475,17 @@ tpe_msg_send_format(struct tpe_msg *msg, const char *type,
 		va_end(ap);
 	}
 
-	return tpe_msg_send(msg, type, cb, userdata, buf, len*sizeof(int32_t));
+	rv = tpe_msg_send(msg, type, cb, userdata, buf, len*sizeof(int32_t));
+
+	if (buf) free(buf);
+
+	return rv;
 }
 
 static int
 format_msg(int32_t *buf, const char *format, va_list ap){
 	int32_t val;
+	int len,padlen;
 	int64_t val64;
 	char *str;
 	int pos,extra;
@@ -509,21 +514,27 @@ format_msg(int32_t *buf, const char *format, va_list ap){
 			break;
 		case 's':
 			str = va_arg(ap, char *);
-			if (str)
-				val = strlen(str);
+			printf("Formatting string: '%s'\n",str);
+			if (str == NULL || (len = strlen(str)) == 0){
+				if (buf) buf[pos] = 0;
+				pos ++;
+				break;
+			}
+
+
+			if (len % 4)
+				padlen = len + (4 - len % 4);
 			else
-				val = 0;
-			/* We pad with '\0' */
-			if (val % 4)
-				extra = 4 - val % 4;
-			else
-				extra = 0;
+				padlen = len;
+
+			printf("Length is %d [%d] (+%d len)\n",len,padlen,padlen / 4);
 			if (buf)
-				buf[pos] = htonl(val + extra);
+				buf[pos] = htonl(padlen);
 			pos ++;
 			if (buf)
-				strncpy((char*)(buf + pos),str,val+extra);
-			pos += (val + extra) % 4;
+				strncpy((char*)(buf + pos),str,padlen);
+			printf("Byes are '%.*s\n",padlen,str);
+			pos += padlen / 4;
 			break;
 			
 		}

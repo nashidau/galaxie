@@ -42,6 +42,18 @@ static const char *build_order = "BuildFleet";
 
 static int build_id = -1;
 
+const char *shipnames[] = {
+	"Endeavour",
+	"Spore",
+	"Mayflower",
+	"Colonial",
+	"Vanquish",
+	"Victory",
+	"Sirius",
+};
+#define N_SHIPNAMES (sizeof(shipnames)/sizeof(shipnames[0]))
+
+
 /* Move:
  * 	pos : Absoluate space coords <int64,int64,int64>
  * Colonose: 
@@ -118,13 +130,22 @@ smith_order_insert_cb(void *userdata, const char *msgtype,
 		return 0;
 	}
 
+	if (maxstr > 100 || maxstr < 1) maxstr = 30;
 	str = malloc(maxstr);
-	snprintf(str, maxstr, "Spore #%x", smith->shipid ++);
-
+	snprintf(str, maxstr, "%s #%d", shipnames[rand() % N_SHIPNAMES],
+			smith->shipid ++);
+	
 	tpe_msg_send_format(smith->tpe->msg, "MsgInsertOrder",
 		NULL, NULL,
-		"iii000iii00",
+		"iii000iii0s",
 		oid, -1, build_id, 1, frigate, 1, str);
+
+	free(br);
+	/* FIXME: Need ways to auto free these */
+	for (i = 0, frigate = 0 ; i < noptions ; i ++)
+		free(options[i].name);
+	free(options);
+	free(str);
 
 	return 1;
 }

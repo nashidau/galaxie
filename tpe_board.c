@@ -116,6 +116,9 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
 	if (board == NULL)
 		board = tpe_board_board_add(tpe, id);
 
+	if (board->name) free(board->name);
+	if (board->description) free(board->description);
+
 	tpe_util_parse_packet(body, "issil", &id, &board->name, 
 			&board->description, &board->nmessages,
 			&board->updated);

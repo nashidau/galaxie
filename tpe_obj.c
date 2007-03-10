@@ -97,6 +97,16 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 			child->parent = 0;
 	}
 
+	if (o->name){
+		free(o->name);
+		o->name = NULL;
+	}
+
+	for (i = 0 ; i < o->norders ; i ++)
+		tpe_orders_order_free(o->orders[i]);
+	if (o->orders) free(o->orders);
+	
+
 	n = tpe_util_parse_packet(edata, "iislllllllaailiip",
 			&o->oid, &o->type, &o->name,
 			&o->size, 
@@ -116,8 +126,6 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 	}
 
 	/* Add slots for the orders */
-	/* FIXME: Leak! */
-	free(o->orders);
 	o->orders = calloc(o->norders, sizeof(struct order *));
 
 	/* Handle extra data for different types */
@@ -286,7 +294,7 @@ tpe_obj_cleanup(struct tpe *tpe, struct object *o){
 	if (o->children) free(o->children);
 	if (o->ordertypes) free(o->ordertypes);
 	for (i = 0 ; i < o->norders ; i ++)
-		free(o->orders[i]);
+		tpe_orders_order_free(o->orders[i]);
 	if (o->orders) free(o->orders);
 	
 	if (o->fleet){
