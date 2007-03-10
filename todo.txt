@@ -1,13 +1,33 @@
  * New art for:
 	- Friendly Shared:	Purple
  * Colour coded fleets
+ * AI Improvements:
+ 	 - Don't try and colonise places where people have already colonised
+	 - Settle locally 
+	 	- If parent is the same - colonise it first, even if something
+			is on route
+	- Handle places being settled on route
+	- Handle ships being destroyed (so send someone else)
+	- If someone settles in the same system - nail them!
+		- Build 4 warships and hit them
+	- Occasionally build some warships to attack planets
+	- When nothing left to settle, build fleets to attack places.
  * UI for messages
+ * UI for orders
+ * Planet popup improve
+ * Planet display
+ * System display
+ * Ship display
+ * Display systems with fleets
+ * Nail some fixmes
  * Board/Messages: Handle object references
- * AI Should name fleets
  * Command line:
  	- Disable AI
 	- Disable GUI
  * Handle Resources
+ * Improve some of the data structures
+ 	- Lists could become hashes in many places
+ * Fix map zoom and pan
  * MTSec support
  	- Design
- * Start looking at TP04 suppor
+ * Start looking at TP04 support
