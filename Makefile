@@ -47,6 +47,8 @@ edje/basic.edj: ${BASICTHEME}
 
 
 tpe_msg.o : tpe_msg.h tpe.h
+ai_smith.o: tpe_obj.h tpe.h tpe_event.h tpe_msg.h tpe_orders.h tpe_ship.h \
+		tpe_util.h
 
 clean: 
 	rm -f *.o 
