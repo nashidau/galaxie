@@ -681,7 +681,17 @@ board_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 	evas_object_show(gui->messagebox);
 	/* FIXME: Check on screen */
 
+	/* FIXME: Fix hard coded board IDs here */
 	message = tpe_board_board_message_unread_get(gui->tpe, 1);
+
+	if (message == NULL){
+		message = tpe_board_board_message_turn_get(gui->tpe,1);
+	}
+
+	if (message == NULL){
+		evas_object_hide(gui->messagebox);
+		return;
+	}
 
 	/* FIXME: Handle no unread messages */
 	message->unread = 0;

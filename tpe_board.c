@@ -218,7 +218,11 @@ tpe_board_msg_message_receive(void *data, int type, void *event){
 /**
  * Gets the first unread message on the specified board.
  *
+ * Note this will happilly return NULL if there are no unread messages.
  *
+ * @param tpe General tpe structure.
+ * @param id The board to get message from.
+ * @return Message structure, or NULL if there are no unread messages.
  */
 struct message *
 tpe_board_board_message_unread_get(struct tpe *tpe, uint32_t id){
@@ -236,4 +240,44 @@ tpe_board_board_message_unread_get(struct tpe *tpe, uint32_t id){
 	}
 
 	return NULL;
+}
+
+/**
+ * Returns the first mesage in the most recent turn.
+ *
+ * This function returns the first message in highest turn.  This generally
+ * the current turn, but is not necessarily.
+ * 
+ * Returns NULL if there are no messages in the board.
+ * 
+ * Note: This function is slow.
+ *
+ * @param tpe General tpe structure.
+ * @param id Board to get message from.
+ * @return Message 
+ */
+struct message *
+tpe_board_board_message_turn_get(struct tpe *tpe, uint32_t id){
+	struct message *message;
+	struct board *board;
+	int i;
+
+	if (tpe == NULL) return NULL;
+	
+	board = tpe_board_board_get_by_id(tpe, id);
+	if (board == NULL) return NULL;
+
+	if (board->nmessages == 0) return NULL;
+	if (board->messages[0] == NULL) return NULL;
+	
+	message = board->messages[0];
+
+	for (i = 1 ; i < board->nmessages ; i ++){
+		if (board->messages[i] == NULL) continue;
+		if (board->messages[i]->turn > message->turn)
+			message = board->messages[i];
+	}
+
+	return message;
+
 }
