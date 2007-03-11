@@ -5,6 +5,7 @@ From tpe_obj:
  * ObjectNew(struct object *): A new object we haven't seen before.
  * ObjectChanged(struct object *): An object that has changed.
  * PlanetNoOrders(struct object *): An object can be orderd, but has no orders
+ * PlanetColonised(struct object *): A planet was colonised by a foreign power
  * FleetNoOrders(struct object *): An object can be orderd, but has no orders
  * ObjectDelete(struct object *): An object is being deleted
 

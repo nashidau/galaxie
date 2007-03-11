@@ -19,7 +19,8 @@ OBJECTS=		\
 	tpe_util.o	\
 
 AIS=			\
-	ai_smith.o
+	ai_smith.o	\
+	ai_util.o
 
 BASICTHEME=			\
 	edje/basic.edc		\

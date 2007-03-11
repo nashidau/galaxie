@@ -360,3 +360,30 @@ tpe_orders_object_colonise(struct tpe *tpe, struct object *obj, int slot,
 			obj->oid, slot, colorder, what->oid);
 }
 
+int 
+tpe_orders_object_clear(struct tpe *tpe, struct object *obj){
+	int i,rv;
+	int *toremove;
+
+	toremove = malloc(sizeof(int32_t) * (obj->norders + 2));
+	toremove[0] = htonl(obj->oid);
+	toremove[1] = htonl(obj->norders);
+
+	for (i = 0 ; i < obj->norders ; i ++){
+		toremove[i + 2] = htonl(obj->norders - i - 1);
+	}
+	
+	/* Catch the fail message */
+	rv = tpe_msg_send(tpe->msg, "MsgRemoveOrder",
+			NULL, NULL,
+			toremove, (sizeof(int32_t) * (obj->norders + 2)));
+
+	free(obj->orders);
+	obj->orders = NULL;
+	obj->norders = 0;
+
+	free(toremove);
+
+	return rv;
+}
+

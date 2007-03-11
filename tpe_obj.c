@@ -49,6 +49,7 @@ tpe_obj_init(struct tpe *tpe){
 	tpe_event_type_add(event, "ObjectChanged");
 	tpe_event_type_add(event, "ObjectDelete");
 	tpe_event_type_add(event, "PlanetNoOrders");
+	tpe_event_type_add(event, "PlanetColonised");
 	tpe_event_type_add(event, "FleetNoOrders");
 
 	tpe_sequence_register(tpe, 
@@ -75,6 +76,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 	int id,n,i;
 	int isnew;
 	int unused;
+	int oldowner;
 	void *end;
 	
 	obj = data;
@@ -105,7 +107,6 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 	for (i = 0 ; i < o->norders ; i ++)
 		tpe_orders_order_free(o->orders[i]);
 	if (o->orders) free(o->orders);
-	
 
 	n = tpe_util_parse_packet(edata, "iislllllllaailiip",
 			&o->oid, &o->type, &o->name,
@@ -145,12 +146,19 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		break;
 	case OBJTYPE_PLANET:
 		/* FIXME: Also do resources */
-		if (o->planet == NULL)
+		if (o->planet == NULL){
 			o->planet = calloc(1,sizeof(struct object_planet));
+			o->owner = -1;
+		} 
+		oldowner = o->owner;
 
 		tpe_util_parse_packet(end, "iR",
 				&o->owner, 
 				&o->planet->nresources, &o->planet->resources);
+
+		if (o->owner != oldowner && o->owner != obj->tpe->player)
+			tpe_event_send(obj->tpe->event, "PlanetColonised", o,
+					tpe_event_nofree, NULL);
 
 		break;
 	case OBJTYPE_FLEET:
@@ -166,8 +174,6 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		printf("Unknown object type: %d\n",o->type);
 		exit(1);
 	}
-
-	//tpe_obj_obj_dump(o);
 
 	tpe_event_send(obj->tpe->event, isnew ? "ObjectNew" : "ObjectChanged",
 				o, tpe_event_nofree, NULL);

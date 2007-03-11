@@ -32,6 +32,7 @@ struct ai_obj {
 
 static int smith_order_planet(void *data, int type, void *event);
 static int smith_order_fleet(void *data, int type, void *event);
+static int smith_planet_colonised(void *data, int type, void *event);
 
 static int smith_order_insert_cb(void *userdata, const char *msgtype, 
 		int len, void *edata);
@@ -74,6 +75,8 @@ ai_smith_init(struct tpe *tpe){
 			smith_order_planet, ai);
 	tpe_event_handler_add(tpe->event, "FleetNoOrders",
 			smith_order_fleet, ai);
+	tpe_event_handler_add(tpe->event, "PlanetColonised", 
+			smith_planet_colonised, ai);
 
 	return ai;
 }
@@ -246,3 +249,45 @@ smith_order_fleet(void *data, int type, void *event){
 	return 1;
 }
 
+/**
+ * Event handler for planet colonised.
+ *
+ * Somone colonised a planet - maybe I'm sending a ship there?  If I am,
+ * redirect the ship somewhere else.  No point trying ot invade, a single
+ * colonising vessel will almost certainly be destroyed.
+ */
+static int 
+smith_planet_colonised(void *data, int type, void *event){
+	struct object *o;
+	struct object *colfleet;
+	struct object *dest;
+	struct ai *smith;
+	struct ai_obj *ai;
+
+	o = event;
+	smith = data;
+
+	/* Wasn't planning on colonising... */
+	if (o->ai == NULL) return 1;
+
+	ai = o->ai;
+
+	colfleet = tpe_obj_obj_get_by_id(smith->tpe->obj, ai->fleet);
+	if (colfleet == NULL){
+		/* Fleet was destroyed - probably while trying to colonised */
+		free(o->ai);
+		o->ai = NULL;
+		return 1;
+	}
+
+	tpe_orders_object_clear(smith->tpe, o);
+
+	tpe_orders_object_move_object(smith->tpe, o, SLOT_LAST, dest);
+	tpe_orders_object_colonise(smith->tpe, o, SLOT_LAST, dest);
+	
+	dest->ai->fleet = o->oid;
+
+	dest = ai_util_planet_closest_uncolonised(smith->tpe, colfleet);
+
+	return 1;	
+}
