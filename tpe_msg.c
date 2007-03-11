@@ -351,7 +351,7 @@ tpe_msg_handle_packet(struct tpe_msg *msg, int seq, int type,
 				break;
 			}
 		}
-		printf("Handling a %s (%d) (response: %d)\n",event,type,seq);
+		//printf("Handling a %s (%d) (response: %d)\n",event,type,seq);
 
 		edata = malloc(16 + len);
 		memcpy(edata,data,16+len);
@@ -396,7 +396,8 @@ tpe_msg_send(struct tpe_msg *msg, const char *msgtype,
 	buf[2] = htonl(type);
 	buf[3] = htonl(len);
 	memcpy(buf + 4, data, len);
-printf("Sending Seq %d Type %d Len: %d [%p]\n",msg->seq,type,len,cb);
+
+	//printf("Sending Seq %d Type %d Len: %d [%p]\n",msg->seq,type,len,cb);
 	ecore_con_server_send(msg->svr, buf, len + HEADER_SIZE);
 
 	free(buf);
@@ -514,7 +515,6 @@ format_msg(int32_t *buf, const char *format, va_list ap){
 			break;
 		case 's':
 			str = va_arg(ap, char *);
-			printf("Formatting string: '%s'\n",str);
 			if (str == NULL || (len = strlen(str)) == 0){
 				if (buf) buf[pos] = 0;
 				pos ++;
@@ -527,13 +527,11 @@ format_msg(int32_t *buf, const char *format, va_list ap){
 			else
 				padlen = len;
 
-			printf("Length is %d [%d] (+%d len)\n",len,padlen,padlen / 4);
 			if (buf)
 				buf[pos] = htonl(padlen);
 			pos ++;
 			if (buf)
 				strncpy((char*)(buf + pos),str,padlen);
-			printf("Byes are '%.*s\n",padlen,str);
 			pos += padlen / 4;
 			break;
 			
