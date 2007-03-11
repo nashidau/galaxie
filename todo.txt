@@ -12,14 +12,16 @@
 		- Build 4 warships and hit them
 	- Occasionally build some warships to attack planets
 	- When nothing left to settle, build fleets to attack places.
+	- Option to limit growth rate
  * UI for messages
  * UI for orders
  * Planet popup improve
  * Planet display
+ * Connect handle failures
  * System display
  * Ship display
  * Display systems with fleets
- * Nail some fixmes
+ * Nail some fixmes (49 at last count)
  * Board/Messages: Handle object references
  * Command line:
  	- Disable AI
