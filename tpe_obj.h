@@ -46,7 +46,7 @@ struct object {
 	enum objtype type;
 	char *name;
 
-	uint32_t owner;
+	int32_t owner;
 
 	uint64_t size;
 	struct vector pos;

@@ -489,7 +489,7 @@ format_msg(int32_t *buf, const char *format, va_list ap){
 	int len,padlen;
 	int64_t val64;
 	char *str;
-	int pos,extra;
+	int pos;
 
 	pos = 0;
 

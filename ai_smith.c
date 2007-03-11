@@ -222,7 +222,7 @@ smith_order_fleet(void *data, int type, void *event){
 			continue;
 		}
 		if (cur->ai != NULL) continue;
-		if (cur->owner == smith->tpe->player) continue;
+		if (cur->owner >= 0) continue;
 		curdist = tpe_util_dist_calc2(cur,o);
 		if (curdist < destdist){
 			/* New target */

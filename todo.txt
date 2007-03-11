@@ -2,7 +2,6 @@
 	- Friendly Shared:	Purple
  * Colour coded fleets
  * AI Improvements:
- 	 - Don't try and colonise places where people have already colonised
 	 - Settle locally 
 	 	- If parent is the same - colonise it first, even if something
 			is on route
