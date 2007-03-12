@@ -5,13 +5,15 @@
 	 - Settle locally 
 	 	- If parent is the same - colonise it first, even if something
 			is on route
-	- Handle places being settled on route
 	- Handle ships being destroyed (so send someone else)
 	- If someone settles in the same system - nail them!
 		- Build 4 warships and hit them
 	- Occasionally build some warships to attack planets
 	- When nothing left to settle, build fleets to attack places.
 	- Option to limit growth rate
+ * Design Updates
+ 	- Waiting on bugs in the server
+	- Otherwise should already work
  * UI for messages
  * UI for orders
  * Planet popup improve
@@ -32,3 +34,18 @@
  * MTSec support
  	- Design
  * Start looking at TP04 support
+ * Documentation.
+	- tpe
+	- tpe_board
+	- tpe_comm
+	- tpe_event
+	- tpe_gui
+	- tpe_msg
+	- tpe_obj
+	- tpe_orders
+	- tpe_sequence
+	- tpe_ship
+	- tpe_util
+	- ai_smith
+	- ai_util
+

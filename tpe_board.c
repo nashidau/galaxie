@@ -156,7 +156,6 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
  *
  * Saves the new message in the boards list of messages.
  *
- * FIXME: Need to clean up at all exit paths 
  */
 static int 
 tpe_board_msg_message_receive(void *data, int type, void *event){
@@ -188,12 +187,18 @@ tpe_board_msg_message_receive(void *data, int type, void *event){
 	board = tpe_board_board_get_by_id(tpe, message->board);
 	if (board == NULL){
 		printf("Weird - No board %d\n", message->board);
+		free(message->title); 
+		free(message->body);
+		free(message);
 		return 1;
 	}
 
 	if (board->messages[message->slot]){
 		printf("Strange - I have this message Bord %d Slot %d\n",
 			message->board, message->slot);
+		free(message->title); 
+		free(message->body);
+		free(message);
 		return 1;
 	}
 

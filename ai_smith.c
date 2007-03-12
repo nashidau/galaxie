@@ -11,6 +11,7 @@
 
 #include "tpe.h"
 #include "ai_smith.h"
+#include "ai_util.h"
 #include "tpe_event.h"
 #include "tpe_msg.h"
 #include "tpe_orders.h"
@@ -201,11 +202,10 @@ smith_order_fleet(void *data, int type, void *event){
 	}
 
 	if (parent->type == OBJTYPE_PLANET){
-		printf("$ Smith: A planet:  Can I colonise it?\n");
-		if (parent->owner == smith->tpe->player){
-			printf("Owned by me...\n");
-		} else {
-			printf("$ smith: Fixme: Colonise this\n");
+		if (parent->owner == -1){
+			tpe_orders_object_colonise(smith->tpe, o, SLOT_LAST, 
+					parent);
+	
 			return 1;
 		}
 	}
@@ -252,7 +252,7 @@ smith_order_fleet(void *data, int type, void *event){
 /**
  * Event handler for planet colonised.
  *
- * Somone colonised a planet - maybe I'm sending a ship there?  If I am,
+ * Someone colonised a planet - maybe I'm sending a ship there?  If I am,
  * redirect the ship somewhere else.  No point trying ot invade, a single
  * colonising vessel will almost certainly be destroyed.
  */
@@ -282,12 +282,17 @@ smith_planet_colonised(void *data, int type, void *event){
 
 	tpe_orders_object_clear(smith->tpe, o);
 
-	tpe_orders_object_move_object(smith->tpe, o, SLOT_LAST, dest);
-	tpe_orders_object_colonise(smith->tpe, o, SLOT_LAST, dest);
+	dest = ai_util_planet_closest_uncolonised(smith->tpe, colfleet);
+	/* FIXME: Do something - don't just hang in space */
+
+	if (dest == NULL)
+		return 1;
+
+	tpe_orders_object_move_object(smith->tpe, colfleet, SLOT_LAST, dest);
+	tpe_orders_object_colonise(smith->tpe, colfleet, SLOT_LAST, dest);
 	
 	dest->ai->fleet = o->oid;
 
-	dest = ai_util_planet_closest_uncolonised(smith->tpe, colfleet);
 
 	return 1;	
 }

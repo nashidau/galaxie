@@ -190,10 +190,10 @@ tpe_gui_edje_splash_connect(void *data, Evas_Object *o,
 	//tpe_comm_connect(tpe->comm, "localhost", 6923, "nash", "password");
 	if (getenv("USER2")){
 		printf("Pants connect!!!\n");
-		tpe_comm_connect(tpe->comm, "10.0.0.1", 6923, "pants", "password");
+		tpe_comm_connect(tpe->comm, "tranquillity.nash.id.au", 6923, "elvis", "password");
 	} else
-	tpe_comm_connect(tpe->comm, "10.0.0.1", 6923, "nash", "password");
-	//tpe_comm_connect(tpe->comm, "tranquillity.nash.id.au", 6923, "nash", "password");
+	//tpe_comm_connect(tpe->comm, "10.0.0.1", 6923, "nash", "password");
+	tpe_comm_connect(tpe->comm, "tranquillity.nash.id.au", 6923, "nash", "password");
 
 	/* Create the map screen */
 	evas_object_del(gui->main);

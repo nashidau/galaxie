@@ -28,7 +28,6 @@ struct design {
 	uint64_t updated;
 };
 
-static int tpe_ship_msg_design_list(void *data, int eventid, void *event);
 static int tpe_ship_msg_design(void *data, int eventid, void *event);
 
 struct tpe_ship *
@@ -47,8 +46,6 @@ tpe_ship_init(struct tpe *tpe){
 			tpe_ship_design_updated_get,
 			NULL, NULL);
 
-	tpe_event_handler_add(event, "MsgListOfDesignIDs",
-			tpe_ship_msg_design_list, tpe);
 	tpe_event_handler_add(event, "MsgDesign",
 			tpe_ship_msg_design, tpe);
 
@@ -89,47 +86,6 @@ tpe_ship_design_updated_get(struct tpe *tpe, uint32_t design){
 	return 0;
 }
 
-/* FIXME: This is cut and paste */
-static int 
-tpe_ship_msg_design_list(void *data, int eventid, void *event){
-	struct tpe *tpe;
-	int seqkey, more;
-	int noids;
-	struct ObjectSeqID *oids = 0;
-	int *toget;
-	int i,n;
-	const char *name;
-
-	tpe = data;
-
-	/* FIXME */
-	event = ((char *)event + 16);
-
-	tpe_util_parse_packet(event, "iiO", &seqkey, &more, &noids,&oids);
-
-	toget = malloc(noids * sizeof(int) + 4);
-	for (i  = 0 , n = 0; i < noids; i ++){
-		name = tpe_ship_design_name_get(tpe, oids[i].oid);
-		if (name == NULL){
-			toget[n + 1] = htonl(oids[i].oid);
-			n ++;
-		}
-	}
-
-	if (n != 0){ 
-		/* Get what we need */
-		toget[0] = htonl(n);
-
-		tpe_msg_send(tpe->msg, "MsgGetDesign",NULL, NULL, 
-				toget, n * 4 + 4);
-	}
-
-	free(toget);
-	free(oids);
-
-	return 1;
-
-}
 static int 
 tpe_ship_msg_design(void *data, int eventid, void *event){
 	struct design *design = 0;
@@ -137,7 +93,6 @@ tpe_ship_msg_design(void *data, int eventid, void *event){
 	struct tpe *tpe = data;
 
 	design = calloc(1,sizeof(struct design));
-
 	/* FIXME */
 	event = ((char *)event + 16);
 
@@ -145,6 +100,7 @@ tpe_ship_msg_design(void *data, int eventid, void *event){
 			&design->updated, &ncats,&cats, 
 			&design->name,
 			&design->description);
+
 	ecore_list_append(tpe->ship->designs, design);
 
 	free(cats);
