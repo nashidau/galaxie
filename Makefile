@@ -14,6 +14,7 @@ OBJECTS=		\
 	tpe_msg.o	\
 	tpe_obj.o	\
 	tpe_orders.o	\
+	tpe_resources.o	\
 	tpe_sequence.o	\
 	tpe_ship.o	\
 	tpe_util.o	\
