@@ -148,18 +148,7 @@ tpe_comm_logged_in(void *data, const char *msgtype, int len, void *mdata){
 
 	tpe_msg_send(msg, "MsgGetTimeRemaining", 0, 0,0,0);
 
-	/* FIXME: These don't really belong here */
-	/* Fire of some sequences */
-	buf[0] = htonl(-1);	/* New seq */
-	buf[1] = htonl(0);	/* From 0 */
-	buf[2] = htonl(-1);	/* Get them all */
-
-	tpe_msg_send(msg, "MsgGetOrderDescriptionIDs", 0,0,buf,12);
-	tpe_msg_send(msg, "MsgGetBoardIDs", 0,0,buf,12);
-	tpe_msg_send(msg, "MsgGetResourceIDs", 0,0,buf,12);
-	tpe_msg_send(msg, "MsgGetObjectIDs", 0,0,buf,12);
-	tpe_msg_send(msg, "MsgGetDesignIDs", 0,0,buf,12);
-
+	/* FIXME: Need a object to handle these */
 	buf[0] = htonl(1);	/* One player to get */
 	buf[1] = htonl(0); 	/* 0 = Myself */
 	tpe_msg_send(msg, "MsgGetPlayerData", tpe_comm_msg_player_id, tpe, 

@@ -60,6 +60,7 @@ tpe_util_dump_packet(void *pdata){
  * FIXME: Need a more general way of parsing complex structures (lists)
  *
  * Format string:
+ *  -: Nothing - skip an int
  *  s: A string - will be malloced into pointer
  *  i: int - 32 bit int
  *  l: long long int - 64 bit int
@@ -85,6 +86,15 @@ tpe_util_parse_packet(void *pdata, char *format, ...){
 	
 	while (*format){
 		switch (*format){
+			case '-':{
+				int *idata;
+				format ++;
+				parsed ++;
+				idata = pdata;
+				idata ++;
+				pdata = idata;
+				break;
+			}
 			case 'i':{ /* Single 32 bit int */
 				 int val;
 				 int *idata;
