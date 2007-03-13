@@ -69,8 +69,6 @@ enum {
 	DEFAULT_ZOOM = 8388608,
 };
 
-#define URI	"localhost"	/* FIXME */
-
 static void tpe_gui_edje_splash_connect(void *data, Evas_Object *o, 
 		const char *emission, const char *source);
 
