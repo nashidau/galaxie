@@ -39,7 +39,7 @@ struct resourcedescription {
 };
 
 
-static int tpe_resource_resourcedescription_msg(void *,int,void*);
+static int tpe_resources_resourcedescription_msg(void *,int,void*);
 
 /**
  * Initialise the resource system. 
@@ -53,7 +53,7 @@ static int tpe_resource_resourcedescription_msg(void *,int,void*);
  * @return tpe_resources structure or NULL on error
  */
 struct tpe_resources *
-tpe_resource_init(struct tpe *tpe){
+tpe_resources_init(struct tpe *tpe){
 	struct tpe_resources *resources;
 
 	resources = calloc(1,sizeof(struct tpe_resources));
@@ -62,11 +62,11 @@ tpe_resource_init(struct tpe *tpe){
 	tpe_sequence_register(tpe, "MsgGetResourceDescriptionIDs",
                         "MsgListOfResourceDescriptionsIDs",
                         "MsgGetResourceDescription",
-                        tpe_resource_resourcedescription_updated,
+                        tpe_resources_resourcedescription_updated,
                         NULL, NULL);
 
         tpe_event_handler_add(tpe->event, "MsgResourceDescription",
-                        tpe_resource_resourcedescription_msg, tpe);
+                        tpe_resources_resourcedescription_msg, tpe);
 
 
 
@@ -81,7 +81,7 @@ tpe_resource_init(struct tpe *tpe){
  * @return Resouce Description, or NULL on error
  */
 struct resourcedescription *
-tpe_resource_resourcedescription_get(struct tpe *tpe, uint32_t resourceid){
+tpe_resources_resourcedescription_get(struct tpe *tpe, uint32_t resourceid){
         struct resourcedescription *r;
         ecore_list_goto_first(tpe->resources->resources);
         while ((r = ecore_list_next(tpe->resources->resources)))
@@ -100,10 +100,10 @@ tpe_resource_resourcedescription_get(struct tpe *tpe, uint32_t resourceid){
  * @return The last time resource was updated, or 0 if not found.
  */
 uint64_t
-tpe_resource_resourcedescription_updated(struct tpe *tpe, uint32_t resourceid){
+tpe_resources_resourcedescription_updated(struct tpe *tpe, uint32_t resourceid){
         struct resourcedescription *r;
 
-        r = tpe_resource_resourcedescription_get(tpe,resourceid);
+        r = tpe_resources_resourcedescription_get(tpe,resourceid);
         if (r)
                 return r->updated;
         return 0;
@@ -127,7 +127,7 @@ tpe_resource_resourcedescription_updated(struct tpe *tpe, uint32_t resourceid){
  */
  
 static int 
-tpe_resource_resourcedescription_msg(void *data,int etype,void *event){
+tpe_resources_resourcedescription_msg(void *data,int etype,void *event){
 	struct resourcedescription *rd;
 	struct tpe *tpe;
 	int *msg;
@@ -140,7 +140,7 @@ tpe_resource_resourcedescription_msg(void *data,int etype,void *event){
 	
 	tpe_util_parse_packet(msg, "i", &id);
 
-	rd = tpe_resource_resourcedescription_get(tpe, id);
+	rd = tpe_resources_resourcedescription_get(tpe, id);
 	if (rd == NULL){
 		rd = calloc(1,sizeof(struct resourcedescription));
 		rd->id = id;

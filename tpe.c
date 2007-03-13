@@ -16,6 +16,7 @@
 #include "tpe_msg.h"
 #include "tpe_obj.h"
 #include "tpe_orders.h"
+#include "tpe_resources.h"
 #include "tpe_sequence.h"
 #include "tpe_ship.h"
 
@@ -49,14 +50,16 @@ main(int argc, char **argv){
 	tpe->event 	= tpe_event_init(tpe);
 	tpe->msg   	= tpe_msg_init(tpe);
 	tpe->comm  	= tpe_comm_init(tpe);
+	
 	tpe->sequence 	= tpe_sequence_init(tpe);
 
 	tpe->obj   	= tpe_obj_init(tpe);
 	tpe->orders  	= tpe_orders_init(tpe);
+	tpe->resources 	= tpe_resources_init(tpe);
 	tpe->board 	= tpe_board_init(tpe);
-	tpe->gui	= tpe_gui_init(tpe);
 	tpe->ship	= tpe_ship_init(tpe);
 
+	tpe->gui	= tpe_gui_init(tpe);
 	tpe->ai 	= ai_smith_init(tpe);
 
 	ecore_main_loop_begin();
