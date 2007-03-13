@@ -14,26 +14,104 @@
  * Design Updates
  	- Waiting on bugs in the server
 	- Otherwise should already work
- * UI for messages
- * UI for orders
- * Planet popup improve
- * Planet display
+ * [UI] messages
+ * [UI] orders
+ * [UI] Planet popup improve
+ * [UI] Planet display
  * Connect handle failures
- * System display
- * Ship display
- * Display systems with fleets
- * Nail some fixmes (49 at last count)
+ * [UI] System display
+ * [UI] Ship display
+ * [UI] Display systems with fleets
+ * Nail some fixmes (46 at last count)
  * Board/Messages: Handle object references
  * Command line:
  	- Disable AI
 	- Disable GUI
- * Handle Resources
  * Improve some of the data structures
  	- Lists could become hashes in many places
  * Fix map zoom and pan
  * MTSec support
  	- Design
  * Start looking at TP04 support
+ * Resiliance - Double Initialisation
+	- tpe_board
+	- tpe_comm
+	- tpe_event
+	- tpe_gui
+	- tpe_msg
+	- tpe_obj
+	- tpe_orders
+	- tpe_resource
+	- tpe_sequence
+	- tpe_ship
+	- tpe_util
+	- ai_smith
+	- ai_util 
+ * Malloc Safety
+ 	- tpe
+	- tpe_board
+	- tpe_comm
+	- tpe_event
+	- tpe_gui
+	- tpe_msg
+	- tpe_obj
+	- tpe_orders
+	- tpe_resource
+	- tpe_sequence
+	- tpe_ship
+	- tpe_util
+	- ai_smith
+	- ai_util 
+ * Realloc Safety
+ 	- tpe
+	- tpe_board
+	- tpe_comm
+	- tpe_event
+	- tpe_gui
+	- tpe_msg
+	- tpe_obj
+	- tpe_orders
+	- tpe_resource
+	- tpe_sequence
+	- tpe_ship
+	- tpe_util
+	- ai_smith
+	- ai_util 
+ * Leak testing
+ * Ecore error testing
+ 	- tpe
+	- tpe_board
+	- tpe_comm
+	- tpe_event
+	- tpe_gui
+	- tpe_msg
+	- tpe_obj
+	- tpe_orders
+	- tpe_resource
+	- tpe_sequence
+	- tpe_ship
+	- tpe_util
+	- ai_smith
+	- ai_util 
+ * Evas error testing
+ 	- tpe_gui
+ * Edje error testing
+ 	- tpe_gui
+ * [API] Use tpe, tpe_gui or AI for passed structures, not internal tpe_* 
+ 	- tpe
+	- tpe_board
+	- tpe_comm
+	- tpe_event
+	- tpe_gui
+	- tpe_msg
+	- tpe_obj
+	- tpe_orders
+	- tpe_resource
+	- tpe_sequence
+	- tpe_ship
+	- tpe_util
+	- ai_smith
+	- ai_util
  * Documentation.
 	- tpe
 	- tpe_board
