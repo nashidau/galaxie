@@ -103,10 +103,13 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		free(o->name);
 		o->name = NULL;
 	}
-
-	for (i = 0 ; i < o->norders ; i ++)
-		tpe_orders_order_free(o->orders[i]);
-	if (o->orders) free(o->orders);
+	
+	if (o->orders){
+		for (i = 0 ; i < o->norders ; i ++)
+			if (o->orders[i])
+				tpe_orders_order_free(o->orders[i]);
+		free(o->orders);
+	}
 
 	n = tpe_util_parse_packet(edata, "iislllllllaailiip",
 			&o->oid, &o->type, &o->name,
@@ -127,7 +130,10 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 	}
 
 	/* Add slots for the orders */
-	o->orders = calloc(o->norders, sizeof(struct order *));
+	if (o->norders)
+		o->orders = calloc(o->norders, sizeof(struct order *));
+	else
+		o->orders = NULL;
 
 	/* Handle extra data for different types */
 	switch (o->type){
@@ -299,9 +305,11 @@ tpe_obj_cleanup(struct tpe *tpe, struct object *o){
 	if (o->name) free(o->name);
 	if (o->children) free(o->children);
 	if (o->ordertypes) free(o->ordertypes);
-	for (i = 0 ; i < o->norders ; i ++)
-		tpe_orders_order_free(o->orders[i]);
-	if (o->orders) free(o->orders);
+	if (o->orders){
+		for (i = 0 ; i < o->norders ; i ++)
+			tpe_orders_order_free(o->orders[i]);
+		free(o->orders);
+	}
 	
 	if (o->fleet){
 		if (o->fleet->ships) free(o->fleet->ships);

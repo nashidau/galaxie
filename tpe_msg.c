@@ -397,7 +397,8 @@ tpe_msg_send(struct tpe_msg *msg, const char *msgtype,
 	buf[3] = htonl(len);
 	memcpy(buf + 4, data, len);
 
-	printf("Sending Seq %d Type %d Len: %d [%p]\n",msg->seq,type,len,cb);
+	printf("Sending Seq %d Type %d [%s] Len: %d [%p]\n",msg->seq,type,msgtype,
+	len,cb);
 	ecore_con_server_send(msg->svr, buf, len + HEADER_SIZE);
 
 	free(buf);

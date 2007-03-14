@@ -96,7 +96,7 @@ tpe_orders_order_desc_updated(struct tpe *tpe, uint32_t id){
 	if (desc)
 		return desc->updated;
 	else
-		return 0;
+		return UINT32_MAX;
 }
 
 struct order_desc *
@@ -240,8 +240,10 @@ tpe_orders_msg_order(void *data, int type, void *event){
 
 int
 tpe_orders_order_free(struct order *order){
-	free(order->resources);
-	free(order);
+	if (order){
+		free(order->resources);
+		free(order);
+	}
 	return 0;
 }
 

@@ -91,9 +91,12 @@ smith_order_planet(void *data, int type, void *event){
 
 	printf("$ Smith: Order for %s\n",o->name);
 
-	if (build_id == -1)
+	if (build_id == -1){
 		build_id = tpe_order_get_type_by_name(smith->tpe, build_order);
-	assert(build_id != -1);
+		/* FIXME: Should requeue or something */
+		if (build_id == -1)
+			return 1;
+	}
 
 	tpe_msg_send_format(smith->tpe->msg, "MsgProbeOrder",
 			smith_order_insert_cb, smith,
@@ -173,7 +176,7 @@ smith_order_fleet(void *data, int type, void *event){
 	const char *designtype;
 	int i;
 
-	printf("$ Smith: Fleet for %s\n",o->name);
+	printf("$ Smith: Orders for Fleet %s\n",o->name);
 
 	/* Smith only cares about frigates... All others are beneath
 	 * 	his notice */

@@ -79,11 +79,10 @@ tpe_ship_design_name_get(struct tpe *tpe, uint32_t design){
 uint64_t 
 tpe_ship_design_updated_get(struct tpe *tpe, uint32_t design){
 	struct design *d;
-
 	d = tpe_ship_design_get(tpe,design);
 	if (d)
 		return d->updated;
-	return 0;
+	return UINT32_MAX;
 }
 
 static int 
