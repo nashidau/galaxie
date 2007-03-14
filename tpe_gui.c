@@ -79,8 +79,10 @@ static int tpe_gui_new_turn(void *data, int eventid, void *event);
 static int tpe_gui_object_update(void *data, int eventid, void *event);
 static int tpe_gui_object_delete(void *data, int eventid, void *event);
 
+/* Connection events */
+static int tpe_gui_connected_handler(void *data, int eventid, void *event);
 
-
+/* Board gui events */
 static int tpe_gui_board_update(void *data, int eventid, void *event);
 static void board_mouse_in(void *data, Evas *e, Evas_Object *obj, void *event);
 static void board_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event);
@@ -160,6 +162,9 @@ tpe_gui_init(struct tpe *tpe){
 	tpe_event_handler_add(gui->tpe->event, "BoardChanged",
 			tpe_gui_board_update, gui);
 
+	tpe_event_handler_add(gui->tpe->event, "Connected",
+			tpe_gui_connected_handler, gui);
+
 	tpe_event_handler_add(gui->tpe->event, "NewTurn",
 			tpe_gui_new_turn, gui);
 
@@ -193,6 +198,15 @@ tpe_gui_edje_splash_connect(void *data, Evas_Object *o,
 	//tpe_comm_connect(tpe->comm, "10.0.0.1", 6923, "nash", "password");
 	tpe_comm_connect(tpe->comm, "tranquillity.nash.id.au", 6923, "nash", "password");
 
+}
+
+
+static int
+tpe_gui_connected_handler(void *data, int eventid, void *event){
+	struct tpe_gui *gui;
+
+	gui = data;
+
 	/* Create the map screen */
 	evas_object_del(gui->main);
 	gui->main = edje_object_add(gui->e);
@@ -209,8 +223,9 @@ tpe_gui_edje_splash_connect(void *data, Evas_Object *o,
 	edje_object_file_set(gui->popup, "edje/basic.edj", "StarPopup");
 	evas_object_resize(gui->popup,100,100);
 	evas_object_layer_set(gui->popup, 1);
-}
 
+	return 1;
+}
 
 
 static int

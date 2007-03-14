@@ -38,7 +38,7 @@ tpe_sequence_init(struct tpe *tpe){
 	tpeseq->seqs = ecore_list_new();
 
 	tpe_event_handler_add(tpe->event,"NewTurn", tpe_sequence_new_turn, tpe);
-	tpe_event_handler_add(tpe->event,"MsgLogin",tpe_sequence_new_turn, tpe);
+	tpe_event_handler_add(tpe->event,"Connected",tpe_sequence_new_turn, tpe);
 
 	return tpeseq;
 }

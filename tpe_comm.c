@@ -40,7 +40,6 @@ struct tpe_comm {
 	const char *user;
 	const char *pass;
 
-
 	struct connect *connect;
 };
 
@@ -111,7 +110,7 @@ tpe_comm_connect(struct tpe_comm *comm, const char *server, int port,
 	tpe_msg_connect(tpe->msg, server, port, 0,
 			tpe_comm_socket_connect, comm);
 
-	tpe_event_send(tpe->event, "ConnectionStart", connect, 
+	tpe_event_send(tpe->event, "ConnectStart", connect, 
 			tpe_event_nofree, NULL);
 
 	return 1;
@@ -165,7 +164,7 @@ tpe_comm_logged_in(void *data, const char *msgtype, int len, void *mdata){
 
 	tpe_msg_send(msg, "MsgGetTimeRemaining", 0, 0,0,0);
 
-	/* FIXME: Need a object to handle these */
+	/* FIXME: Need a class to handle these */
 	buf[0] = htonl(1);	/* One player to get */
 	buf[1] = htonl(0); 	/* 0 = Myself */
 	tpe_msg_send(msg, "MsgGetPlayerData", tpe_comm_msg_player_id, tpe, 
@@ -173,7 +172,8 @@ tpe_comm_logged_in(void *data, const char *msgtype, int len, void *mdata){
 
 	ecore_timer_add(5, tpe_comm_get_time, msg);
 
-	tpe_event_send(tpe->event, "Connected", comm->connected, 
+	/* The rest of the system know */
+	tpe_event_send(tpe->event, "Connected", comm->connect, 
 			tpe_event_nofree, NULL);
 
 	return 0;
