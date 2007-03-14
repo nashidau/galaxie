@@ -294,8 +294,8 @@ smith_planet_colonised(void *data, int type, void *event){
 	tpe_orders_object_move_object(smith->tpe, colfleet, SLOT_LAST, dest);
 	tpe_orders_object_colonise(smith->tpe, colfleet, SLOT_LAST, dest);
 	
+	dest->ai = calloc(1,sizeof(struct ai_obj));
 	dest->ai->fleet = o->oid;
-
 
 	return 1;	
 }
