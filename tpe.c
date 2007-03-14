@@ -86,6 +86,10 @@ main(int argc, char **argv){
 	if (tpe == NULL) exit(1);
 
 	opt = parse_args(argc, argv);
+	if (opt == NULL){
+		printf("Error parsing arguments\n");
+		exit(1);
+	}
 
 	tpe->event 	= tpe_event_init(tpe);
 	tpe->msg   	= tpe_msg_init(tpe);
@@ -120,6 +124,8 @@ parse_args(int argc, char **argv){
 	int i,j;
 
 	opt = calloc(1,sizeof(struct startopt));
+	if (opt == NULL) return NULL;
+
 	/* Set some defaults */
 	opt->usegui = 1; /* Default */ /* FIXME: Compile constant */
 	opt->ai = AI_SMITH; /* FIXME: Compile constant */

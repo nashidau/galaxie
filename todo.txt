@@ -22,11 +22,17 @@
  * [UI] System display
  * [UI] Ship display
  * [UI] Display systems with fleets
- * Nail some fixmes (46 at last count)
+ * Nail some fixmes (50 at last count)
  * Board/Messages: Handle object references
  * Command line:
- 	- Disable AI
-	- Disable GUI
+ 	- Process arguments for server & game support
+ * Support mulitple games
+ * Protocol support for
+ 	- SSL
+	- HTTP
+	- HTTPS
+ * Metaserver queries
+ * Avahi/zeroconf queries
  * Improve some of the data structures
  	- Lists could become hashes in many places
  * Fix map zoom and pan
