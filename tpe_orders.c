@@ -51,7 +51,6 @@ struct order {
 	
 };
 
-static int tpe_orders_msg_order_description_ids(void *, int type, void *data);
 static int tpe_orders_msg_order_description(void *, int type, void *data);
 static int tpe_orders_msg_order(void *, int type, void *data);
 
@@ -133,43 +132,6 @@ tpe_order_get_name_by_type(struct tpe *tpe, uint32_t type){
 			return od->name;
 	}
 	return NULL;
-}
-
-static int
-tpe_orders_msg_order_description_ids(void *data, int type, void *edata){
-	struct tpe *tpe = data;
-	struct order_desc *od;
-	int *event = edata;
-	int noids;
-	struct ObjectSeqID *oids = 0;
-	int *toget;
-	int i,n;
-	int seqkey;
-	int more;
-
-
-	event += 4;
-
-	tpe_util_parse_packet(event, "iiO", &seqkey, &more, &noids,&oids);
-
-	toget = malloc(noids * sizeof(int) + 4);
-	for (i  = 0 , n = 0; i < noids; i ++){
-		od = tpe_order_orders_get_desc_by_id(tpe,oids[i].oid);
-		if (od == NULL || od->updated < oids[i].updated)
-			toget[++n] = htonl(oids[i].oid);
-	}
-
-	if (n > 0){
-		toget[0] = htonl(n);
-		tpe_msg_send(tpe->msg, "MsgGetOrderDescription" /* 8 */, 
-				NULL, NULL, 
-				toget, (n + 1) * sizeof(uint32_t));
-	}
-
-	free(toget);
-	free(oids);
-
-	return 1;
 }
 
 static int

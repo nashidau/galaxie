@@ -39,6 +39,9 @@ struct tpe_comm {
 	int port;
 	const char *user;
 	const char *pass;
+
+
+	struct connect *connect;
 };
 
 int tpe_comm_connect(struct tpe_comm *comm, const char *server, int port, 
@@ -74,6 +77,9 @@ tpe_comm_init(struct tpe *tpe){
 			tpe_comm_time_remaining, tpe);
 
 	tpe_event_type_add(tpe->event, "NewTurn");
+	tpe_event_type_add(tpe->event, "ConnectStart");
+	tpe_event_type_add(tpe->event, "ConnectUpdate");
+	tpe_event_type_add(tpe->event, "Connected");
 
 
 	return comm;
@@ -84,6 +90,7 @@ int
 tpe_comm_connect(struct tpe_comm *comm, const char *server, int port, 
 			const char *user, const char *pass){
 	struct tpe *tpe;
+	struct connect *connect;
 	
 	tpe = comm->tpe;
 	assert(tpe);
@@ -93,8 +100,19 @@ tpe_comm_connect(struct tpe_comm *comm, const char *server, int port,
 	comm->user = strdup(user);
 	comm->pass = strdup(pass);
 
+	connect = calloc(1,sizeof(struct connect));
+	connect->server = comm->server;
+	connect->user = comm->user;
+	connect->game = "Default";
+	connect->status = CONSTATUS_CONNECTING;
+
+	comm->connect = connect;
+
 	tpe_msg_connect(tpe->msg, server, port, 0,
 			tpe_comm_socket_connect, comm);
+
+	tpe_event_send(tpe->event, "ConnectionStart", connect, 
+			tpe_event_nofree, NULL);
 
 	return 1;
 }
@@ -109,8 +127,6 @@ tpe_comm_socket_connect(void *data, struct tpe_msg_connection *mcon){
 	comm = data;
 	tpe = comm->tpe;
 	msg = tpe->msg;
-
-	printf("We have a socket... now to do something with it\n");
 
 	tpe_msg_send_strings(msg,"MsgConnect", tpe_comm_may_login, comm,
 				"EClient", NULL);
@@ -142,6 +158,7 @@ tpe_comm_logged_in(void *data, const char *msgtype, int len, void *mdata){
 	struct tpe_msg *msg;
 	int buf[3];
 
+	/* FIXME: Need to check the access worked */
 	comm = data;
 	tpe = comm->tpe;
 	msg = tpe->msg;
@@ -154,7 +171,10 @@ tpe_comm_logged_in(void *data, const char *msgtype, int len, void *mdata){
 	tpe_msg_send(msg, "MsgGetPlayerData", tpe_comm_msg_player_id, tpe, 
 			buf, 8);
 
-	ecore_timer_add(5 , tpe_comm_get_time, msg);
+	ecore_timer_add(5, tpe_comm_get_time, msg);
+
+	tpe_event_send(tpe->event, "Connected", comm->connected, 
+			tpe_event_nofree, NULL);
 
 	return 0;
 }

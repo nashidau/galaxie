@@ -11,6 +11,10 @@ From tpe_obj:
 
 From tpe_comm:
  * NewTurn(nothing): A new turn has started
+ * ConnectStart(struct connect *): Start connection to a server.
+ * ConnectUpdate(struct connect *): Update about connection process
+ 		(progress - in connection and hte like)
+ * Connected(struct connect *): Have been connected to a server
 
 From tpe_board:
  * BoardUpdated(struct board_update): A messae board has supdated in some way

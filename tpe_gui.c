@@ -212,6 +212,7 @@ tpe_gui_edje_splash_connect(void *data, Evas_Object *o,
 }
 
 
+
 static int
 tpe_gui_time_remaining(void *guip, int type, void *eventd){
 	struct tpe_gui *gui;
