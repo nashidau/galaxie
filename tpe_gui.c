@@ -52,6 +52,7 @@ struct tpe_gui {
 
 	/* Window for message */
 	Evas_Object *messagebox;
+
 };
 
 struct tpe_gui_obj {
@@ -66,7 +67,7 @@ struct tpe_gui_obj {
 enum {
 	WIDTH = 640,
 	HEIGHT = 480,
-	DEFAULT_ZOOM = 8388608,
+	DEFAULT_ZOOM = 1 << 22,
 };
 
 static void tpe_gui_edje_splash_connect(void *data, Evas_Object *o, 
@@ -139,7 +140,12 @@ tpe_gui_init(struct tpe *tpe, const char *theme, unsigned int fullscreen){
 	evas_object_move(gui->background, 0,0);
 	evas_object_show(gui->background);
 	evas_object_layer_set(gui->background,-100);
-	evas_object_resize(gui->background,WIDTH,HEIGHT);
+	if (fullscreen){
+		Evas_Coord w,h;
+		ecore_evas_geometry_get(gui->ee, NULL, NULL, &w, &h);
+		evas_object_resize(gui->background, w, h);
+	} else 
+		evas_object_resize(gui->background,WIDTH,HEIGHT);
 
 	gui->main = edje_object_add(gui->e);
 	edje_object_file_set(gui->main,"edje/basic.edj", "Splash");
@@ -192,14 +198,7 @@ tpe_gui_edje_splash_connect(void *data, Evas_Object *o,
 	tpe = data;
 	gui = tpe->gui;
 
-	//tpe_comm_connect(tpe->comm, "localhost", 6923, "nash", "password");
-	if (getenv("USER2")){
-		printf("Pants connect!!!\n");
-		tpe_comm_connect(tpe->comm, "tranquillity.nash.id.au", 6923, "elvis", "password");
-	} else
-	//tpe_comm_connect(tpe->comm, "10.0.0.1", 6923, "nash", "password");
 	tpe_comm_connect(tpe->comm, "tranquillity.nash.id.au", 6923, "nash", "password");
-
 }
 
 
@@ -568,11 +567,14 @@ map_key_down(void *data, Evas *e, Evas_Object *obj, void *event){
 	Evas_Event_Key_Down *key = event;
 	struct tpe_gui *gui = data;
 
-	if (strcmp(key->keyname, "equal") == 0)
-		gui->map.zoom /= 2; /* FIXME: Sanity check */
-	else if (strcmp(key->keyname, "minus") == 0)
-		gui->map.zoom *= 2; /* FIXME: Sanity check */
-	else if (strcmp(key->keyname, "Left") == 0)
+	/* FIXME: Need to recenter as I zoom in */
+	if (strcmp(key->keyname, "equal") == 0){
+		if (gui->map.zoom > 4)
+			gui->map.zoom >>= 1;
+	} else if (strcmp(key->keyname, "minus") == 0){
+		if (gui->map.zoom < (1LL << 60))
+			gui->map.zoom <<= 1;
+	} else if (strcmp(key->keyname, "Left") == 0)
 		gui->map.left += 100;	
 	else if (strcmp(key->keyname, "Right") == 0)
 		gui->map.left -= 100;	
