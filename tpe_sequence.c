@@ -132,12 +132,24 @@ tpe_sequence_handle_oids(void *udata, int type, void *event){
 	int noids;
 	struct ObjectSeqID *oids = NULL;
 	int64_t updated;
+	int len;
+	int expectedlen;
 
 	seq = udata;
 
-	tpe_util_parse_packet(event, "iiiiiiO", NULL, NULL, NULL, NULL,
+	tpe_util_parse_packet(event, "iiiiiiO", NULL, NULL, NULL, &len,
 			&seqkey, &more, &noids,&oids);
 	seq->position += noids;
+	expectedlen = sizeof(int32_t) * 3 + 
+		(noids * (sizeof(uint64_t) + sizeof(int32_t)));
+
+	if (len != expectedlen){
+		printf("Invalid sequence message\n");
+		printf("Got %d bytes - Expected %d (Seq %d, #Oid %d More %d)\n",
+				len, expectedlen, seqkey, noids, more);
+		exit(1); /* FIXME: Handle gracefully */
+		return 0; /* Packet damaged */
+	}	
 
 	toget = malloc((noids + 1) * sizeof(int));
 	for (i = 0 , n = 0; i < noids ; i ++){

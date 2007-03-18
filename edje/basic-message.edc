@@ -1,0 +1,171 @@
+
+/* Message Box
+Displays a single message.
+    < Title Turn %d >
+    Body
+    Links...
+
+Window contains:
+    Title   Text title (evas_text)
+    Turn:   Integer - the turn the message was sent on
+    Body:   A textbox for the message body
+Should also contain links to referenced objects 
+
+Can emit:
+    MessageNext
+    MessagePrev
+*/
+styles {
+    style {
+	name: "message_style";
+	base: "font=Edje-Vera font_size=10 align=left color=#fff text_class=tb_plain wrap=word";
+	tag:  "br" "\n";
+    }
+}
+
+
+
+group {
+    name: "MessageBox";
+    min: 50 50;
+    max: 1000 1000;
+    parts {
+	part {
+	    name: "background";
+	    type: IMAGE;
+	    description {
+		state: "default" 0.0;
+		image {
+		    normal: "messagebox-bg.png";
+		}
+		color: 0 0 0 200;
+	    }
+	}
+	part {
+	    name: "Title";
+	    type: TEXT;
+	    description {
+		state: "default" 0.0;
+		rel1 {
+		    relative: 0.0 0.0;
+		    offset: 10 5;
+		    to: "background";
+		}
+		rel2 {
+		    relative: 1.0 0.0;
+		    offset: 2 22;
+		    to: "background";
+		}
+		text {
+		    text:     "<No Title>";
+		    font:     "Vera";
+		    size:     10;
+		    min:      1 1;
+		    align:    0.5 1.0;
+		}
+	    }
+	}
+	part {
+	    name: "Body";
+	    type: TEXTBLOCK;
+	    description {
+		state: "default" 0.0;
+		rel1 { 
+		    relative: 0.0 0.0;
+		    offset: 10 25;
+		    to: "background";
+		}
+		rel2 {
+		    relative: 1.0 1.0;
+		    offset: -10 -15;
+		    to: "background";
+		}
+		text {
+		    style: "message_style";
+		    min:	0 1;
+		}
+	    }
+	}
+    }
+}
+
+
+/*
+* The message board: Has two states:
+- Normal (default)
+- New Messaages (NewMessage)
+*/
+group {
+name: "Board";
+min: 10 10;
+max: 20 20;
+parts {
+    part {
+	name: "mailbox";
+	type: IMAGE;
+	description {
+	    state: "default" 0.0;
+	    rel1 {
+		relative: 0 0;
+		offset: 0 0;
+	    }
+	    rel2 {
+		relative: 1.0 1.0;
+		offset: -1 -1;
+	    }
+	    image {
+		normal: "mailbox.png";
+	    }
+	}
+
+	description {
+	    state: "NewMessage" 0.0;
+	    inherit: "default" 0.0;
+	}
+	description {
+	    state: "NewMessage" 1.0;
+	    inherit: "default" 0.0;
+	    color: 255 0 0 255;
+	}
+    } 
+    part {
+	name: "Text";
+	type: TEXT;
+	effect: SOFT_SHADOW;
+	description {
+	    state: "default"  0.0;
+	    rel1 {
+		relative: 0.0 0.0;
+		offset: 0 0;
+	    }
+	    rel2 {
+		relative: 1.0 1.0;
+		offset: -1 -1;
+	    }
+	    color: 0 0 0 255;
+	    color3: 128 255 128 150;
+	    text {
+		text: "0/0
+		font: "Vera";
+		size: 16;
+		min: 1 1;
+		align: 1.0 1.0;
+	    }
+	}
+    }
+
+}
+
+}
+
+
+
+program {
+    name, "animate_box";
+    signal, "show";
+    action, STATE_SET "NewMessage" 1.0;
+    transition, LINEAR 5.0;
+    target, "mailbox";
+}
+
+/* vim:set sw=4 sts=4 syn=c: */

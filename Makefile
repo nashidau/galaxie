@@ -25,10 +25,11 @@ AIS=			\
 
 BASICTHEME=			\
 	edje/basic.edc		\
+	edje/basic-message.edc  \
 	edje/basic-stars.edc
 
 
-EDJE=	edje/basic.edj edje/background.edj
+EDJE=	edje/basic.edj 
 EDJE_FLAGS=-id edje/images
 
 
