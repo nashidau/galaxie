@@ -37,7 +37,8 @@ struct startopt {
 	enum opt_ai ai;
 
 	/* GUI options */
-	int usegui;
+	unsigned int usegui :1; 
+	unsigned int fullscreen :1; 
 	const char *theme;
 };
 
@@ -48,6 +49,7 @@ static int parse_server(struct startopt *opt, int i, char **args);
 static int parse_ai(struct startopt *opt, int i, char **args);
 static int parse_no_ai(struct startopt *opt, int i, char **args);
 static int parse_gui(struct startopt *opt, int i, char **args);
+static int parse_fullscreen(struct startopt *opt, int i, char **args);
 static int parse_theme(struct startopt *opt, int i, char **args);
 static int parse_usage(struct startopt *opt, int i, char **args);
 static const char *parse_option(char **args, int *i);
@@ -67,6 +69,7 @@ struct args {
 	{ "--no-gui",   parse_gui      },
 	{ "--theme",    parse_theme    },
 	{ "-t",         parse_theme    },
+	{ "--fullscreen", parse_fullscreen },
 	{ "--usage",    parse_usage    },
 	{ "--help",     parse_usage    },
 	{ "-h",    	parse_usage    },
@@ -104,9 +107,9 @@ main(int argc, char **argv){
 	tpe->ship	= tpe_ship_init(tpe);
 
 	if (opt->usegui)
-		tpe->gui	= tpe_gui_init(tpe);
+		tpe->gui = tpe_gui_init(tpe, opt->theme, opt->fullscreen);
 	if (opt->ai == AI_SMITH)
-		tpe->ai 	= ai_smith_init(tpe);
+		tpe->ai = ai_smith_init(tpe);
 
 	if (opt->server && opt->username && opt->server)
 		tpe_comm_connect(tpe->comm, opt->server, 6923, opt->username,
@@ -180,6 +183,11 @@ parse_no_ai(struct startopt *opt, int i, char **args){
 int 
 parse_gui(struct startopt *opt, int i, char **args){
 	opt->usegui = 0;	
+	return i;
+}
+int 
+parse_fullscreen(struct startopt *opt, int i, char **args){
+	opt->fullscreen = 1;	
 	return i;
 }
 

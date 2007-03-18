@@ -105,7 +105,7 @@ static void tpe_gui_redraw(struct tpe_gui *gui);
 static const char *star_summary(struct tpe *tpe, struct object *object);
 
 struct tpe_gui *
-tpe_gui_init(struct tpe *tpe){
+tpe_gui_init(struct tpe *tpe, const char *theme, unsigned int fullscreen){
 	struct tpe_gui *gui;
 
 	gui = calloc(1,sizeof(struct tpe_gui));
@@ -125,6 +125,8 @@ tpe_gui_init(struct tpe *tpe){
 	ecore_evas_title_set(gui->ee, "Thousand Parsec (E-Client)");
 	ecore_evas_borderless_set(gui->ee, 0);
 	ecore_evas_show(gui->ee);
+	if (fullscreen)
+		ecore_evas_fullscreen_set(gui->ee, 1);
 	gui->e = ecore_evas_get(gui->ee);
 
 	evas_font_path_append(gui->e, "data/");
@@ -580,6 +582,10 @@ map_key_down(void *data, Evas *e, Evas_Object *obj, void *event){
 		gui->map.top -= 100;	
 	else if (strcmp(key->keyname, "Home") == 0){
 		/* FIXME: Find homeworld, and center map */
+	
+	} else if (strcmp(key->keyname, "F11") == 0){
+		ecore_evas_fullscreen_set(gui->ee,
+				!ecore_evas_fullscreen_get(gui->ee));
 	} else {
 		return;
 	}
@@ -679,6 +685,11 @@ static void board_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event){
  * Handler for someone clicking on a MsgBoard Icon
  *
  * Opens on first unread message 
+ *
+ * @param data Is general TPE GUI pointer 
+ * @param e Evas pointer
+ * @param obj Object
+ * @param event Mouse Down Event data
  */
 static void 
 board_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
