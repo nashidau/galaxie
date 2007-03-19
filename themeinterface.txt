@@ -8,3 +8,5 @@ Message Window
 			Sets state on "MailBox" to "default";
 			
 
+Fleets (Part Name "Fleet")
+	Have a text property called "Name" which is the name of the fleet

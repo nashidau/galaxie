@@ -339,7 +339,7 @@ tpe_gui_object_update(void *data, int eventid, void *event){
 			evas_object_show(go->obj);
 			evas_object_move(go->obj,x + gui->map.left,
 					y + gui->map.top);
-
+			edje_object_part_text_set(go->obj, "Name", obj->name);
 		}
 	}
 
