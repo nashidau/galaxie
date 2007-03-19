@@ -49,6 +49,12 @@ sparse:
 
 edje/basic.edj: ${BASICTHEME}
 
+tags:
+	cscope -R -b -I/usr/local/include 			\
+		-s.						\
+		-s/home/nash/work/e17--cvs/libs/evas/src/lib 	\
+		-s/home/nash/work/e17--cvs/libs/edje/src/lib	\
+		-s/home/nash/work/e17--cvs/libs/ecore/src/lib
 
 tpe_msg.o : tpe_msg.h tpe.h
 ai_smith.o: tpe_obj.h tpe.h tpe_event.h tpe_msg.h tpe_orders.h tpe_ship.h \
