@@ -1,0 +1,103 @@
+
+group {
+    name: "ObjectInfo";
+    min: 50 50;
+    parts {
+	part { 
+	    /* FIXME: This should be a nice image */
+	    name: "background";
+	    mouse_events: 1;
+	    type:   RECT;
+	    dragable {
+		x: 1 1 0;
+		y: 1 1 0;
+	    }
+	    description {
+		state:	"default" 0.0;
+		rel1 {
+		    relative: 0.0 0.0;
+		    offset: 0 0 ;
+		}
+		rel2 {
+		    relative: 1.0 1.0;
+		    offset: -1 -1;
+		}
+		color: 21 21 21 221;
+	    }
+	}
+	part {
+	    name: "image";
+	    mouse_events: 0;
+	    type: SWALLOW;
+	    description {
+		state: "default" 0.0;
+		rel1 {
+		    relative: 0.0 0.0;
+		    offset: 0 0;
+		    to: "background";
+		}
+		rel2 {
+		    relative: 0.0 0.0;
+		    offset: 32 32;
+		    to: "background";
+		}
+		color: 12 12 12 255;
+	    }
+	}
+	part {
+	    name: "Name";
+	    mouse_events: 0;
+	    type: TEXT;
+	    description {
+		state: "default" 0.0;
+		rel1 {
+		    relative: 1.0 0.0;
+		    offset: 3 2;
+		    to_x: "image";
+		    to_y: "background";
+		}
+		rel2 {
+		    relative: 1.0 0.0;
+		    offset: 3 14;
+		    to: "background";
+		}
+		text {
+		    text:     "Title";
+		    font:     "Vera";
+		    size:     12;
+		    min:      1 1;
+		    align:    0.0 0.5;
+		}
+	    }
+	}
+	part {
+	    name: "Owner";
+	    mouse_events: 0;
+	    type: TEXT;
+	    description {
+		state: "default" 0.0;
+		rel1 {
+		    relative: 0.0 1.0;
+		    offset: 0 2;
+		    to: "Name";
+		}
+		rel2 {
+		    relative: 1.0 1.0;
+		    offset: 0 12;
+		    to: "Name";
+		}
+		text {
+		    text: "Owner";
+		    font: "Vera";
+		    size: 10;
+		    min: 1 1;
+		    align: 0.0 0.5;
+		}
+	    }
+	}
+    }		    
+
+}
+
+
+/* vim:set sw=4 sts=4 : */

@@ -25,6 +25,7 @@ AIS=			\
 
 BASICTHEME=			\
 	edje/basic.edc		\
+	edje/basic-info.edc	\
 	edje/basic-menu.edc	\
 	edje/basic-message.edc	\
 	edje/basic-stars.edc
@@ -46,6 +47,9 @@ doc:
 
 sparse: 
 	sparse -Wall *.c
+
+testedje: ${EDJE}
+	edje ${EDJE}
 
 edje/basic.edj: ${BASICTHEME}
 

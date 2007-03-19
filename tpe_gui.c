@@ -50,6 +50,9 @@ struct tpe_gui {
 	 * delete */
 	Evas_Object *popup;
 
+	/* Board popups */
+	Evas_Object *boardpopup;
+
 	Ecore_List *visible;
 
 	Ecore_List *boards;
@@ -60,6 +63,8 @@ struct gui_board {
 	Evas_Object *obj;
 	uint32_t boardid;
 	int state;
+	const char *name;
+	const char *desc;
 };
 
 
@@ -240,6 +245,11 @@ tpe_gui_connected_handler(void *data, int eventid, void *event){
 	edje_object_file_set(gui->popup, "edje/basic.edj", "StarPopup");
 	evas_object_resize(gui->popup,100,100);
 	evas_object_layer_set(gui->popup, 1);
+
+	gui->boardpopup = edje_object_add(gui->e);
+	edje_object_file_set(gui->boardpopup,"edje/basic.edj", "BoardPopup");
+	evas_object_resize(gui->boardpopup, 200,200);
+	evas_object_layer_set(gui->boardpopup, 1);
 
 	return 1;
 }
@@ -580,17 +590,30 @@ star_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event){
  **/
 static void
 star_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
-	Evas_Event_Mouse_Down *mouse = event;
+	Evas_Object *o;
+	//Evas_Event_Mouse_Down *mouse = event;
 	struct tpe_gui_obj *go = data;
+	char buf[50];
 
 	tpe_obj_obj_dump(go->object);
 	
-	if (mouse->button == 1){
-			
-	} else if (mouse->button == 3){
-	
+	o = edje_object_add(go->gui->e);
+	edje_object_file_set(o,"edje/basic.edj", "ObjectInfo");
+	evas_object_move(o, rand() % 200, rand() % 200);
+	evas_object_resize(o, 64,64);
 
+	edje_object_part_text_set(o, "Name", go->object->name);
+	/* FIXME: Get the player name */
+	if (go->object->owner == -1)
+		edje_object_part_text_set(o, "Owner", "Unowned");
+	else if (go->object->owner == go->gui->tpe->player)
+		edje_object_part_text_set(o, "Owner", "Mine");
+	else {
+		snprintf(buf,50,"Other (%d)", go->object->owner);
+		edje_object_part_text_set(o, "Owner", buf);
 	}
+
+	evas_object_show(o);
 
 }
 static void
@@ -718,6 +741,11 @@ tpe_gui_board_update(void *data, int eventid, void *event){
 		evas_object_move(o, 0,20); /* FIXME: Want this on the right */
 		evas_object_resize(o,32,32);
 		board->state = BOARD_READ;	
+
+		if (update->name)
+			board->name = strdup(update->name);
+		if (update->desc)
+			board->desc = strdup(update->desc);
 	}
 	o = board->obj;
 
@@ -742,11 +770,40 @@ tpe_gui_board_update(void *data, int eventid, void *event){
 
 static void 
 board_mouse_in(void *data, Evas *e, Evas_Object *obj, void *event){
+	struct gui_board *board = data;
+	struct tpe_gui *gui;
+	Evas_Coord x,y,w,h,pw,ph,sw,sh,px,py;
+
+	assert(board);
+	
+	gui = board->gui;
+
+	edje_object_part_text_set(gui->boardpopup, "BoardTitle", board->name);
+	edje_object_part_text_set(gui->boardpopup, "BoardDescription", 
+			board->desc);
+
+	evas_object_geometry_get(gui->boardpopup,0,0,&pw,&ph);
+	evas_object_geometry_get(board->obj,&x,&y,&w,&h);
+	ecore_evas_geometry_get(gui->ee, NULL,NULL,&sw,&sh);
+
+	px = x + w;
+	py = y + (h / 2) - (ph / 2);
+	if (px + w > sw)
+		px = x - pw;
+	if (py < 0)
+		py = 0;
+	if (py > sh)
+		py = sh - ph;
+
+	evas_object_move(gui->boardpopup, px, py);
+	evas_object_show(gui->boardpopup);
+
 
 }
 static void 
 board_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event){
-
+	struct gui_board *board = data;
+	evas_object_hide(board->gui->boardpopup);
 }
 
 /**

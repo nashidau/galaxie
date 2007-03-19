@@ -18,6 +18,7 @@
  * [UI] orders
  * [UI] Planet popup improve
  * [UI] Object display
+ * [UI] Smart window placement
  * Connect handle failures
  * [UI] System display
  * [UI] Ship display

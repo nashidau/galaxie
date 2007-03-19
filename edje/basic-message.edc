@@ -258,6 +258,8 @@ group {
 	}
     }
 
+
+
     /* FIXME: Also should have a program to cause "NewMessages" to flash */
     program {
 	name, "new_messages";
@@ -274,6 +276,80 @@ group {
 	action, STATE_SET "default" 0.0;
 	transition, LINEAR 2.0;
 	target: "MailBox";
+    }
+}
+
+/* Popup for Boards */
+group {
+    name: "BoardPopup";
+    parts {
+	part {
+	    name: "background";
+	    type: IMAGE;
+	    mouse_events: 0;
+	    description {
+		state: "default" 0.0;
+		rel1 {
+		    relative: 0.0 0.0;
+		    offset: 0 0;
+		}
+		rel2 {
+		    relative: 1.0 1.0;
+		    offset: -1 -1;
+		}
+		image {
+		    normal: "starpopup-bg.png";
+		    border: 30 30 30 30;
+		}
+	    }
+	}
+	part {
+	    name: "BoardTitle";
+	    type: TEXT;
+	    mouse_events: 0;
+	    description {
+		state: "default" 0.0;
+		rel1 {
+		    relative: 0.0 0.0;
+		    offset: 5 5;
+		    to: "background";
+		}
+		rel2 {
+		    relative: 1.0 0.0;
+		    offset: -5 17;
+		    to: "background";
+		}
+		text {
+		    text:     "<No Title>";
+		    font:     "Vera";
+		    size:     12;
+		    min:      1 1;
+		    align:    0.5 1.0;
+		}
+	    }
+	}
+	part {
+	    name: "BoardDescription";
+	    type: TEXTBLOCK;
+	    mouse_events: 0;
+	    description {
+		state: "default" 0.0;
+		rel1 { 
+		    relative: 0.0 1.0;
+		    offset: 0 4;
+		    to: "BoardTitle";
+		}
+		rel2 {
+		    relative: 1.0 1.0;
+		    offset: -5 -5;
+		    to: "background";
+		}
+		text {
+		    style: "message_style";
+		    min:	0 1;
+		}
+	    }
+	}
     }
 }
 
