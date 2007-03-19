@@ -1,4 +1,5 @@
 #include <arpa/inet.h>
+#include <assert.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -90,9 +91,13 @@ static void board_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event);
 static void board_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event);
 
 /* Message Window event handlers */
-static void
-tpe_gui_edje_message_next(void *data, Evas_Object *o, const char *emission,
-		const char *source);
+static Evas_Object *tpe_gui_messagebox_add(struct tpe_gui *gui);
+static void tpe_gui_edje_message_change(void *data, Evas_Object *o, 
+			const char *emission, const char *source);
+static void tpe_gui_edje_messagebox_close(void *data, Evas_Object *o, 
+			const char *emission, const char *source);
+static void tpe_gui_messagebox_message_set(struct tpe_gui *gui, 
+			Evas_Object *messagebox, struct message *msg);
 
 /* Gui event handlers */
 static void star_mouse_in(void *data, Evas *e, Evas_Object *obj, void *event);
@@ -738,41 +743,77 @@ static void
 board_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 	struct tpe_gui *gui = data;
 	struct message *message;
+	Evas_Object *msgbox;
 
-	if (gui->messagebox == NULL){
-		Evas_Object *o;
-		gui->messagebox = o = edje_object_add(gui->e);
-		edje_object_file_set(o, "edje/basic.edj", "MessageBox");
-		evas_object_move(o, 20,20);
-		evas_object_resize(o, 200,150);
-		edje_object_signal_callback_add(gui->messagebox, "mouse,clicked,*", 
-				"Next", tpe_gui_edje_message_next, gui);
-	} 
-	evas_object_show(gui->messagebox);
-//	evas_object_event_callback_add(gui->messagebox, 
-//			EVAS_CALLBACK_MOUSE_DOWN, messagebox_mouse_down, board);
-	//evas_object_event_callback_add(gui->messagebox,  );
+	msgbox = tpe_gui_messagebox_add(gui);
 
 	/* FIXME: Check on screen */
 
 	/* FIXME: Fix hard coded board IDs here */
 	message = tpe_board_board_message_unread_get(gui->tpe, 1);
-	if (message != NULL){
-		tpe_board_board_meessage_read(gui->tpe, message);
-	} else {
+	if (message == NULL){
 		message = tpe_board_board_message_turn_get(gui->tpe,1);
 	}
-
+	
 	if (message == NULL){
-		evas_object_hide(gui->messagebox);
+		evas_object_del(msgbox);
 		return;
 	}
 
-
-	edje_object_part_text_set(gui->messagebox, "Title", message->title);
-	edje_object_part_text_set(gui->messagebox, "Body", message->body);
-
+	tpe_gui_messagebox_message_set(gui, msgbox, message);
 }
+
+/**
+ * Create a new mesage box.
+ *
+ * There can an unlimited number of message boxes at the moment.  
+ *
+ * This may need to be fixed - in particular, clicking on the board icon on
+ * the left shouldn't keep adding new ones.  Left clicks anyway.
+ *
+ * @param gui TPE Gui pointer
+ * @return New messagebox, or NULL on error.
+ */
+static Evas_Object *
+tpe_gui_messagebox_add(struct tpe_gui *gui){
+	Evas_Object *o;
+	
+	o = edje_object_add(gui->e);
+
+	edje_object_file_set(o, "edje/basic.edj", "MessageBox");
+	/* FIXME: Place intelligently */
+	evas_object_move(o, rand() % 400 ,rand() % 320);
+	evas_object_show(o);
+	evas_object_resize(o, 200,150);
+	edje_object_signal_callback_add(o,
+			"mouse,clicked,*", "Next", 
+			tpe_gui_edje_message_change, gui);
+	edje_object_signal_callback_add(o,
+			"mouse,clicked,*", "Prev", 
+			tpe_gui_edje_message_change, gui);
+	edje_object_signal_callback_add(o,
+			"mouse,clicked,*", "Close", 
+			tpe_gui_edje_messagebox_close, gui);
+
+	return o;
+}
+
+static void
+tpe_gui_messagebox_message_set(struct tpe_gui *gui, 
+		Evas_Object *messagebox, struct message *msg){
+	char buf[100];
+
+	snprintf(buf,100,"Message: %d Turn: %d", msg->slot, msg->turn);
+	edje_object_part_text_set(messagebox, "MessageNumber", buf);
+
+	edje_object_part_text_set(messagebox, "Title", msg->title);
+	edje_object_part_text_set(messagebox, "Body", msg->body);
+		
+	tpe_board_board_message_read(gui->tpe, msg);
+
+	evas_object_data_set(messagebox, "Message", msg);
+}
+
 
 /**
  * Mouse-click handler for mouse clicks in a message window.
@@ -782,15 +823,64 @@ board_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
  * Right button: (Next): Jump to next turn
  * 		Jump to first message in previous turn
  * 	
- * @param data Tpe structuture FIXME: Do I wnat this ?
+ * @param data GUI structuture
  * @param o The edje object
  * @param emission Signal name (mouse,click,N where N == button)
  * @param source "next" or "prev"
  */
 static void
-tpe_gui_edje_message_next(void *data, Evas_Object *o, const char *emission,
+tpe_gui_edje_message_change(void *data, Evas_Object *o, const char *emission,
 		const char *source){
-	printf("Got next click: %s %s\n",emission, source);
+	struct tpe_gui *gui = data;
+	struct message *msg;
+	int button;
+
+	msg = evas_object_data_get(o, "Message");
+	assert(msg);
+	if (msg == NULL) return;
+
+	if (strstr(emission, "2")){
+		printf("FIXME: Create new window\n");
+	}
+
+	if (strstr(emission,"3"))
+		button = 2;
+	else 
+		button = 1;
+	
+
+
+	if (strcmp(source,"Next") == 0){
+		if (button == 1)
+			msg = tpe_board_board_message_next(gui->tpe, msg);	
+		else 
+			printf("Not handled yet\n");
+	} else {
+		/* Previous */
+		if (button == 1)
+			msg = tpe_board_board_message_prev(gui->tpe, msg);	
+		else 
+			printf("Not handled yet\n");
+	}
+
+	tpe_gui_messagebox_message_set(gui, o, msg);
+
+	return;
 }
 
+/**
+ * Window close handler for message box window.
+ *
+ */
+static void 
+tpe_gui_edje_messagebox_close(void *data, Evas_Object *o, 
+			const char *emission, const char *source){
+	struct tpe_gui *gui = data;
+
+	/* FIXME: Need better handling of this */
+	if (gui->messagebox == o)
+		gui->messagebox = NULL;
+
+	evas_object_del(o);
+}
 

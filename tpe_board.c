@@ -291,6 +291,55 @@ tpe_board_board_message_turn_get(struct tpe *tpe, uint32_t id){
 }
 
 /**
+ * Gets the next message in the board.
+ *
+ * @param tpe Tpe structure
+ * @param message A valid message
+ * @return Next message, or the same message if last.  NULL on error.
+ */
+struct message *
+tpe_board_board_message_next(struct tpe *tpe, struct message *msg){
+	struct board *board;
+
+	if (tpe == NULL || msg == NULL) return NULL;
+
+	board = tpe_board_board_get_by_id(tpe, msg->board);
+	assert(board);
+	if (board == NULL) return NULL;
+
+	if (board->nmessages > msg->slot + 1)
+		return board->messages[msg->slot + 1];
+	else 
+		return msg;
+}
+
+/**
+ * Gets the previous message in the board.
+ *
+ * @param tpe Tpe structure
+ * @param message A valid message
+ * @return Previous message, or the same message if last.  NULL on error.
+ */
+
+struct message *
+tpe_board_board_message_prev(struct tpe *tpe, struct message *msg){
+	struct board *board;
+
+	if (tpe == NULL || msg == NULL) return NULL;
+
+	board = tpe_board_board_get_by_id(tpe, msg->board);
+	assert(board);
+	if (board == NULL) return NULL;
+
+	if (msg->slot > 0)
+		return board->messages[msg->slot - 1];
+	else 
+		return msg;
+
+
+}
+
+/**
  * Marks a message as read.
  *
  * If the message is already read, it has no affect.  Otherwise it triggers a
@@ -301,7 +350,7 @@ tpe_board_board_message_turn_get(struct tpe *tpe, uint32_t id){
  * @return 0 on success, a negative failure code otherwise.
  */
 int 
-tpe_board_board_meessage_read(struct tpe *tpe, struct message *msg){
+tpe_board_board_message_read(struct tpe *tpe, struct message *msg){
 	struct board *board;
 
 	if (tpe == NULL) return -1;

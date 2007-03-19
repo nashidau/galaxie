@@ -27,6 +27,7 @@ images {
     image: "messagebox-bg.png" COMP;
     image: "arrow-right-ugly.png" COMP;
     image: "arrow-left-ugly.png" COMP;
+    image: "window-close-ugly.png" COMP;
     image: "mailbox.png" COMP;
 }
 
@@ -39,6 +40,11 @@ group {
 	part {
 	    name: "background";
 	    type: IMAGE;
+	    mouse_events: 1;
+	    dragable {
+		x: 1 1 0;
+		y: 1 1 0;
+	    }
 	    description {
 		state: "default" 0.0;
 		image {
@@ -48,24 +54,50 @@ group {
 	    }
 	}
 	part {
+	    name: "MessageNumber";
+	    type: TEXT;
+	    mouse_events: 0;
+	    description {
+		state: "default" 0.0;
+		rel1 {
+		    relative: 0.0 0.0;
+		    offset: 5 1;
+		    to: "background";
+		}
+		rel2 {
+		    relative: 1.0 0.0;
+		    offset: -30 11;
+		    to: "background";
+		}
+		text {
+		    text:     "Message: N  Turn: N";
+		    font:     "Vera";
+		    size:     10;
+		    min:      1 1;
+		    align:    0.0 1.0;
+		}
+	    }
+	}
+
+	part {
 	    name: "Title";
 	    type: TEXT;
 	    description {
 		state: "default" 0.0;
 		rel1 {
 		    relative: 0.0 0.0;
-		    offset: 10 5;
+		    offset: 10 14;
 		    to: "background";
 		}
 		rel2 {
 		    relative: 1.0 0.0;
-		    offset: 2 22;
+		    offset: -10 26;
 		    to: "background";
 		}
 		text {
 		    text:     "<No Title>";
 		    font:     "Vera";
-		    size:     10;
+		    size:     12;
 		    min:      1 1;
 		    align:    0.5 1.0;
 		}
@@ -93,7 +125,7 @@ group {
 	    }
 	}
 	part {
-	    name: "Next";
+	    name: "Close";
 	    type: IMAGE;
 	    description {
 		state: "default" 0.0;
@@ -106,6 +138,27 @@ group {
 		    to: "background";
 		    relative: 1.0 0;
 		    offset: -4 16;
+		}
+		image {
+		    normal: "window-close-ugly.png";
+		}
+	    }
+
+	}
+	part {
+	    name: "Next";
+	    type: IMAGE;
+	    description {
+	    state: "default" 0.0;
+		rel1 { 
+		    to: "Close";
+		    relative: 0.0 0.0;
+		    offset: -17 0;
+		}
+		rel2 {
+		    to: "Close";
+		    relative: 0.0 0.0;
+		    offset: -1 16;
 		}
 		image {
 		    normal: "arrow-right-ugly.png";
