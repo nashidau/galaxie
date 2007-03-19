@@ -30,3 +30,4 @@ uint64_t tpe_board_board_updated_get(struct tpe *tpe, uint32_t oid);
 
 struct message *tpe_board_board_message_unread_get(struct tpe *, uint32_t);
 struct message *tpe_board_board_message_turn_get(struct tpe *tpe, uint32_t id);
+int tpe_board_board_meessage_read(struct tpe *tpe, struct message *msg);

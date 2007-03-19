@@ -1,0 +1,10 @@
+
+
+Message Window
+	To Send:
+		"AllMessagesRead" : All messages on this board have been read
+			Sets state on "MailBox" to "NewMessages";
+		"NewMessages" : There are new messages.
+			Sets state on "MailBox" to "default";
+			
+

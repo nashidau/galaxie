@@ -1,4 +1,5 @@
 #include <arpa/inet.h>
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -30,29 +31,40 @@ struct board {
 	int received;
 };
 
+/* Event handlers for messages */
 static int tpe_board_msg_board_receive(void *data, int type, void *event);
 static int tpe_board_msg_message_receive(void *data, int type, void *event);
+
+
+static int tpe_board_board_changed_notify(struct tpe *tpe, struct board *board);
 
 struct tpe_board *
 tpe_board_init(struct tpe *tpe){
 	struct tpe_board *board;
 	FILE *msglog;
 
+	if (tpe->board != NULL) return tpe->board;
+
 	board = calloc(1,sizeof(struct tpe_board));
 
 	board->boards = ecore_list_new();
 
-	tpe_event_type_add(tpe->event, "BoardChanged");
+	/* Events we send */
+	tpe_event_type_add(tpe->event, "BoardUpdate");
 
+	/* What messages we handle */
 	tpe_event_handler_add(tpe->event, "MsgBoard",
                         tpe_board_msg_board_receive, tpe);
 	tpe_event_handler_add(tpe->event, "MsgMessage",
                         tpe_board_msg_message_receive, tpe);
 
+	/* Sequence system can handle... */
 	tpe_sequence_register(tpe, "MsgGetBoardIDs",
 				"MsgListOfBoards", 
 				"MsgGetBoards",
 				tpe_board_board_updated_get, NULL, NULL);
+
+	/* FIXME: For now... we log messages */
 	msglog = fopen("msglog.txt","w");
 	board->msglog = msglog;
 
@@ -159,7 +171,6 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
  */
 static int 
 tpe_board_msg_message_receive(void *data, int type, void *event){
-	struct board_update *update;
 	struct board *board;
 	struct message *message;
 	struct tpe *tpe;
@@ -207,15 +218,7 @@ tpe_board_msg_message_receive(void *data, int type, void *event){
 	board->unread ++;
 	board->received ++;
 
-	/* FIXME: Appropriate Notification */
-	update = calloc(1,sizeof(struct board_update));
-	update->id = board->oid;
-	update->name = board->name;
-	update->desc = board->description;
-	update->messages = board->received;
-	update->unread = board->unread;
-
-	tpe_event_send(tpe->event, "BoardChanged", update, NULL, NULL);
+	tpe_board_board_changed_notify(tpe, board);
 
 	return 1;
 }
@@ -286,3 +289,66 @@ tpe_board_board_message_turn_get(struct tpe *tpe, uint32_t id){
 	return message;
 
 }
+
+/**
+ * Marks a message as read.
+ *
+ * If the message is already read, it has no affect.  Otherwise it triggers a
+ * board changed message.
+ *
+ * @param tpe TPE pointer
+ * @param msg The message to mark as read
+ * @return 0 on success, a negative failure code otherwise.
+ */
+int 
+tpe_board_board_meessage_read(struct tpe *tpe, struct message *msg){
+	struct board *board;
+
+	if (tpe == NULL) return -1;
+	if (msg == NULL) return -1;
+
+	/* Nothing to do... */
+	if (msg->unread == 0) return 0;
+	
+	msg->unread = 0;
+
+	board = tpe_board_board_get_by_id(tpe, msg->board);
+	/* Weird: Someone has screwed with msg */
+	assert(board);
+	if (board == NULL) return -1;
+
+	board->unread --;
+
+	tpe_board_board_changed_notify(tpe, board);
+
+	return 0;
+}
+
+/** 
+ * Sends a BoardUpdate message.
+ *
+ * Sends a board updated message with teh current status of hte board.
+ *
+ * @param tpe TPE structure.
+ * @param board Board that has changed.
+ * @return 0 on success, less then zero on error.
+ */
+static int
+tpe_board_board_changed_notify(struct tpe *tpe, struct board *board){
+	struct board_update *update;	
+
+	assert(tpe);
+	assert(board);
+
+	update = calloc(1,sizeof(struct board_update));
+	update->id = board->oid;
+	update->name = board->name;
+	update->desc = board->description;
+	update->messages = board->received;
+	update->unread = board->unread;
+
+	tpe_event_send(tpe->event, "BoardUpdate", update, NULL, NULL);
+
+	return 0;
+}
+

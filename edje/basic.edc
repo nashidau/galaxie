@@ -134,6 +134,7 @@ collections {
 
     #include "basic-stars.edc"
     #include "basic-message.edc"
+    #include "basic-menu.edc"
 
     /* The Information about a single Star 
 	Appears as a popup on mouse-over */
@@ -211,7 +212,6 @@ collections {
 		    }
 		}
 	    }
-	    /*
 	    part {
 		name, "label";
 		type: TEXT;
@@ -232,9 +232,8 @@ collections {
 		    }
 		}
 	    }
-	    */
 	}
     }
 }
 
-/* vim:set sw=4 sts=4 syn=c: */
+/* vim:set sw=4 sts=4 : */

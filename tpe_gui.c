@@ -167,7 +167,7 @@ tpe_gui_init(struct tpe *tpe, const char *theme, unsigned int fullscreen){
 	tpe_event_handler_add(gui->tpe->event, "ObjectDelete",
 			tpe_gui_object_delete, gui);
 
-	tpe_event_handler_add(gui->tpe->event, "BoardChanged",
+	tpe_event_handler_add(gui->tpe->event, "BoardUpdate",
 			tpe_gui_board_update, gui);
 
 	tpe_event_handler_add(gui->tpe->event, "Connected",
@@ -548,13 +548,34 @@ star_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event){
 	}
 }
 
+/** 
+ * Handler for mouse down on stars. 
+ *
+ * Pops a window for the star.  A right click pops up a menu, to allow
+ * selection of planet or fleet.
+ *
+ * Left click - select the star.
+ * Right click - menu.
+ *
+ * @param data Gui object data for star.
+ * @param e Evas.
+ * @param obj The star object .
+ * @param event The evas mouse event.
+ **/
 static void
 star_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
-	struct tpe_gui_obj *go;
-
-	go = data;
+	Evas_Event_Mouse_Down *mouse = event;
+	struct tpe_gui_obj *go = data;
 
 	tpe_obj_obj_dump(go->object);
+	
+	if (mouse->button == 1){
+			
+	} else if (mouse->button == 3){
+	
+
+	}
+
 }
 static void
 fleet_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
@@ -648,6 +669,7 @@ tpe_gui_board_update(void *data, int eventid, void *event){
 	struct tpe_gui *gui = data;
 	struct board_update *board = event;
 	Evas_Object *o;
+	const char *state;
 	char buf[20];
 
 	if (gui->board == NULL){
@@ -671,6 +693,18 @@ tpe_gui_board_update(void *data, int eventid, void *event){
 
 	snprintf(buf,20, "%d/%d",board->unread, board->messages);
 	edje_object_part_text_set(o, "Text", buf);
+
+	state = edje_object_part_state_get(o, "MailBox",NULL);
+	printf("State is %s\n",state);
+	if (board->unread == 0){
+		if (state && strcmp(state, "default") != 0)
+			edje_object_signal_emit(o, "AllMessagesRead", "app");
+	} else {
+		if (state && strcmp(state, "NewMessages") != 0){
+			printf("emit NewMessages\n");
+			edje_object_signal_emit(o, "NewMessages", "app");
+		}
+	}
 
 	return 1;
 }
@@ -710,8 +744,9 @@ board_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 
 	/* FIXME: Fix hard coded board IDs here */
 	message = tpe_board_board_message_unread_get(gui->tpe, 1);
-
-	if (message == NULL){
+	if (message != NULL){
+		tpe_board_board_meessage_read(gui->tpe, message);
+	} else {
 		message = tpe_board_board_message_turn_get(gui->tpe,1);
 	}
 
@@ -720,8 +755,6 @@ board_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 		return;
 	}
 
-	/* FIXME: Handle no unread messages */
-	message->unread = 0;
 
 	edje_object_part_text_set(gui->messagebox, "Title", message->title);
 	edje_object_part_text_set(gui->messagebox, "Body", message->body);

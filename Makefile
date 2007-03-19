@@ -25,7 +25,8 @@ AIS=			\
 
 BASICTHEME=			\
 	edje/basic.edc		\
-	edje/basic-message.edc  \
+	edje/basic-menu.edc	\
+	edje/basic-message.edc	\
 	edje/basic-stars.edc
 
 

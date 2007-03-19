@@ -1,0 +1,95 @@
+images {
+   image: "menu_bg.png" COMP;
+   /*
+   image: "e17_menu_bg.png" COMP;
+   image: "e17_menu_bg_border.png" COMP;
+   image: "e17_menu_check1.png" COMP;
+   image: "e17_menu_check2.png" COMP;
+   image: "e17_menu_radio1.png" COMP;
+   image: "e17_menu_radio2.png" COMP;
+   image: "e17_menu_separator.png" COMP;
+   */
+}
+/*
+group {
+    name: "menu_bg";
+    parts {
+	part {
+	    name:   "bg";
+	    mouse_events: 0;
+	    type:   IMAGE;
+	    description {
+		state:	"default" 0.0;
+		rel1 {
+		    relative: 0.0 0.0;
+		    offset: 0 0;
+		}
+		rel2 {
+		    relative: 1.0 1.0;
+		    offset: -1 -1;
+		}
+		image {
+		    normal: "menu_bg.png";
+		}
+	    }
+	}
+    }
+}
+
+group {
+    name: "menu_item";
+    parts {
+	part {
+	    name:   "background";
+	    mouse_events: 1;
+	    type: RECT;
+	    description {
+		state: "default" 0.0;
+		rel1 {
+		    relative: 0.0 0.0;
+		    offset: 0 0;
+		}
+		rel2 {
+		    relative: 1.0 1.0;
+		    offset: -1 -1;
+		}
+		color: 0 0 0 0;
+	    }
+	    description {
+		state: "selected" 0.0;
+		inherit: "default" 0.0;
+		color: 50 0 0 255;
+	    }
+	}
+	part {
+	    name:  "item";
+	    mouse_events: 0;
+	    type: TEXT;
+	    description {
+		state: "default" 0.0;
+		rel1 {
+		    relative: 0.0 0.0;
+		    offset: 5 2;
+		    to: "background";
+		}
+		rel2 {
+		    relative: 0.0 0.0;
+		    offset: -5 -2;
+		    to: "background";
+		}
+		color: 0 0 0 255;
+		text {
+		   text:     "Item Label";
+		   font:     "Edje-Vera";
+		   size:     10;
+		   min:      1 1;
+		   align:    0.0 0.5;
+		}
+	    }
+	}
+    }
+}
+
+
+*/
+/* vim:set sw=4 sts=4 : */

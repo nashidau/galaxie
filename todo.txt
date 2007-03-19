@@ -11,9 +11,6 @@
 	- Occasionally build some warships to attack planets
 	- When nothing left to settle, build fleets to attack places.
 	- Option to limit growth rate
- * Design Updates
- 	- Waiting on bugs in the server
-	- Otherwise should already work
  * [UI] messages
  * [UI] orders
  * [UI] Planet popup improve
@@ -35,12 +32,16 @@
  * Avahi/zeroconf queries
  * Improve some of the data structures
  	- Lists could become hashes in many places
+		- Objects (Planets)
+		- Designs
  * Fix map zoom and pan
  * MTSec support
  	- Design
  * Start looking at TP04 support
+ * Edje:
+ 	- Icons in the menus
+	- Move to styles for the text everywhere
  * Resiliance - Double Initialisation
-	- tpe_board
 	- tpe_comm
 	- tpe_event
 	- tpe_gui

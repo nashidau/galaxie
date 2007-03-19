@@ -96,76 +96,84 @@ group {
 - New Messaages (NewMessage)
 */
 group {
-name: "Board";
-min: 10 10;
-max: 20 20;
-parts {
-    part {
-	name: "mailbox";
-	type: IMAGE;
-	description {
-	    state: "default" 0.0;
-	    rel1 {
-		relative: 0 0;
-		offset: 0 0;
+    name: "Board";
+    min: 10 10;
+    max: 20 20;
+    parts {
+	part {
+	    name: "MailBox";
+	    type: IMAGE;
+	    description {
+		state: "default" 0.0;
+		rel1 {
+		    relative: 0 0;
+		    offset: 0 0;
+		}
+		rel2 {
+		    relative: 1.0 1.0;
+		    offset: -1 -1;
+		}
+		image {
+		    normal: "mailbox.png";
+		}
 	    }
-	    rel2 {
-		relative: 1.0 1.0;
-		offset: -1 -1;
+
+	    description {
+		state: "NewMessages" 0.0;
+		inherit: "default" 0.0;
+		color: 0 0 0 255;
 	    }
-	    image {
-		normal: "mailbox.png";
+	    description {
+		state: "NewMessages" 1.0;
+		inherit: "default" 0.0;
+		color: 255 0 0 255;
+	    }
+	} 
+	part {
+	    name: "Text";
+	    type: TEXT;
+	    effect: SOFT_SHADOW;
+	    description {
+		state: "default"  0.0;
+		rel1 {
+		    relative: 0.0 0.0;
+		    offset: 0 0;
+		}
+		rel2 {
+		    relative: 1.0 1.0;
+		    offset: -1 -1;
+		}
+		color: 0 0 0 255;
+		color3: 128 255 128 150;
+		text {
+		    text: "0/0";
+		    font: "Vera";
+		    size: 10;
+		    min: 1 1;
+		    align: 1.0 1.0;
+		}
 	    }
 	}
 
-	description {
-	    state: "NewMessage" 0.0;
-	    inherit: "default" 0.0;
-	}
-	description {
-	    state: "NewMessage" 1.0;
-	    inherit: "default" 0.0;
-	    color: 255 0 0 255;
-	}
-    } 
-    part {
-	name: "Text";
-	type: TEXT;
-	effect: SOFT_SHADOW;
-	description {
-	    state: "default"  0.0;
-	    rel1 {
-		relative: 0.0 0.0;
-		offset: 0 0;
-	    }
-	    rel2 {
-		relative: 1.0 1.0;
-		offset: -1 -1;
-	    }
-	    color: 0 0 0 255;
-	    color3: 128 255 128 150;
-	    text {
-		text: "0/0
-		font: "Vera";
-		size: 16;
-		min: 1 1;
-		align: 1.0 1.0;
-	    }
-	}
     }
 
+
+    program {
+	name, "new_messages";
+	signal, "NewMessages";
+	source, "app";
+	action, STATE_SET "NewMessages" 1.0;
+	transition, LINEAR 5.0;
+	target, "MailBox";
+    }
+    program {
+	name, "no_messages";
+	signal, "AllMessagesRead";
+	source, "app";
+	action, STATE_SET "default" 0.0;
+	transition, LINEAR 2.0;
+	target: "MailBox";
+    }
 }
 
-}
-
-
-
-program {
-    name, "animate_box";
-    signal, "show";
-    action, STATE_SET "NewMessage" 1.0;
-    transition, LINEAR 5.0;
-    target, "mailbox";
-}
-
-/* vim:set sw=4 sts=4 syn=c: */
+/* vim:set sw=4 sts=4 : */
