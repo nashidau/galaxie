@@ -23,6 +23,12 @@ styles {
     }
 }
 
+images {
+    image: "messagebox-bg.png" COMP;
+    image: "arrow-right-ugly.png" COMP;
+    image: "arrow-left-ugly.png" COMP;
+    image: "mailbox.png" COMP;
+}
 
 
 group {
@@ -86,6 +92,49 @@ group {
 		}
 	    }
 	}
+	part {
+	    name: "Next";
+	    type: IMAGE;
+	    description {
+		state: "default" 0.0;
+		rel1 { 
+		    to: "background";
+		    relative: 1.0 0;
+		    offset: -20 0;
+		}
+		rel2 {
+		    to: "background";
+		    relative: 1.0 0;
+		    offset: -4 16;
+		}
+		image {
+		    normal: "arrow-right-ugly.png";
+		}
+	    }
+	}
+	part {
+	    name: "Prev";
+	    type: IMAGE;
+	    description {
+		state: "default" 0.0;
+		rel1 { 
+		    to: "Next";
+		    relative: 0.0 0.0;
+		    offset: -17 0;
+		}
+		rel2 {
+		    to: "Next";
+		    relative: 0.0 0.0;
+		    offset: -1 16;
+		}
+		image {
+		    normal: "arrow-left-ugly.png";
+		}
+	    }
+	}
+
+
+
     }
 }
 
@@ -154,16 +203,15 @@ group {
 		}
 	    }
 	}
-
     }
 
-
+    /* FIXME: Also should have a program to cause "NewMessages" to flash */
     program {
 	name, "new_messages";
 	signal, "NewMessages";
 	source, "app";
 	action, STATE_SET "NewMessages" 1.0;
-	transition, LINEAR 5.0;
+	transition, LINEAR 2.0;
 	target, "MailBox";
     }
     program {

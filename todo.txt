@@ -39,6 +39,7 @@
  	- Design
  * Start looking at TP04 support
  * Edje:
+ 	- Menus
  	- Icons in the menus
 	- Move to styles for the text everywhere
  * Resiliance - Double Initialisation

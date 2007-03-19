@@ -89,6 +89,11 @@ static void board_mouse_in(void *data, Evas *e, Evas_Object *obj, void *event);
 static void board_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event);
 static void board_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event);
 
+/* Message Window event handlers */
+static void
+tpe_gui_edje_message_next(void *data, Evas_Object *o, const char *emission,
+		const char *source);
+
 /* Gui event handlers */
 static void star_mouse_in(void *data, Evas *e, Evas_Object *obj, void *event);
 static void star_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event);
@@ -686,7 +691,7 @@ tpe_gui_board_update(void *data, int eventid, void *event){
 
 		edje_object_file_set(o,"edje/basic.edj","Board");
 		evas_object_show(o);
-		evas_object_move(o, 0,20); /* FIXME */
+		evas_object_move(o, 0,20); /* FIXME: Want this on the right */
 		evas_object_resize(o,20,20);
 	}
 	o = gui->board;
@@ -710,10 +715,12 @@ tpe_gui_board_update(void *data, int eventid, void *event){
 }
 
 
-static void board_mouse_in(void *data, Evas *e, Evas_Object *obj, void *event){
+static void 
+board_mouse_in(void *data, Evas *e, Evas_Object *obj, void *event){
 
 }
-static void board_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event){
+static void 
+board_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event){
 
 }
 
@@ -738,8 +745,14 @@ board_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 		edje_object_file_set(o, "edje/basic.edj", "MessageBox");
 		evas_object_move(o, 20,20);
 		evas_object_resize(o, 200,150);
+		edje_object_signal_callback_add(gui->messagebox, "mouse,clicked,*", 
+				"Next", tpe_gui_edje_message_next, gui);
 	} 
 	evas_object_show(gui->messagebox);
+//	evas_object_event_callback_add(gui->messagebox, 
+//			EVAS_CALLBACK_MOUSE_DOWN, messagebox_mouse_down, board);
+	//evas_object_event_callback_add(gui->messagebox,  );
+
 	/* FIXME: Check on screen */
 
 	/* FIXME: Fix hard coded board IDs here */
@@ -759,6 +772,25 @@ board_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 	edje_object_part_text_set(gui->messagebox, "Title", message->title);
 	edje_object_part_text_set(gui->messagebox, "Body", message->body);
 
+}
+
+/**
+ * Mouse-click handler for mouse clicks in a message window.
+ *
+ * Left button: Do that operation (Next, Prev etc);
+ * Middle button: Spawn a new window, and perform op in that window
+ * Right button: (Next): Jump to next turn
+ * 		Jump to first message in previous turn
+ * 	
+ * @param data Tpe structuture FIXME: Do I wnat this ?
+ * @param o The edje object
+ * @param emission Signal name (mouse,click,N where N == button)
+ * @param source "next" or "prev"
+ */
+static void
+tpe_gui_edje_message_next(void *data, Evas_Object *o, const char *emission,
+		const char *source){
+	printf("Got next click: %s %s\n",emission, source);
 }
 
 

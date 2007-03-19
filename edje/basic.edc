@@ -2,8 +2,6 @@ images {
     image: "star.png" COMP;
     image: "starpopup-bg.png" COMP;
     image: "fleet.png" COMP;
-    image: "mailbox.png" COMP;
-    image: "messagebox-bg.png" COMP;
 }
 
 styles
