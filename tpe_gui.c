@@ -691,15 +691,15 @@ tpe_gui_board_update(void *data, int eventid, void *event){
 		edje_object_file_set(o,"edje/basic.edj","Board");
 		evas_object_show(o);
 		evas_object_move(o, 0,20); /* FIXME: Want this on the right */
-		evas_object_resize(o,20,20);
+		evas_object_resize(o,32,32);
 	}
 	o = gui->board;
 
 	snprintf(buf,20, "%d/%d",board->unread, board->messages);
 	edje_object_part_text_set(o, "Text", buf);
 
+	/* FIXME: Should track state manually - that way no race conditions */
 	state = edje_object_part_state_get(o, "MailBox",NULL);
-	printf("State is %s\n",state);
 	if (board->unread == 0){
 		if (state && strcmp(state, "default") != 0)
 			edje_object_signal_emit(o, "AllMessagesRead", "app");
@@ -797,7 +797,7 @@ tpe_gui_messagebox_message_set(struct tpe_gui *gui,
 		Evas_Object *messagebox, struct message *msg){
 	char buf[100];
 
-	snprintf(buf,100,"Message: %d  Turn: %d", msg->slot, msg->turn);
+	snprintf(buf,100,"Message: %d  Turn: %d", msg->slot + 1, msg->turn);
 	edje_object_part_text_set(messagebox, "MessageNumber", buf);
 
 	edje_object_part_text_set(messagebox, "Title", msg->title);
@@ -834,7 +834,7 @@ tpe_gui_edje_message_change(void *data, Evas_Object *o, const char *emission,
 	if (msg == NULL) return;
 
 	if (strstr(emission, "2")){
-		printf("FIXME: Create new window\n");
+		o = tpe_gui_messagebox_add(gui);
 	}
 
 	if (strstr(emission,"3"))
@@ -848,13 +848,13 @@ tpe_gui_edje_message_change(void *data, Evas_Object *o, const char *emission,
 		if (button == 1)
 			msg = tpe_board_board_message_next(gui->tpe, msg);	
 		else 
-			printf("Not handled yet\n");
+			msg = tpe_board_board_message_next_turn(gui->tpe, msg);	
 	} else {
 		/* Previous */
 		if (button == 1)
 			msg = tpe_board_board_message_prev(gui->tpe, msg);	
 		else 
-			printf("Not handled yet\n");
+			msg = tpe_board_board_message_prev_turn(gui->tpe, msg);	
 	}
 
 	tpe_gui_messagebox_message_set(gui, o, msg);

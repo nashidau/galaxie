@@ -32,4 +32,6 @@ struct message *tpe_board_board_message_unread_get(struct tpe *, uint32_t);
 struct message *tpe_board_board_message_turn_get(struct tpe *tpe, uint32_t id);
 struct message *tpe_board_board_message_next(struct tpe *, struct message *);
 struct message *tpe_board_board_message_prev(struct tpe *, struct message *);
+struct message *tpe_board_board_message_next_turn(struct tpe*, struct message*);
+struct message *tpe_board_board_message_prev_turn(struct tpe*, struct message*);
 int tpe_board_board_message_read(struct tpe *tpe, struct message *msg);

@@ -11,6 +11,8 @@
 	- Occasionally build some warships to attack planets
 	- When nothing left to settle, build fleets to attack places.
 	- Option to limit growth rate
+	- Recover from being shut down
+		- Find ships with colonisation orders
  * [UI] Fix map zoom and pan
  * [UI] orders
  * [UI] Planet popup improve
@@ -36,7 +38,6 @@
  	- Lists could become hashes in many places
 		- Objects (Planets)
 		- Designs
-
  * [UI] Send messages
  * [UI] Clean up messages in one click (close all windows)
  * MTSec support

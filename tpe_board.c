@@ -340,6 +340,54 @@ tpe_board_board_message_prev(struct tpe *tpe, struct message *msg){
 }
 
 /**
+ * Get the first message in the next turn.
+ *
+ * Similar to tpe_board_board_message_next, except this will jump to the first
+ * message in the next turn, OR the last message if there are no messages in
+ * turn indicated.
+ *
+ *
+ * @param tpe General TPE structure
+ * @param msg The current message
+ * @return Message as above.
+ */
+struct message *
+tpe_board_board_message_next_turn(struct tpe *tpe, struct message *msg){
+	struct board *board;
+	int i;
+
+	if (tpe == NULL || msg == NULL) return NULL;
+
+	board = tpe_board_board_get_by_id(tpe, msg->board);
+	assert(board);
+	if (board == NULL) return NULL;
+
+	for (i = msg->slot ; i < board->nmessages ; i ++){
+		if (msg->turn != board->messages[i]->turn)
+			return board->messages[i];
+	}
+
+	return board->messages[board->nmessages - 1];
+}
+struct message *
+tpe_board_board_message_prev_turn(struct tpe *tpe, struct message *msg){
+	struct board *board;
+	int i;
+
+	if (tpe == NULL || msg == NULL) return NULL;
+
+	board = tpe_board_board_get_by_id(tpe, msg->board);
+	assert(board);
+	if (board == NULL) return NULL;
+	for (i = msg->slot ; i > 0 ; i --){
+		if (msg->turn != board->messages[i]->turn)
+			return board->messages[i];
+	}
+
+	return board->messages[0];
+}
+
+/**
  * Marks a message as read.
  *
  * If the message is already read, it has no affect.  Otherwise it triggers a
