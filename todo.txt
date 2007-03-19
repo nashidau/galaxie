@@ -11,16 +11,18 @@
 	- Occasionally build some warships to attack planets
 	- When nothing left to settle, build fleets to attack places.
 	- Option to limit growth rate
- * [UI] messages
+ * [UI] Fix map zoom and pan
  * [UI] orders
  * [UI] Planet popup improve
- * [UI] Planet display
+ * [UI] Object display
  * Connect handle failures
  * [UI] System display
  * [UI] Ship display
  * [UI] Display systems with fleets
  * Nail some fixmes (50 at last count)
  * Board/Messages: Handle object references
+	- tpe_board
+	- [UI] Interface to go to object if appropriate
  * Command line:
  	- Process arguments for server & game support
  * Support mulitple games
@@ -34,7 +36,9 @@
  	- Lists could become hashes in many places
 		- Objects (Planets)
 		- Designs
- * Fix map zoom and pan
+
+ * [UI] Send messages
+ * [UI] Clean up messages in one click (close all windows)
  * MTSec support
  	- Design
  * Start looking at TP04 support
