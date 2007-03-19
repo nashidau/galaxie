@@ -13,6 +13,7 @@
 	- Option to limit growth rate
 	- Recover from being shut down
 		- Find ships with colonisation orders
+ * [UI] Popup over boards to show details about them
  * [UI] Fix map zoom and pan
  * [UI] orders
  * [UI] Planet popup improve

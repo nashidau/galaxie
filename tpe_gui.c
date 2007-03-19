@@ -19,6 +19,11 @@
 #include "tpe_obj.h"
 #include "tpe_ship.h"
 
+enum board_state {
+	BOARD_UNREAD,
+	BOARD_READ,
+};
+
 struct tpe_gui {
 	struct tpe *tpe;
 
@@ -47,10 +52,16 @@ struct tpe_gui {
 
 	Ecore_List *visible;
 
-
-	/* FIXME: More then one board */
-	Evas_Object *board;
+	Ecore_List *boards;
 };
+
+struct gui_board {
+	struct tpe_gui *gui;
+	Evas_Object *obj;
+	uint32_t boardid;
+	int state;
+};
+
 
 struct tpe_gui_obj {
 	Evas_Object *obj;
@@ -181,6 +192,7 @@ tpe_gui_init(struct tpe *tpe, const char *theme, unsigned int fullscreen){
 			tpe_gui_new_turn, gui);
 
 	gui->visible = ecore_list_new();
+	gui->boards = ecore_list_new();
 
 	ecore_evas_data_set(gui->ee, "TPEGUI", gui);
 	ecore_evas_callback_resize_set(gui->ee, window_resize);
@@ -671,42 +683,56 @@ tpe_gui_redraw(struct tpe_gui *gui){
 static int 
 tpe_gui_board_update(void *data, int eventid, void *event){
 	struct tpe_gui *gui = data;
-	struct board_update *board = event;
+	struct board_update *update = event;
+	struct gui_board *board;
 	Evas_Object *o;
-	const char *state;
 	char buf[20];
 
-	if (gui->board == NULL){
-		gui->board = o = edje_object_add(gui->e);
+	board = ecore_list_goto_first(gui->boards);
+	while ((board = ecore_list_next(gui->boards))){
+		if (board->boardid == update->id)
+			break;
+	}
+
+	if (board == NULL){
+		board = calloc(1,sizeof(struct gui_board));
+		o = edje_object_add(gui->e);
+		board->obj = o;
+		board->boardid = update->id;
+		board->gui = gui;
+		ecore_list_append(gui->boards, board);
+
 		evas_object_event_callback_add(o, 
 				EVAS_CALLBACK_MOUSE_DOWN,
-				board_mouse_down, gui);
+				board_mouse_down, board);
 		evas_object_event_callback_add(o, 
 				EVAS_CALLBACK_MOUSE_IN,
-				board_mouse_in, gui);
+				board_mouse_in, board);
 		evas_object_event_callback_add(o, 
 				EVAS_CALLBACK_MOUSE_OUT,
-				board_mouse_out, gui);
+				board_mouse_out, board);
 
 		edje_object_file_set(o,"edje/basic.edj","Board");
 		evas_object_show(o);
+		/* FIXME: position not on top of other boards... */
 		evas_object_move(o, 0,20); /* FIXME: Want this on the right */
 		evas_object_resize(o,32,32);
+		board->state = BOARD_READ;	
 	}
-	o = gui->board;
+	o = board->obj;
 
-	snprintf(buf,20, "%d/%d",board->unread, board->messages);
+	snprintf(buf,20, "%d/%d",update->unread, update->messages);
 	edje_object_part_text_set(o, "Text", buf);
 
-	/* FIXME: Should track state manually - that way no race conditions */
-	state = edje_object_part_state_get(o, "MailBox",NULL);
-	if (board->unread == 0){
-		if (state && strcmp(state, "default") != 0)
+	if (update->unread == 0){
+		if (board->state == BOARD_UNREAD){
 			edje_object_signal_emit(o, "AllMessagesRead", "app");
+			board->state = BOARD_READ;
+		}
 	} else {
-		if (state && strcmp(state, "NewMessages") != 0){
-			printf("emit NewMessages\n");
+		if (board->state == BOARD_READ){
 			edje_object_signal_emit(o, "NewMessages", "app");
+			board->state = BOARD_UNREAD;
 		}
 	}
 
@@ -728,25 +754,27 @@ board_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event){
  *
  * Opens on first unread message 
  *
- * @param data Is general TPE GUI pointer 
+ * @param data Is board pointer
  * @param e Evas pointer
  * @param obj Object
  * @param event Mouse Down Event data
  */
 static void 
 board_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
-	struct tpe_gui *gui = data;
+	struct gui_board *board = data;
 	struct message *message;
 	Evas_Object *msgbox;
 
-	msgbox = tpe_gui_messagebox_add(gui);
+	msgbox = tpe_gui_messagebox_add(board->gui);
 
 	/* FIXME: Check on screen */
 
 	/* FIXME: Fix hard coded board IDs here */
-	message = tpe_board_board_message_unread_get(gui->tpe, 1);
+	message = tpe_board_board_message_unread_get(board->gui->tpe, 
+			board->boardid);
 	if (message == NULL){
-		message = tpe_board_board_message_turn_get(gui->tpe,1);
+		message = tpe_board_board_message_turn_get(board->gui->tpe,
+				board->boardid);
 	}
 	
 	if (message == NULL){
@@ -754,7 +782,7 @@ board_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 		return;
 	}
 
-	tpe_gui_messagebox_message_set(gui, msgbox, message);
+	tpe_gui_messagebox_message_set(board->gui, msgbox, message);
 }
 
 /**
@@ -835,8 +863,10 @@ tpe_gui_edje_message_change(void *data, Evas_Object *o, const char *emission,
 
 	if (strstr(emission, "2")){
 		o = tpe_gui_messagebox_add(gui);
+		button = 1;
 	}
 
+	/* FIXME: This is ugly... 3, 2 etc. */
 	if (strstr(emission,"3"))
 		button = 2;
 	else 
