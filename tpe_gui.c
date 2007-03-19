@@ -50,10 +50,6 @@ struct tpe_gui {
 
 	/* FIXME: More then one board */
 	Evas_Object *board;
-
-	/* Window for message */
-	Evas_Object *messagebox;
-
 };
 
 struct tpe_gui_obj {
@@ -93,8 +89,6 @@ static void board_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event)
 /* Message Window event handlers */
 static Evas_Object *tpe_gui_messagebox_add(struct tpe_gui *gui);
 static void tpe_gui_edje_message_change(void *data, Evas_Object *o, 
-			const char *emission, const char *source);
-static void tpe_gui_edje_messagebox_close(void *data, Evas_Object *o, 
 			const char *emission, const char *source);
 static void tpe_gui_messagebox_message_set(struct tpe_gui *gui, 
 			Evas_Object *messagebox, struct message *msg);
@@ -793,7 +787,7 @@ tpe_gui_messagebox_add(struct tpe_gui *gui){
 			tpe_gui_edje_message_change, gui);
 	edje_object_signal_callback_add(o,
 			"mouse,clicked,*", "Close", 
-			tpe_gui_edje_messagebox_close, gui);
+			(void*)evas_object_del, o);
 
 	return o;
 }
@@ -803,7 +797,7 @@ tpe_gui_messagebox_message_set(struct tpe_gui *gui,
 		Evas_Object *messagebox, struct message *msg){
 	char buf[100];
 
-	snprintf(buf,100,"Message: %d Turn: %d", msg->slot, msg->turn);
+	snprintf(buf,100,"Message: %d  Turn: %d", msg->slot, msg->turn);
 	edje_object_part_text_set(messagebox, "MessageNumber", buf);
 
 	edje_object_part_text_set(messagebox, "Title", msg->title);
@@ -866,21 +860,5 @@ tpe_gui_edje_message_change(void *data, Evas_Object *o, const char *emission,
 	tpe_gui_messagebox_message_set(gui, o, msg);
 
 	return;
-}
-
-/**
- * Window close handler for message box window.
- *
- */
-static void 
-tpe_gui_edje_messagebox_close(void *data, Evas_Object *o, 
-			const char *emission, const char *source){
-	struct tpe_gui *gui = data;
-
-	/* FIXME: Need better handling of this */
-	if (gui->messagebox == o)
-		gui->messagebox = NULL;
-
-	evas_object_del(o);
 }
 
