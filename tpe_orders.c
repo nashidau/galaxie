@@ -274,6 +274,39 @@ tpe_orders_order_print(struct tpe *tpe, struct order *order){
 	return 0;
 }
 
+/**
+ * Returns a string describing the orders on an object.
+ *
+ * Format is
+ * 	<order>Order Name</order>
+ * 		<arg>Arg 1</arg>...
+ * 
+ * @param tpe Tpe structure.
+ * @param object Object to print orders of.
+ * @return NULL on error, or a string with order description.
+ */
+const char *
+tpe_orders_str_get(struct tpe *tpe, struct object *obj){
+	static char buf[BUFSIZ];
+	struct order *order;
+	int pos;
+	int i;
+
+	for (pos = 0 , i = 0 ; i < obj->norders ; i ++){
+		order = obj->orders[i];
+		if (order == NULL){
+			pos += snprintf(buf + pos, BUFSIZ - pos, 
+					"<order>Unknown</order>");
+			continue;
+		}
+		pos += snprintf(buf + pos, BUFSIZ - pos, 
+				"<order>%s</order>", 
+				tpe_order_get_name_by_type(tpe, order->type));
+		/* FIXME: Do args... */	
+	}
+
+	return buf;
+}
 
 /**
  * Appends a order to move to a particular location.

@@ -17,6 +17,7 @@
 #include "tpe_comm.h"
 #include "tpe_event.h"
 #include "tpe_obj.h"
+#include "tpe_orders.h"
 #include "tpe_ship.h"
 
 enum board_state {
@@ -353,7 +354,7 @@ tpe_gui_object_update(void *data, int eventid, void *event){
 				go->obj = edje_object_add(gui->e);
 				evas_object_event_callback_add(go->obj,
 						EVAS_CALLBACK_MOUSE_DOWN,
-						fleet_mouse_down, obj);
+						fleet_mouse_down, go);
 
 				ecore_list_append(gui->visible, obj);
 
@@ -594,6 +595,7 @@ star_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 	//Evas_Event_Mouse_Down *mouse = event;
 	struct tpe_gui_obj *go = data;
 	char buf[50];
+	const char *orderstr;
 
 	tpe_obj_obj_dump(go->object);
 	
@@ -613,12 +615,15 @@ star_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 		edje_object_part_text_set(o, "Owner", buf);
 	}
 
+	orderstr = tpe_orders_str_get(go->gui->tpe, go->object);
+	edje_object_part_text_set(o, "Orders", orderstr);
+
 	evas_object_show(o);
 
 }
 static void
 fleet_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
-	tpe_obj_obj_dump(data);
+	star_mouse_down(data,e,obj,event);
 
 }
 
