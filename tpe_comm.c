@@ -145,7 +145,7 @@ tpe_comm_may_login(void *data, const char *msgtype, int len, void *mdata){
 
 	tpe_msg_send_strings(msg, "MsgLogin",  tpe_comm_logged_in, comm,
 			comm->user, comm->pass, 0);
-	tpe_msg_send(msg, "MsgGetFeatures", 0,0,0,0);
+	tpe_msg_send(msg, "MsgGetFeatures", NULL,NULL,NULL,0);
 
 	return 0;
 }
@@ -162,7 +162,7 @@ tpe_comm_logged_in(void *data, const char *msgtype, int len, void *mdata){
 	tpe = comm->tpe;
 	msg = tpe->msg;
 
-	tpe_msg_send(msg, "MsgGetTimeRemaining", 0, 0,0,0);
+	tpe_msg_send(msg, "MsgGetTimeRemaining", NULL, NULL,NULL,0);
 
 	/* FIXME: Need a class to handle these */
 	buf[0] = htonl(1);	/* One player to get */
@@ -181,7 +181,7 @@ tpe_comm_logged_in(void *data, const char *msgtype, int len, void *mdata){
 
 static int
 tpe_comm_get_time(void *msg){
-	tpe_msg_send(msg, "MsgGetTimeRemaining", 0,0,0,0);
+	tpe_msg_send(msg, "MsgGetTimeRemaining", NULL,NULL,NULL,0);
 	return 1;
 }
 
@@ -232,7 +232,7 @@ static int
 tpe_comm_msg_fail(void *udata, int etype, void *event){
 	int magic, type, seq, len, errcode;
 	int rv;
-	char *str = 0;
+	char *str = NULL;
 
 	rv = tpe_util_parse_packet(event, "iiiiis", &magic, &seq, &type, &len,
 			&errcode, &str);

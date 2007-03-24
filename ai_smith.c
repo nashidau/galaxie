@@ -44,7 +44,7 @@ static const char *build_order = "BuildFleet";
 
 static int build_id = -1;
 
-const char *shipnames[] = {
+static const char *shipnames[] = {
 	"Endeavour",
 	"Spore",
 	"Mayflower",

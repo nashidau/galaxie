@@ -54,7 +54,7 @@ static int parse_theme(struct startopt *opt, int i, char **args);
 static int parse_usage(struct startopt *opt, int i, char **args);
 static const char *parse_option(char **args, int *i);
 
-struct args {
+static struct args {
 	const char *arg;
 	int (*fn)(struct startopt *opt, int i, char **args);
 } args[] = {
@@ -147,19 +147,19 @@ parse_args(int argc, char **argv){
 
 
 
-int 
+static int 
 parse_username(struct startopt *opt, int i, char **args){
 	opt->username = parse_option(args,&i);
 	return i;
 }
 
-int 
+static int 
 parse_password(struct startopt *opt, int i, char **args){
 	opt->password = parse_option(args,&i);
 	return i;
 }
 
-int 
+static int 
 parse_ai(struct startopt *opt, int i, char **args){
 	const char *p;
 
@@ -180,18 +180,18 @@ parse_no_ai(struct startopt *opt, int i, char **args){
 	return i;
 }
 
-int 
+static int 
 parse_gui(struct startopt *opt, int i, char **args){
 	opt->usegui = 0;	
 	return i;
 }
-int 
+static int 
 parse_fullscreen(struct startopt *opt, int i, char **args){
 	opt->fullscreen = 1;	
 	return i;
 }
 
-int 
+static int 
 parse_theme(struct startopt *opt, int i, char **args){
 	opt->theme = parse_option(args, &i);
 	

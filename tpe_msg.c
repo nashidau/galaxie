@@ -35,7 +35,7 @@ enum {
 #define ID "Thousand Parsec - Enlightened Client"
 
 
-struct msgname {
+static const struct msgname {
 	const char *name;
 	int tp03;
 } msgnames[] = {
@@ -242,8 +242,8 @@ static int tpe_msg_con_event_server_add(void *data, int type, void *edata){
 	if (msg->conncb)
 		msg->conncb(msg->conndata, NULL);
 	
-	msg->conncb = 0;
-	msg->conndata = 0;
+	msg->conncb = NULL;
+	msg->conndata = NULL;
 
 	//msg = data;
 	//tpe_msg_send_strings(msg, TPE_MSG_CONNECT, tpe_connect_accept,msg,ID, NULL);

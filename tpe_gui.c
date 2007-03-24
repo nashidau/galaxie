@@ -142,7 +142,7 @@ tpe_gui_init(struct tpe *tpe, const char *theme, unsigned int fullscreen){
 	if (gui->ee == NULL) {
 		printf("Could not create ecore_evas_xll.\n");
 		printf("Check you built evas and ecore with x11 support\n");
-		return 0;
+		return NULL;
 	}
 	ecore_evas_title_set(gui->ee, "Thousand Parsec (E-Client)");
 	ecore_evas_borderless_set(gui->ee, 0);
@@ -338,7 +338,7 @@ tpe_gui_object_update(void *data, int eventid, void *event){
 			if (obj->gui){
 				evas_object_del(obj->gui->obj);
 				free(obj->gui);
-				obj->gui = 0;
+				obj->gui = NULL;
 				/* Remove it from the list of visible items */
 				if (ecore_list_goto(gui->visible, obj))
 					ecore_list_remove(gui->visible);
@@ -787,7 +787,7 @@ board_mouse_in(void *data, Evas *e, Evas_Object *obj, void *event){
 	edje_object_part_text_set(gui->boardpopup, "BoardDescription", 
 			board->desc);
 
-	evas_object_geometry_get(gui->boardpopup,0,0,&pw,&ph);
+	evas_object_geometry_get(gui->boardpopup,NULL,NULL,&pw,&ph);
 	evas_object_geometry_get(board->obj,&x,&y,&w,&h);
 	ecore_evas_geometry_get(gui->ee, NULL,NULL,&sw,&sh);
 

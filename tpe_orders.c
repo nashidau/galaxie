@@ -362,6 +362,8 @@ tpe_orders_object_clear(struct tpe *tpe, struct object *obj){
 	int i,rv;
 	int *toremove;
 
+	if (obj->norders == 0) return 0;
+
 	toremove = malloc(sizeof(int32_t) * (obj->norders + 2));
 	toremove[0] = htonl(obj->oid);
 	toremove[1] = htonl(obj->norders);

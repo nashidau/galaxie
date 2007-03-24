@@ -300,7 +300,7 @@ tpe_obj_cleanup(struct tpe *tpe, struct object *o){
 	ecore_list_goto(tpe->obj->objs,o);
 	ecore_list_remove(tpe->obj->objs);
 
-	o->tpe = 0;
+	o->tpe = NULL;
 	o->oid = -1;
 	if (o->name) free(o->name);
 	if (o->children) free(o->children);
