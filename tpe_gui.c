@@ -887,6 +887,8 @@ tpe_gui_messagebox_message_set(struct tpe_gui *gui,
 		Evas_Object *messagebox, struct message *msg){
 	char buf[100];
 
+	/* FIXME: Apparently it's possible for msg to be NULL !? */
+
 	snprintf(buf,100,"Message: %d  Turn: %d", msg->slot + 1, msg->turn);
 	edje_object_part_text_set(messagebox, "MessageNumber", buf);
 
