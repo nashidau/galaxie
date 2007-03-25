@@ -283,13 +283,14 @@ smith_planet_colonised(void *data, int type, void *event){
 		return 1;
 	}
 
-	tpe_orders_object_clear(smith->tpe, o);
-
 	dest = ai_util_planet_closest_uncolonised(smith->tpe, colfleet);
-	/* FIXME: Do something - don't just hang in space */
 
+	/* FIXME: Should do something more intelligent */
+	/* Currently I'll just let it try anyway */
 	if (dest == NULL)
 		return 1;
+
+	tpe_orders_object_clear(smith->tpe, o);
 
 	tpe_orders_object_move_object(smith->tpe, colfleet, SLOT_LAST, dest);
 	tpe_orders_object_colonise(smith->tpe, colfleet, SLOT_LAST, dest);

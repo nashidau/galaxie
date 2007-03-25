@@ -239,8 +239,6 @@ tpe_comm_msg_fail(void *udata, int etype, void *event){
 
 	printf("** Error: Seq %d: Err %d: %s\n",seq,errcode,str);
 
-	exit(1);
-	
 	return 1;
 }
 
