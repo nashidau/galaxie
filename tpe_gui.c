@@ -882,12 +882,20 @@ tpe_gui_messagebox_add(struct tpe_gui *gui){
 	return o;
 }
 
+/**
+ * Sets the message in a message box.
+ *
+ * @param gui TPE Gui structure.
+ * @param messagebox The messagebox object to set the message in.
+ * @param msg The message to set.
+ */
 static void
 tpe_gui_messagebox_message_set(struct tpe_gui *gui, 
 		Evas_Object *messagebox, struct message *msg){
 	char buf[100];
 
-	/* FIXME: Apparently it's possible for msg to be NULL !? */
+	if (gui == NULL || messagebox == NULL) return;
+	if (msg == NULL) return;
 
 	snprintf(buf,100,"Message: %d  Turn: %d", msg->slot + 1, msg->turn);
 	edje_object_part_text_set(messagebox, "MessageNumber", buf);
@@ -951,7 +959,8 @@ tpe_gui_edje_message_change(void *data, Evas_Object *o, const char *emission,
 			msg = tpe_board_board_message_prev_turn(gui->tpe, msg);	
 	}
 
-	tpe_gui_messagebox_message_set(gui, o, msg);
+	if (msg)
+		tpe_gui_messagebox_message_set(gui, o, msg);
 
 	return;
 }
