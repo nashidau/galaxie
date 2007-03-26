@@ -131,9 +131,10 @@ collections {
     }
 
     #include "basic-info.edc"
-    #include "basic-stars.edc"
     #include "basic-message.edc"
     #include "basic-menu.edc"
+    #include "basic-ships.edc"
+    #include "basic-stars.edc"
 
     /* The Information about a single Star 
 	Appears as a popup on mouse-over */

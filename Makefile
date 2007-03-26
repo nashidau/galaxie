@@ -28,6 +28,7 @@ BASICTHEME=			\
 	edje/basic-info.edc	\
 	edje/basic-menu.edc	\
 	edje/basic-message.edc	\
+	edje/basic-ships.edc	\
 	edje/basic-stars.edc
 
 

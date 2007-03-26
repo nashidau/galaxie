@@ -1,0 +1,58 @@
+images {
+    image: "epyon/tp_battleship_base.png" COMP;
+    image: "epyon/tp_battleship_mask.png" COMP;
+    image: "epyon/tp_frigate1_base.png" COMP;
+    image: "epyon/tp_frigate1_mask.png" COMP;
+    image: "epyon/tp_scout_base.png" COMP;
+    image: "epyon/tp_scout_mask.png" COMP;
+};
+
+#define SHIP(thename, base, mask, red,green,blue,alpha)	\
+    group {		\
+	name:	thename    ;		\
+	min: 80 80;		\
+	max: 80 80;		\
+	parts {		\
+	    part {		\
+		name: "background";		\
+		type: IMAGE;		\
+		description {		\
+		    state: "default" 0.0;		\
+		    image {		\
+			normal: base;		\
+		    }		\
+		}		\
+	    }		\
+	    part {		\
+		name: "mask";		        \
+		type: IMAGE;			\
+		description {			\
+		    state: "default" 0.0;   	\
+		    image {			\
+			normal: mask;		\
+		    }		\
+		    color: red green blue alpha;	\
+		}		\
+	    }		\
+	}		\
+    }		
+
+SHIP("battleship", "epyon/tp_battleship_base.png", "epyon/tp_battleship_mask.png", 255,255,255,150);
+SHIP("frigate", "epyon/tp_frigate1_base.png", "epyon/tp_frigate1_mask.png",  255,255,255,100);
+SHIP("scout", "epyon/tp_scout_base.png", "epyon/tp_scout_mask.png", 255,255,255,100);
+
+SHIP("battleship2", "epyon/tp_battleship_base.png",
+"epyon/tp_battleship_mask.png", 0,0,255,100);
+SHIP("frigate2", "epyon/tp_frigate1_base.png", "epyon/tp_frigate1_mask.png",
+0,0,255,100);
+SHIP("scout2", "epyon/tp_scout_base.png", "epyon/tp_scout_mask.png", 0,0,255,100);
+
+SHIP("battleship3", "epyon/tp_battleship_base.png",
+"epyon/tp_battleship_mask.png", 255,0,0,100);
+SHIP("frigate3", "epyon/tp_frigate1_base.png", "epyon/tp_frigate1_mask.png",
+255,0,0,100);
+SHIP("scout3", "epyon/tp_scout_base.png", "epyon/tp_scout_mask.png", 255,0,0,100);
+
+
+
+/* vim:set sw=4 sts=4 : */
