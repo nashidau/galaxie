@@ -602,7 +602,7 @@ star_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 	o = edje_object_add(go->gui->e);
 	edje_object_file_set(o,"edje/basic.edj", "ObjectInfo");
 	evas_object_move(o, rand() % 200, rand() % 200);
-	evas_object_resize(o, 64,64);
+	evas_object_resize(o, 200,200);
 
 	edje_object_part_text_set(o, "Name", go->object->name);
 	/* FIXME: Get the player name */

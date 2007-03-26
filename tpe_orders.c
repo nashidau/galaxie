@@ -18,6 +18,14 @@
 #include "tpe_obj.h"
 #include "tpe_sequence.h"
 
+enum {
+	ARG_COORD = 0,
+	ARG_TIME = 1,
+	ARG_OBJECT = 2,
+	ARG_PLAYER = 3,
+	ARG_STRING = 7,
+};
+
 struct tpe_orders {
 	struct tpe *tpe;
 
@@ -26,16 +34,52 @@ struct tpe_orders {
 
 
 
+/* Type 0: ARG_COORD */
+struct order_arg_coord {
+	int64_t x,y,z;
+};
+/* Type 1: ARG_TIME */
+struct order_arg_time {
+	int64_t turns;
+	int64_t max;
+};
+/* Type 2: ARG_OBJECT */
+struct order_arg_object {
+	uint32_t oid;
+};
+/* Type 3: ARG_PLAYER */
+struct order_arg_player {
+	uint32_t pid;
+	uint32_t flags;
+};
+
+
+/* Type 7: ARG_STRING */ 
+struct order_arg_string {
+	uint32_t maxlen;
+	char *str;
+};
+
+union order_arg_data {
+	struct order_arg_coord coord;
+	struct order_arg_time time;
+	struct order_arg_object object;
+	struct order_arg_player player;
+	struct order_arg_string string;
+};
+
 struct order_desc {
 	uint32_t otype;	 /* Type */
 	const char *name;
 	const char *description;
 	
 	int nargs;
-	struct order_arg *args;
+	struct order_arg *args; /* The type of the args */
 
 	uint64_t updated;
 };
+
+
 
 struct order {
 	int oid;
@@ -44,17 +88,20 @@ struct order {
 	int turns;
 	int nresources;
 	struct build_resources *resources;
-
-	union {
-		int colonise;
-	} extra;
 	
+	/* These come from the order desc */
+	union order_arg_data **args;
 };
 
 static int tpe_orders_msg_order_description(void *, int type, void *data);
 static int tpe_orders_msg_order(void *, int type, void *data);
 
 static int tpe_orders_object_update(void *, int type, void *data);
+
+static int tpe_order_arg_format(struct tpe *tpe, char *buf, int pos, int maxlen,
+		struct order *order, struct order_desc *desc, int argnum);
+static void tpe_order_parse_args(struct tpe *tpe, struct order *order, 
+		struct order_desc *desc, int *p);
 
 struct tpe_orders *
 tpe_orders_init(struct tpe *tpe){
@@ -134,11 +181,16 @@ tpe_order_get_name_by_type(struct tpe *tpe, uint32_t type){
 	return NULL;
 }
 
+/**
+ * Parse an order 
+ *
+ */
 static int
 tpe_orders_msg_order_description(void *data, int type, void *edata){
 	struct tpe *tpe = data;
 	int *event = edata;
 	struct order_desc *od;
+	int i;
 
 	od = calloc(1,sizeof(struct order_desc));
 
@@ -149,6 +201,11 @@ tpe_orders_msg_order_description(void *data, int type, void *edata){
 			&od->nargs, &od->args, &od->updated);
 
 	ecore_list_append(tpe->orders->ordertypes, od);
+
+	printf("Order has %d args\n",od->nargs);
+	for (i = 0 ; i < od->nargs ; i ++){
+		printf("\tArg is type %d\n",od->args[i].arg_type);
+	}
 
 	return 1;
 }
@@ -185,16 +242,19 @@ tpe_orders_object_update(void *tpev, int type, void *objv){
 	return 1;
 }
 
-/*
+/**
+ * Callback for receiving an order from the server.
+ *
  * FIXME: Optimise - should peak at the end, can not parse an order unless I
  * have to
+ *
  */
 static int 
 tpe_orders_msg_order(void *data, int type, void *event){
 	struct tpe *tpe = data;
 	struct object *object;
+	struct order_desc *desc;
 	struct order *order;
-	const char *tname;
 	void *end;
 
 	order = calloc(1,sizeof(struct order));
@@ -206,14 +266,13 @@ tpe_orders_msg_order(void *data, int type, void *event){
 			&order->nresources, &order->resources,
 			&end);
 
-	tname = tpe_order_get_name_by_type(tpe, order->type);
-	if (tname == NULL){
-		printf("Unknown order type %d\n",order->type);
-	} else if (strcmp(tname,"Colonise") == 0){
-		tpe_util_parse_packet(end, "i", &order->extra.colonise);
-	} 
-	/* FIXME: Handle all order types - and use order desc to do parsing */
-
+	desc = tpe_order_orders_get_desc_by_id(tpe, order->type);
+	if (desc)
+		tpe_order_parse_args(tpe, order, desc, end);
+	else {
+		printf("No description for order type %d\n",order->type);
+	}
+	
 	if (order->slot == -1){
 		/* Free it */
 		tpe_orders_order_free(order);
@@ -235,7 +294,55 @@ tpe_orders_msg_order(void *data, int type, void *event){
 		object->orders[order->slot] = order;
 	}
 
+
 	return 1;
+}
+
+/**
+ * Parse the arguments for an order.
+ *
+ */
+static void
+tpe_order_parse_args(struct tpe *tpe, struct order *order, 
+		struct order_desc *desc, int *p){
+	int i;
+	union order_arg_data *data;
+
+	/* FIXME: Leak?? */
+	order->args = calloc(desc->nargs, sizeof(union order_arg_data));
+
+	/* FIXME: Should do a little more checking here */
+	for (i = 0 ; i < desc->nargs ; i ++){
+		data = calloc(1,sizeof(union order_arg_data));
+		order->args[i] = data;
+
+		switch(desc->args[i].arg_type){
+		case ARG_COORD:
+			tpe_util_parse_packet(p,"lllp",
+					&data->coord.x,
+					&data->coord.y,
+					&data->coord.z,
+					&p);
+			break;
+		case ARG_TIME:
+			break;
+		case ARG_OBJECT:
+			tpe_util_parse_packet(p, "ip",
+					&data->object.oid,
+					&p);
+			break;
+		case ARG_PLAYER:
+			break;
+		case ARG_STRING:
+			tpe_util_parse_packet(p, "isp", 
+					&data->string.maxlen,
+					&data->string.str,
+					&p);
+			break;
+		}
+	}
+
+
 }
 
 int
@@ -249,7 +356,6 @@ tpe_orders_order_free(struct order *order){
 
 int
 tpe_orders_order_print(struct tpe *tpe, struct order *order){
-	struct object *target;
 
 	if (order == NULL){
 		printf("\tNo order data\n");
@@ -262,14 +368,6 @@ tpe_orders_order_print(struct tpe *tpe, struct order *order){
 			tpe_order_get_name_by_type(tpe, order->type),
 			order->turns,
 			order->nresources);
-	/* FIXME: Print resources */
-
-	if (order->type == 3){
-		printf("Colonising object %d:\n", order->extra.colonise);
-		target = tpe_obj_obj_get_by_id(tpe->obj, order->extra.colonise);
-		tpe_obj_obj_dump(target);
-		printf("End col\n");
-	}
 
 	return 0;
 }
@@ -289,8 +387,11 @@ const char *
 tpe_orders_str_get(struct tpe *tpe, struct object *obj){
 	static char buf[BUFSIZ];
 	struct order *order;
+	struct order_desc *desc;
 	int pos;
-	int i;
+	int i,j;
+
+	buf[0] = 0;
 
 	for (pos = 0 , i = 0 ; i < obj->norders ; i ++){
 		order = obj->orders[i];
@@ -299,14 +400,67 @@ tpe_orders_str_get(struct tpe *tpe, struct object *obj){
 					"<order>Unknown</order>");
 			continue;
 		}
+		desc = tpe_order_orders_get_desc_by_id(tpe, order->type);
+
 		pos += snprintf(buf + pos, BUFSIZ - pos, 
 				"<order>%s</order>", 
 				tpe_order_get_name_by_type(tpe, order->type));
-		/* FIXME: Do args... */	
+
+		for (j = 0 ; j < desc->nargs ; j ++){
+			pos = tpe_order_arg_format(tpe, buf, pos, BUFSIZ, 
+					order, desc, j);	
+		}
+
 	}
 
 	return buf;
 }
+
+static int
+tpe_order_arg_format(struct tpe *tpe, char *buf, int pos, int maxlen,
+		struct order *order, struct order_desc *desc, int argnum){
+	struct object *obj;
+
+	switch (desc->args[argnum].arg_type){
+	case ARG_COORD:
+		pos += snprintf(buf + pos, maxlen - pos,
+				"<arg>%lld %lld %lld</arg>", 
+				order->args[argnum]->coord.x,
+				order->args[argnum]->coord.y,
+				order->args[argnum]->coord.z);
+		break;
+
+	case ARG_TIME:
+
+		break;
+	case ARG_OBJECT:
+		obj = tpe_obj_obj_get_by_id(tpe->obj,
+				order->args[argnum]->object.oid);
+		if (obj)
+			pos += snprintf(buf + pos, maxlen - pos,
+					"<arg>%d: %s</arg>",obj->oid,obj->name);
+		else
+			pos += snprintf(buf + pos, maxlen - pos,
+					"<arg>%d [Unknown]</arg>",
+					order->args[argnum]->object.oid);
+		break;
+	case ARG_PLAYER:
+
+	case ARG_STRING:
+		pos += snprintf(buf + pos, maxlen - pos, 
+				"<arg>%s</arg>", "arg");
+		break;
+	default: 
+		printf("Don't handle arg type %d yet\n", desc->args[argnum].arg_type);
+
+
+	}
+
+	return pos;
+
+}
+
+
 
 /**
  * Appends a order to move to a particular location.
