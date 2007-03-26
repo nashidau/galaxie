@@ -103,6 +103,11 @@ static void board_mouse_in(void *data, Evas *e, Evas_Object *obj, void *event);
 static void board_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event);
 static void board_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event);
 
+/* Object window event handlers */
+static void tpe_gui_edje_object_change(void *data, Evas_Object *objectbox, 
+		const char *emission, const char *source);
+static void tpe_gui_objectbox_object_set(struct tpe_gui *gui, Evas_Object *objectbox, struct object *object);
+
 /* Message Window event handlers */
 static Evas_Object *tpe_gui_messagebox_add(struct tpe_gui *gui);
 static void tpe_gui_edje_message_change(void *data, Evas_Object *o, 
@@ -594,33 +599,87 @@ star_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 	Evas_Object *o;
 	//Evas_Event_Mouse_Down *mouse = event;
 	struct tpe_gui_obj *go = data;
-	char buf[50];
-	const char *orderstr;
 
-	tpe_obj_obj_dump(go->object);
-	
 	o = edje_object_add(go->gui->e);
 	edje_object_file_set(o,"edje/basic.edj", "ObjectInfo");
 	evas_object_move(o, rand() % 200, rand() % 200);
 	evas_object_resize(o, 200,200);
 
-	edje_object_part_text_set(o, "Name", go->object->name);
-	/* FIXME: Get the player name */
-	if (go->object->owner == -1)
-		edje_object_part_text_set(o, "Owner", "Unowned");
-	else if (go->object->owner == go->gui->tpe->player)
-		edje_object_part_text_set(o, "Owner", "Mine");
-	else {
-		snprintf(buf,50,"Other (%d)", go->object->owner);
-		edje_object_part_text_set(o, "Owner", buf);
-	}
+	tpe_gui_objectbox_object_set(go->gui, o, go->object);
 
-	orderstr = tpe_orders_str_get(go->gui->tpe, go->object);
-	edje_object_part_text_set(o, "Orders", orderstr);
+	edje_object_signal_callback_add(o,
+			"mouse,clicked,*", "Next", 
+			tpe_gui_edje_object_change, go->gui);
+	edje_object_signal_callback_add(o,
+			"mouse,clicked,*", "Prev", 
+			tpe_gui_edje_object_change, go->gui);
+	edje_object_signal_callback_add(o,
+			"mouse,clicked,*", "Child", 
+			tpe_gui_edje_object_change, go->gui);
+	edje_object_signal_callback_add(o,
+			"mouse,clicked,*", "Parent", 
+			tpe_gui_edje_object_change, go->gui);
+	edje_object_signal_callback_add(o,
+			"mouse,clicked,*", "Close", 
+			(void*)evas_object_del, o);
 
 	evas_object_show(o);
 
 }
+
+/**
+ * Mouse click handler for mouse clicks in the Object view window.
+ *
+ */
+static void
+tpe_gui_edje_object_change(void *data, Evas_Object *objectbox, 
+		const char *emission, const char *source){
+	struct tpe_gui *gui = data;
+	struct object *obj,*target;
+
+	obj = evas_object_data_get(objectbox, "Object");
+	assert(obj);
+	if (obj == NULL) return;
+
+	if (strcmp(source, "Child") == 0){
+		target = tpe_obj_obj_child_get(gui->tpe, obj);
+	} else if (strcmp(source, "Parent") == 0){
+		target = tpe_obj_obj_parent_get(gui->tpe, obj);
+	} else if (strcmp(source, "Next") == 0){
+		target = tpe_obj_obj_sibling_get(gui->tpe, obj, 1);
+	} else {
+		target = tpe_obj_obj_sibling_get(gui->tpe, obj, 0);
+	}
+
+	if (target)
+		tpe_gui_objectbox_object_set(gui, objectbox, target);
+}
+
+static void
+tpe_gui_objectbox_object_set(struct tpe_gui *gui, Evas_Object *objectbox,
+		struct object *object){
+	const char *orderstr;
+	char buf[50];
+
+	edje_object_part_text_set(objectbox, "Name", object->name);
+	/* FIXME: Get the player name */
+	if (object->owner == -1)
+		edje_object_part_text_set(objectbox, "Owner", "Unowned");
+	else if (object->owner == gui->tpe->player)
+		edje_object_part_text_set(objectbox, "Owner", "Mine");
+	else {
+		snprintf(buf,50,"Other (%d)", object->owner);
+		edje_object_part_text_set(objectbox, "Owner", buf);
+	}
+
+	orderstr = tpe_orders_str_get(gui->tpe, object);
+	edje_object_part_text_set(objectbox, "Orders", orderstr);
+
+	evas_object_data_set(objectbox, "Object", object);
+
+}
+
+
 static void
 fleet_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 	star_mouse_down(data,e,obj,event);
@@ -875,6 +934,7 @@ tpe_gui_messagebox_add(struct tpe_gui *gui){
 	edje_object_signal_callback_add(o,
 			"mouse,clicked,*", "Prev", 
 			tpe_gui_edje_message_change, gui);
+
 	edje_object_signal_callback_add(o,
 			"mouse,clicked,*", "Close", 
 			(void*)evas_object_del, o);

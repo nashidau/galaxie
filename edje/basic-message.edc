@@ -27,6 +27,8 @@ images {
     image: "messagebox-bg.png" COMP;
     image: "arrow-right-ugly.png" COMP;
     image: "arrow-left-ugly.png" COMP;
+    image: "arrow-down-ugly.png" COMP;
+    image: "arrow-up-ugly.png" COMP;
     image: "window-close-ugly.png" COMP;
     image: "mailbox.png" COMP;
 }

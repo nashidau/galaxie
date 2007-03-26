@@ -268,6 +268,61 @@ tpe_obj_object_updated(struct tpe *tpe, uint32_t oid){
 	return obj->updated;
 }
 
+/**
+ * Get the sibling (either next or previous) of an object.
+ *
+ * If it is the last (or first) this function returns NULL.
+ *
+ * @param obj Object to get sibling off.
+ * @param next Get the next sbiling (0 == prev)
+ * @return Sibling or NULL on error 
+ */
+struct object *
+tpe_obj_obj_sibling_get(struct tpe *tpe, struct object *obj, int next){
+	struct object *parent;
+	int i;
+
+	if (obj == NULL) return NULL;
+
+	if (obj->parent == -1){
+		printf("Objects %d (%s) parent is NULL!\n", obj->oid,obj->name);
+		return NULL;
+	}
+
+	parent = tpe_obj_obj_get_by_id(tpe->obj, obj->parent);
+	if (parent == NULL) return NULL;
+
+	for (i = 0 ; i < parent->nchildren ; i ++){
+		if (parent->children[i] == obj->oid)
+			break;
+	}
+	if (i == 0 && next == 0) return NULL;
+	if (i == parent->nchildren) return NULL;
+	if (i == parent->nchildren -1 && next) return NULL;
+
+	if (next)
+		return tpe_obj_obj_get_by_id(tpe->obj,parent->children[i + 1]);
+	else
+		return tpe_obj_obj_get_by_id(tpe->obj,parent->children[i - 1]);
+}
+
+struct object *
+tpe_obj_obj_child_get(struct tpe *tpe, struct object *obj){
+	if (tpe == NULL) return NULL;
+	if (obj == NULL) return NULL;
+	if (obj->nchildren == 0) return NULL;
+
+	return tpe_obj_obj_get_by_id(tpe->obj, obj->children[0]);
+}
+
+struct object *
+tpe_obj_obj_parent_get(struct tpe *tpe, struct object *obj){
+	if (tpe == NULL) return NULL;
+	if (obj == NULL) return NULL;
+	if (obj->parent == -1) return NULL;
+
+	return tpe_obj_obj_get_by_id(tpe->obj, obj->parent);
+}
 
 static void
 tpe_obj_list_begin(struct tpe *tpe){
@@ -321,3 +376,4 @@ tpe_obj_cleanup(struct tpe *tpe, struct object *o){
 	}
 	free(o);
 }
+

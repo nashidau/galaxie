@@ -133,6 +133,109 @@ group {
 
 	    }
 	}
+	part {
+	    name: "Close";
+	    type: IMAGE;
+	    description {
+		state: "default" 0.0;
+		rel1 { 
+		    to: "background";
+		    relative: 1.0 0;
+		    offset: -20 0;
+		}
+		rel2 {
+		    to: "background";
+		    relative: 1.0 0;
+		    offset: -4 16;
+		}
+		image {
+		    normal: "window-close-ugly.png";
+		}
+	    }
+
+	}
+	part {
+	    name: "Next";
+	    type: IMAGE;
+	    description {
+	    state: "default" 0.0;
+		rel1 { 
+		    to: "Close";
+		    relative: 0.0 0.0;
+		    offset: -17 0;
+		}
+		rel2 {
+		    to: "Close";
+		    relative: 0.0 0.0;
+		    offset: -1 16;
+		}
+		image {
+		    normal: "arrow-right-ugly.png";
+		}
+	    }
+	}
+	part {
+	    name: "Parent";
+	    type: IMAGE;
+	    description {
+		state: "default" 0.0;
+		rel1 { 
+		    to: "Next";
+		    relative: 0.0 0.0;
+		    offset: -17 0;
+		}
+		rel2 {
+		    to: "Next";
+		    relative: 0.0 0.0;
+		    offset: -1 16;
+		}
+		image {
+		    normal: "arrow-up-ugly.png";
+		}
+	    }
+	}
+	part {
+	    name: "Child";
+	    type: IMAGE;
+	    description {
+		state: "default" 0.0;
+		rel1 { 
+		    to: "Parent";
+		    relative: 0.0 0.0;
+		    offset: -17 0;
+		}
+		rel2 {
+		    to: "Parent";
+		    relative: 0.0 0.0;
+		    offset: -1 16;
+		}
+		image {
+		    normal: "arrow-down-ugly.png";
+		}
+	    }
+	}
+	part {
+	    name: "Prev";
+	    type: IMAGE;
+	    description {
+		state: "default" 0.0;
+		rel1 { 
+		    to: "Child";
+		    relative: 0.0 0.0;
+		    offset: -17 0;
+		}
+		rel2 {
+		    to: "Child";
+		    relative: 0.0 0.0;
+		    offset: -1 16;
+		}
+		image {
+		    normal: "arrow-left-ugly.png";
+		}
+	    }
+	}
+
+
     }		    
 
 }

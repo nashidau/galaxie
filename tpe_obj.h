@@ -84,6 +84,10 @@ int tpe_obj_obj_dump(struct object *o);
 struct object *tpe_obj_obj_get_by_id(struct tpe_obj *obj, uint32_t oid);
 struct object *tpe_obj_obj_add(struct tpe_obj *obj, int );
 
+struct object *tpe_obj_obj_sibling_get(struct tpe *tpe, struct object *, int prev);
+struct object *tpe_obj_obj_child_get(struct tpe *tpe, struct object *);
+struct object *tpe_obj_obj_parent_get(struct tpe *tpe, struct object *);
+
 uint64_t tpe_obj_object_updated(struct tpe *, uint32_t oid);
 
 /* Really for the AI use only... */
