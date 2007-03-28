@@ -27,6 +27,17 @@ enum opt_ai {
 	AI_SMITH,
 };
 
+/* FIXME: This should be auto generated */
+struct ai_info {
+	enum opt_ai ai;
+	const char *name;
+	const char *description;
+} ai_info[] = {
+	AI_NONE,	"none",	"No AI - don't use an AI.",
+	AI_SMITH,	"smith", 
+"Smith is a basic hyper expander for the MiniSec game.  He is not aggresive\n"
+"but will attempt to colonise everything he can.\n"
+};
 
 struct startopt {
 	const char *username;
@@ -207,8 +218,29 @@ parse_server(struct startopt *opt, int i, char **args){
 
 static int 
 parse_usage(struct startopt *opt, int i, char **args){
-	printf("This is the help. \n");
-	printf("It will be implemented soon\n");
+	printf(
+"Welcome to TPE : The Thousand Parsec Enlightened Client\n"
+"\n"
+"TPE features a basic AI as well as human user interface.\n"
+"Future work includes using the AI for micro-management.\n"
+"Please note this is a work in progress, and at this time\n"
+"is not a complete client.\n"
+"\n"
+"Usage:\n"
+"\ttpe [options] [server]\n"
+"Options:\n"
+"\t--username,-u <User>       Log into server with this username.\n"
+"\t--password,-p <Password>   Log into server with this password.\n"
+"\t--server,-s <Server>       Server name (hostname or IP).\n"
+"\t--ai <AI Name | None>      Use this AI, or none.\n"
+"\t--list-ais		      List the AIs in this client.\n"
+"\t--no-ai                    Turn off all AIs.\n"
+"\t--no-gui                   Disable the GUI.\n"
+"\t--theme,-t <Themename>     Name of edje theme file to use [GUI].\n"
+"\t--fullscreen               Start in fullscreen mode [GUI].\n"
+"\t--usage,--help,-h,-?       This help screen.\n"
+);
+
 	exit(0);
 }
 
