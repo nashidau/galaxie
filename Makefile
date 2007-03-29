@@ -4,6 +4,9 @@ PKGS='evas ecore edje'
 CFLAGS+=`${PKGCONFIG} --cflags ${PKGS}`
 LDFLAGS+=`${PKGCONFIG} --libs ${PKGS}`
 
+ifeq "${PREFIX}" ""
+	PREFIX=/usr/local
+endif
 
 OBJECTS=		\
 	tpe.o		\
@@ -36,10 +39,17 @@ EDJE=	edje/basic.edj
 EDJE_FLAGS=-id edje/images
 
 
-TARGETS: tpe ${EDJE}
+TARGETS: tpe tpai ${EDJE}
 
 %.edj : %.edc
 	edje_cc ${EDJE_FLAGS} $<
+
+# Big FIXME: install edje data, and make sure binaries can find it
+install:
+	cp tpe tpai ${PREFIX}/bin
+
+tpai: 
+	ln -s tpe tpai
 
 tpe: ${OBJECTS} ${AIS}
 

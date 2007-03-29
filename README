@@ -1,0 +1,30 @@
+Welcome to the Thousand Parsec Enlightened Client!
+
+This is client for Thousand Parsec.  The home page for that project is at
+http://www.thousandparsec.com/.  Please, if you find the 's', let us know.
+
+This client uses the E foundation libraries, in particular Edje, Evas and
+Ecore.
+
+Additional it supports an AI infrastructure, and a simple AI for the game
+minisec 'Smith'. 
+
+About Smith
+===========
+
+Smith is a purely reaction driven AI.  It essentially only reacts to finding
+things it can give orders too.  In fact it only orders Frigates and Planets at
+this time.   For Frigates it finds them somewhere to colonise.  For planets,
+it gets them to build frigates. 
+
+There is basic support for redirecting fleets which are going to colonise
+pre-colonised worlds.
+
+Future Work
+===========
+
+The main piece of future work is to complete the human UI.  Once that is done
+tp04 support, and support for other rulesets.  Hopefully it will keep pace
+with the SoC projects.
+
+

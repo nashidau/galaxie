@@ -1,0 +1,27 @@
+INSTALL
+=======
+
+The Thousand Parsec Enlightened Client (tpe) depends on the Enlightenment
+Foundation Libraries.  In particular Ecore, Evas, and Edje.  
+
+There are two ways of getting the libraries: 
+ * Download from CVS from enlightenment.org
+ * Download unofficial packages for your distribution
+
+Unofficial packages are available at:
+deb http://e17.dunnewind.net/ubuntu edgy e17
+deb-src http://e17.dunnewind.net/ubuntu edgy e17
+
+Or use
+## E17 repository "edevelop.org"
+deb http://edevelop.org/pkg-e/ubuntu edgy e17
+deb-src http://edevelop.org/pkg-e/ubuntu edgy e17
+
+
+Replace edgy with one of dapper or feisty if you prefer.
+
+apt-get install libedje0 libevas0 libecore0
+
+Should get you the libraries you need.
+
+Then just 'make' in this directory.

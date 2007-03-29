@@ -36,6 +36,7 @@
  	- SSL
 	- HTTP
 	- HTTPS
+ * Register tp:// handler
  * Metaserver queries
  * Avahi/zeroconf queries
  * Improve some of the data structures
@@ -143,4 +144,9 @@
 	- tpe_util
 	- ai_smith
 	- ai_util
+
+General TP
+ * Metaserver browsing URIs
+ * Register ports with IANA
+ * Register scheme with IANA
 
