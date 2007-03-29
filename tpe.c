@@ -1,6 +1,9 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <regex.h>
 
 #include <Evas.h>
 #include <Ecore.h>
@@ -41,9 +44,16 @@ struct ai_info {
 };
 
 struct startopt {
-	const char *username;
-	const char *password;
-	const char *server;
+	/* Server details */
+	unsigned int http: 1;
+	unsigned int ssl:  1;
+	unsigned short port;
+	char *server;
+	
+	char *game;
+
+	char *username;
+	char *password;
 	
 	/* AI options */
 	enum opt_ai ai;
@@ -51,20 +61,29 @@ struct startopt {
 	/* GUI options */
 	unsigned int usegui :1; 
 	unsigned int fullscreen :1; 
-	const char *theme;
+	char *theme;
+
+	int showoptions;
 };
 
 static struct startopt *parse_args(int argc, char **argv);
 static int parse_username(struct startopt *opt, int i, char **args);
 static int parse_password(struct startopt *opt, int i, char **args);
 static int parse_server(struct startopt *opt, int i, char **args);
+static int parse_port(struct startopt *opt, int i, char **args);
+static int parse_url(struct startopt *opt, int i, char **args);
+static int parse_game(struct startopt *opt, int i, char **args);
 static int parse_ai(struct startopt *opt, int i, char **args);
 static int parse_no_ai(struct startopt *opt, int i, char **args);
 static int parse_gui(struct startopt *opt, int i, char **args);
 static int parse_fullscreen(struct startopt *opt, int i, char **args);
 static int parse_theme(struct startopt *opt, int i, char **args);
 static int parse_usage(struct startopt *opt, int i, char **args);
+static int parse_options(struct startopt *opt, int i, char **args);
 static const char *parse_option(char **args, int *i);
+static void dump_options(struct startopt *);
+
+char *substringdup(const char *str, int start, int end);
 
 static struct args {
 	const char *arg;
@@ -76,20 +95,43 @@ static struct args {
 	{ "-p",		parse_password	},
 	{ "--server",	parse_server	},
 	{ "-s",		parse_server	},
+	{ "--port",	parse_port	},
+	{ "--game",	parse_game	},
+	{ "-g",		parse_game	},
 	{ "--ai",	parse_ai	},
 	{ "--no-ai",	parse_no_ai	},
+	{ "--noai",	parse_no_ai	},
 	{ "--no-gui",   parse_gui	},
+	{ "--nogui",    parse_gui	},
 	{ "--theme",    parse_theme	},
 	{ "-t",         parse_theme     },
 	{ "--fullscreen", parse_fullscreen },
-	{ "tp:",	parse_url 	},
-	{ "tps:",	parse_url 	},
+	{ "tp",		parse_url 	},
+	{ "--options",  parse_options   },
 	{ "--usage",    parse_usage	},
 	{ "--help",     parse_usage	},
 	{ "-h",    	parse_usage	},
 	{ "-?",    	parse_usage	},
 };
 
+/* The regular expression for matching URLS */
+static const char *urlpattern = 
+	"^tp"		/* The tp */
+	"(\\+?http)?"    /* 1: Use Http */
+	"(s)?" 		/* 2: ssh */
+	"://"		
+	"([[:alnum:]]+"	/* 3: Username */
+	"(:[[:alnum:]]+)?" /* 4: Password */
+	"@)?"		/*   - End username */
+	"([[:alnum:].]+)" /* 5: Server */
+	"(:[[:digit:]]+)?" /* 6: Port */
+	"/([[:alnum:]]+)?" /* 7: Game */
+	"$";		/* Terminating '/' */
+
+#define MATCH(match,offset) 	(match[offset].rm_so != match[offset].rm_eo &&\
+				match[offset].rm_so != -1)
+#define EXTRACT(str,match,offset) 	\
+		substringdup(str,match[offset].rm_so,match[offset].rm_eo)
 
 int
 main(int argc, char **argv){
@@ -107,6 +149,8 @@ main(int argc, char **argv){
 		printf("Error parsing arguments\n");
 		exit(1);
 	}
+	if (opt->showoptions)
+		dump_options(opt);
 
 	tpe->event 	= tpe_event_init(tpe);
 	tpe->msg   	= tpe_msg_init(tpe);
@@ -126,8 +170,8 @@ main(int argc, char **argv){
 		tpe->ai = ai_smith_init(tpe);
 
 	if (opt->server && opt->username && opt->server)
-		tpe_comm_connect(tpe->comm, opt->server, 6923, opt->username,
-			opt->password);
+		tpe_comm_connect(tpe->comm, opt->server, opt->port, 
+				opt->username, opt->password);
 
 	ecore_main_loop_begin();
 
@@ -137,6 +181,7 @@ main(int argc, char **argv){
 
 static struct startopt *
 parse_args(int argc, char **argv){
+	char *p;
 	struct startopt *opt;
 	int i,j;
 
@@ -144,11 +189,28 @@ parse_args(int argc, char **argv){
 	if (opt == NULL) return NULL;
 
 	/* Set some defaults */
-	opt->usegui = 1; /* Default */ /* FIXME: Compile constant */
-	opt->ai = AI_SMITH; /* FIXME: Compile constant */
-	opt->username = "nash";
-	opt->password = "password";
-	opt->server = "localhost";
+	p = strrchr(argv[0],'/');
+	if (p == NULL)
+		p = argv[0];
+	else 
+		p ++;
+	if (strcmp(p, "tpai") == 0){
+		/* Use AI defaults */
+		opt->usegui = 0; /* Default */ /* FIXME: Compile constant */
+		opt->ai = AI_SMITH; /* FIXME: Compile constant */
+		opt->username = strdup("smith");
+		opt->password = strdup("password");
+		opt->server = strdup("localhost");
+		opt->port = 6923;
+	} else {
+		/* Use defaults */
+		opt->usegui = 1; /* Default */ /* FIXME: Compile constant */
+		opt->ai = AI_SMITH; /* FIXME: Compile constant */
+		opt->username = strdup("nash");
+		opt->password = strdup("password");
+		opt->server = strdup("localhost");
+		opt->port = 6923;
+	}
 
 	for (i = 1 ; i < argc ; i ++){
 		for (j = 0 ; j < sizeof(args)/sizeof(args[0]) ; j ++)	
@@ -163,13 +225,19 @@ parse_args(int argc, char **argv){
 
 static int 
 parse_username(struct startopt *opt, int i, char **args){
-	opt->username = parse_option(args,&i);
+	const char *tmp;
+	tmp = parse_option(args, &i);
+	if (tmp)
+		opt->username = strdup(tmp);
 	return i;
 }
 
 static int 
 parse_password(struct startopt *opt, int i, char **args){
-	opt->password = parse_option(args,&i);
+	const char *tmp;
+	tmp = parse_option(args, &i);
+	if (tmp)
+		opt->password = strdup(tmp);
 	return i;
 }
 
@@ -207,15 +275,145 @@ parse_fullscreen(struct startopt *opt, int i, char **args){
 
 static int 
 parse_theme(struct startopt *opt, int i, char **args){
-	opt->theme = parse_option(args, &i);
-	
-	return i;	
+	const char *tmp;
+	tmp = parse_option(args, &i);
+	if (tmp)
+		opt->theme = strdup(tmp);
+	return i;
+}
+
+static int 
+parse_game(struct startopt *opt, int i, char **args){
+	const char *tmp;
+	tmp = parse_option(args, &i);
+	if (tmp)
+		opt->game = strdup(tmp);
+	return i;
+
 }
 
 
 static int 
 parse_server(struct startopt *opt, int i, char **args){
-	opt->server = parse_option(args, &i);
+	const char *tmp;
+	tmp = parse_option(args, &i);
+	if (tmp)
+		opt->server = strdup(tmp);
+	return i;
+}
+
+
+static int 
+parse_options(struct startopt *opt, int i, char **args){
+	opt->showoptions = 1;
+	return i;
+}
+
+
+static int 
+parse_port(struct startopt *opt, int i, char **args){
+	opt->port = strtol(parse_option(args,&i),0,0);
+	return i;
+}
+
+static void
+dump_options(struct startopt *opt){
+	printf("tp%s%s://%s:%s@%s:%d/%s\n",
+			opt->http ? "+http" : "",
+			opt->ssl ? "s" : "",
+			opt->username,
+			opt->password, 
+			opt->server,
+			opt->port,
+			opt->game);
+	
+	printf("Ai is %s\n",ai_info[opt->ai].name);
+	printf("Gui is %s\n",opt->usegui ? "On" : "Off");
+	printf("Theme is %s\n",opt->theme);
+
+	exit(0);
+
+}
+
+/**
+ * Parse a TP formatted URL
+ *
+ * tp+?(http)s?://[username[:password]@]server[:port]/[game]
+ *
+ * Does not support games at this time
+ *
+ * Currently parses:
+ * Scheme: 
+ * 	tp
+ * 
+ */
+static int 
+parse_url(struct startopt *opt, int i, char **args){
+	regex_t re;
+	regmatch_t *matches;
+	int rv;
+	char *str;
+
+	str = args[i];
+
+	if (regcomp(&re, urlpattern, REG_EXTENDED) != 0){
+		/* FIXME: perror doesn't work here */
+		perror("regcomp:");
+		return -1;
+	}
+
+	matches = calloc(re.re_nsub + 1, sizeof(regmatch_t));
+	if (matches == NULL){
+		perror("calloc");
+		return -1;
+	}
+
+	rv = regexec(&re, str, re.re_nsub, matches, 0);
+	if (rv != 0){
+		/* FIXME: perror doesn't work here */
+		perror("regexec");
+	}
+
+	/* 1: Http */
+	if (MATCH(matches,1)){
+		opt->http = 1;
+	}
+
+	/* 2: ssh */
+	if (MATCH(matches,2)){
+		opt->ssl = 1;
+	}
+
+	/* 3: Username */
+	if (MATCH(matches,3)){
+		opt->username = EXTRACT(str,matches,3);
+	}
+	/* 4: Password */
+	if (MATCH(matches,4)){
+		if (opt->password) free(opt->password);
+		opt->password = EXTRACT(str,matches,4);
+	}
+
+	/* 5: Server */
+	if (MATCH(matches,5)){
+		if (opt->server) free(opt->server);
+		opt->server = EXTRACT(str,matches,5);
+	}	
+
+	/* 6: Port */
+	if (MATCH(matches, 6)){
+		opt->port = strtol(str + matches[6].rm_eo,0,10);
+	}
+
+
+	/* 4: Game name */
+	if (MATCH(matches,7)){
+		if (opt->game) free(opt->game);
+		opt->game = EXTRACT(str,matches,7);
+	}
+
+
+
 	return i;
 }
 
@@ -233,7 +431,7 @@ parse_usage(struct startopt *opt, int i, char **args){
 "\ttpe [options] [server]\n"
 "Where server is the full URL of the server in the form:\n"
 "\tProtocol://[user[:password]@]server[:port]/\n"
-"\t\tProtcol can only be tp at this time.\n",
+"\t\tProtcol can only be tp at this time.\n"
 "\t\tUser is the optional username.\n"
 "\t\tPassword requires username to be present).\n"
 "\t\tServer is the IP of name of the server - IPv4 or DNS.\n"
@@ -249,6 +447,7 @@ parse_usage(struct startopt *opt, int i, char **args){
 "\t--theme,-t <Themename>     Name of edje theme file to use [GUI].\n"
 "\t--fullscreen               Start in fullscreen mode [GUI].\n"
 "\t--usage,--help,-h,-?       This help screen.\n"
+"\t--options       	      Dump options and exit.\n"
 );
 
 	exit(0);
@@ -269,4 +468,13 @@ parse_option(char **args, int *i){
 }
 
 
+char *
+substringdup(const char *str, int start, int end){
+	char *buf;
 
+	if (str == NULL || end <= start) return NULL;
+
+	buf = calloc(end - start + 1,sizeof(char));
+	strncpy(buf,str + start,end - start);
+	return buf;
+}
