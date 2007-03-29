@@ -33,10 +33,11 @@ struct ai_info {
 	const char *name;
 	const char *description;
 } ai_info[] = {
-	AI_NONE,	"none",	"No AI - don't use an AI.",
-	AI_SMITH,	"smith", 
+	{ AI_NONE,	"none",	"No AI - don't use an AI." },
+	{ AI_SMITH,	"smith", 
 "Smith is a basic hyper expander for the MiniSec game.  He is not aggresive\n"
 "but will attempt to colonise everything he can.\n"
+	},
 };
 
 struct startopt {
@@ -69,22 +70,24 @@ static struct args {
 	const char *arg;
 	int (*fn)(struct startopt *opt, int i, char **args);
 } args[] = {
-	{ "--user",	parse_username },
-	{ "-u",		parse_username },
-	{ "--password", parse_password },
-	{ "-p",		parse_password },
-	{ "--server",	parse_server   },
-	{ "-s",		parse_server   },
-	{ "--ai",	parse_ai       },
-	{ "--no-ai",	parse_no_ai    },
-	{ "--no-gui",   parse_gui      },
-	{ "--theme",    parse_theme    },
-	{ "-t",         parse_theme    },
+	{ "--user",	parse_username	},
+	{ "-u",		parse_username	},
+	{ "--password", parse_password	},
+	{ "-p",		parse_password	},
+	{ "--server",	parse_server	},
+	{ "-s",		parse_server	},
+	{ "--ai",	parse_ai	},
+	{ "--no-ai",	parse_no_ai	},
+	{ "--no-gui",   parse_gui	},
+	{ "--theme",    parse_theme	},
+	{ "-t",         parse_theme     },
 	{ "--fullscreen", parse_fullscreen },
-	{ "--usage",    parse_usage    },
-	{ "--help",     parse_usage    },
-	{ "-h",    	parse_usage    },
-	{ "-?",    	parse_usage    },
+	{ "tp:",	parse_url 	},
+	{ "tps:",	parse_url 	},
+	{ "--usage",    parse_usage	},
+	{ "--help",     parse_usage	},
+	{ "-h",    	parse_usage	},
+	{ "-?",    	parse_usage	},
 };
 
 
@@ -228,6 +231,13 @@ parse_usage(struct startopt *opt, int i, char **args){
 "\n"
 "Usage:\n"
 "\ttpe [options] [server]\n"
+"Where server is the full URL of the server in the form:\n"
+"\tProtocol://[user[:password]@]server[:port]/\n"
+"\t\tProtcol can only be tp at this time.\n",
+"\t\tUser is the optional username.\n"
+"\t\tPassword requires username to be present).\n"
+"\t\tServer is the IP of name of the server - IPv4 or DNS.\n"
+"\t\tPort (optional), else default port will be used.\n"
 "Options:\n"
 "\t--username,-u <User>       Log into server with this username.\n"
 "\t--password,-p <Password>   Log into server with this password.\n"
