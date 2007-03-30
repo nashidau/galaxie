@@ -19,9 +19,13 @@
 #include "tpe_ship.h"
 #include "tpe_util.h"
 
+/** General AI struture for Smith
+ */
 struct ai {
+	/** Pointer back to TPE structure */
 	struct tpe *tpe;
 
+	/* Number of last ship built */
 	int shipid;
 };
 
