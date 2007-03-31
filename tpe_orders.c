@@ -190,7 +190,6 @@ tpe_orders_msg_order_description(void *data, int type, void *edata){
 	struct tpe *tpe = data;
 	int *event = edata;
 	struct order_desc *od;
-	int i;
 
 	od = calloc(1,sizeof(struct order_desc));
 
@@ -201,11 +200,6 @@ tpe_orders_msg_order_description(void *data, int type, void *edata){
 			&od->nargs, &od->args, &od->updated);
 
 	ecore_list_append(tpe->orders->ordertypes, od);
-
-	printf("Order has %d args\n",od->nargs);
-	for (i = 0 ; i < od->nargs ; i ++){
-		printf("\tArg is type %d\n",od->args[i].arg_type);
-	}
 
 	return 1;
 }
