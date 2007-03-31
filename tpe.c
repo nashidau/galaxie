@@ -23,25 +23,22 @@
 #include "tpe_sequence.h"
 #include "tpe_ship.h"
 
-#include "ai_smith.h"
+#define TPE_AI(name,desc,func)  extern struct ai *func(struct tpe *);
+#include "ailist.h"
+#undef TPE_AI
 
-enum opt_ai {
-	AI_NONE,
-	AI_SMITH,
-};
-
-/* FIXME: This should be auto generated */
 struct ai_info {
-	enum opt_ai ai;
 	const char *name;
 	const char *description;
+	struct ai *(*init)(struct tpe *);
 } ai_info[] = {
-	{ AI_NONE,	"none",	"No AI - don't use an AI." },
-	{ AI_SMITH,	"smith", 
-"Smith is a basic hyper expander for the MiniSec game.  He is not aggresive\n"
-"but will attempt to colonise everything he can.\n"
-	},
+#define TPE_AI(name,desc,func)  {name,desc,func},
+#include "ailist.h"
+#undef TPE_AI
+	{ "none", "No AI - Don't use an AI.", NULL },
 };
+#define N_AIS  (sizeof(ai_info) / sizeof(ai_info[0]))
+
 
 struct startopt {
 	/* Server details */
@@ -56,7 +53,7 @@ struct startopt {
 	char *password;
 	
 	/* AI options */
-	enum opt_ai ai;
+	struct ai_info *ai;
 
 	/* GUI options */
 	unsigned int usegui :1; 
@@ -75,6 +72,7 @@ static int parse_url(struct startopt *opt, int i, char **args);
 static int parse_game(struct startopt *opt, int i, char **args);
 static int parse_ai(struct startopt *opt, int i, char **args);
 static int parse_no_ai(struct startopt *opt, int i, char **args);
+static int parse_list_ai(struct startopt *opt, int i, char **args);
 static int parse_gui(struct startopt *opt, int i, char **args);
 static int parse_fullscreen(struct startopt *opt, int i, char **args);
 static int parse_theme(struct startopt *opt, int i, char **args);
@@ -108,6 +106,11 @@ static struct args {
 	{ "--fullscreen", parse_fullscreen },
 	{ "tp",		parse_url 	},
 	{ "--options",  parse_options   },
+	{ "--list-ais", parse_list_ai	},
+	{ "--list-ai",  parse_list_ai	},
+	{ "--ais",      parse_list_ai	},
+	{ "--listais",	parse_list_ai	},
+	{ "--listai",	parse_list_ai	},
 	{ "--usage",    parse_usage	},
 	{ "--help",     parse_usage	},
 	{ "-h",    	parse_usage	},
@@ -166,8 +169,8 @@ main(int argc, char **argv){
 
 	if (opt->usegui)
 		tpe->gui = tpe_gui_init(tpe, opt->theme, opt->fullscreen);
-	if (opt->ai == AI_SMITH)
-		tpe->ai = ai_smith_init(tpe);
+	if (opt->ai && opt->ai->init)	
+		tpe->ai = opt->ai->init(tpe);
 
 	if (opt->server && opt->username && opt->server)
 		tpe_comm_connect(tpe->comm, opt->server, opt->port, 
@@ -197,7 +200,7 @@ parse_args(int argc, char **argv){
 	if (strcmp(p, "tpai") == 0){
 		/* Use AI defaults */
 		opt->usegui = 0; /* Default */ /* FIXME: Compile constant */
-		opt->ai = AI_SMITH; /* FIXME: Compile constant */
+		opt->ai = ai_info; /* FIXME: Compile constant */
 		opt->username = strdup("smith");
 		opt->password = strdup("password");
 		opt->server = strdup("localhost");
@@ -205,7 +208,7 @@ parse_args(int argc, char **argv){
 	} else {
 		/* Use defaults */
 		opt->usegui = 1; /* Default */ /* FIXME: Compile constant */
-		opt->ai = AI_SMITH; /* FIXME: Compile constant */
+		opt->ai = ai_info; /* FIXME: Compile constant */
 		opt->username = strdup("nash");
 		opt->password = strdup("password");
 		opt->server = strdup("localhost");
@@ -244,13 +247,15 @@ parse_password(struct startopt *opt, int i, char **args){
 static int 
 parse_ai(struct startopt *opt, int i, char **args){
 	const char *p;
+	int j;
 
 	p = parse_option(args, &i);
-	if (strcasecmp(p, "none") == 0)
-		opt->ai = AI_NONE;
-	if (strcasecmp(p, "smith") == 0)
-		opt->ai = AI_SMITH;
-	else
+	for (j = 0 ; j < N_AIS ; j ++){
+		if (strcasecmp(ai_info[j].name,p) == 0){
+			opt->ai = ai_info + j;
+		}
+	}
+	if (j == N_AIS)
 		printf("Unknown AI %s\n",p);
 
 	return i;
@@ -258,8 +263,19 @@ parse_ai(struct startopt *opt, int i, char **args){
 
 static int 
 parse_no_ai(struct startopt *opt, int i, char **args){
-	opt->ai = AI_NONE;
+	opt->ai = NULL;
 	return i;
+}
+
+static int
+parse_list_ai(struct startopt *opt, int i, char **args){
+	int j;
+
+	printf("Known AIs are:\n");
+	for (j = 0 ; j < N_AIS ; j ++){
+		printf("%s:\n\t%s\n",ai_info[j].name,ai_info[j].description);
+	}
+	exit(0);
 }
 
 static int 
@@ -327,7 +343,7 @@ dump_options(struct startopt *opt){
 			opt->port,
 			opt->game);
 	
-	printf("Ai is %s\n",ai_info[opt->ai].name);
+	if (opt->ai) printf("Ai is %s\n",opt->ai->name);
 	printf("Gui is %s\n",opt->usegui ? "On" : "Off");
 	printf("Theme is %s\n",opt->theme);
 

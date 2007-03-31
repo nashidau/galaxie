@@ -21,10 +21,13 @@ OBJECTS=		\
 	tpe_sequence.o	\
 	tpe_ship.o	\
 	tpe_util.o	\
+	ai_util.o
 
 AIS=			\
 	ai_smith.o	\
-	ai_util.o
+	ai_jones.o
+
+AI_SRCS=${subst .o,.c,${AIS}}
 
 BASICTHEME=			\
 	edje/basic.edc		\
@@ -48,10 +51,13 @@ TARGETS: tpe tpai ${EDJE}
 install:
 	cp tpe tpai ${PREFIX}/bin
 
+ailist.h:  ${AI_SRCS}
+	grep -h TPE_AI ${AI_SRCS} > ailist.h
+
 tpai: 
 	ln -s tpe tpai
 
-tpe: ${OBJECTS} ${AIS}
+tpe: ${OBJECTS} ${AIS} 
 
 doc:
 	doxygen Doxygen.conf
@@ -71,10 +77,11 @@ tags:
 		-s/home/nash/work/e17--cvs/libs/edje/src/lib	\
 		-s/home/nash/work/e17--cvs/libs/ecore/src/lib
 
+tpe.o: ailist.h
 tpe_msg.o : tpe_msg.h tpe.h
 ai_smith.o: tpe_obj.h tpe.h tpe_event.h tpe_msg.h tpe_orders.h tpe_ship.h \
 		tpe_util.h
 
 clean: 
-	rm -f *.o 
+	rm -f *.o ailist.h
 

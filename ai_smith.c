@@ -10,7 +10,6 @@
 #include <Ecore_Data.h>
 
 #include "tpe.h"
-#include "ai_smith.h"
 #include "ai_util.h"
 #include "tpe_event.h"
 #include "tpe_msg.h"
@@ -28,6 +27,8 @@ struct ai {
 	/* Number of last ship built */
 	int shipid;
 };
+
+TPE_AI("Smith", "Smith: A basic AI for minisec", ai_smith_init)
 
 
 /* Structure embedded into Objects for AI usage */
