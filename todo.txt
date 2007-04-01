@@ -45,6 +45,9 @@
 		- Designs
  * [UI] Send messages
  * [UI] Clean up messages in one click (close all windows)
+ * Ability to save screenshots
+ 	- Single shot
+	- 1/turn (make a video of the game ;-)
  * MTSec support
  	- Design
  * Start looking at TP04 support
