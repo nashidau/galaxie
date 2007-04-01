@@ -8,6 +8,9 @@ ifeq "${PREFIX}" ""
 	PREFIX=/usr/local
 endif
 
+# Image path
+I=edje/images/
+
 OBJECTS=		\
 	tpe.o		\
 	tpe_board.o	\
@@ -37,8 +40,15 @@ BASICTHEME=			\
 	edje/basic-ships.edc	\
 	edje/basic-stars.edc
 
+IMAGES=				\
+	$Iarrowright.png	\
+	$Iarrowleft.png		\
+	$Ibg.png		\
+	$Imessagewindow.png	\
+	$Imailbox.png	
 
-EDJE=	edje/basic.edj 
+
+EDJE=edje/basic.edj 
 EDJE_FLAGS=-id edje/images
 
 
@@ -68,7 +78,7 @@ sparse:
 testedje: ${EDJE}
 	edje ${EDJE}
 
-edje/basic.edj: ${BASICTHEME}
+edje/basic.edj: ${BASICTHEME} ${IMAGES}
 
 tags:
 	cscope -R -b -I/usr/local/include 			\
@@ -77,11 +87,28 @@ tags:
 		-s/home/nash/work/e17--cvs/libs/edje/src/lib	\
 		-s/home/nash/work/e17--cvs/libs/ecore/src/lib
 
+
 tpe.o: ailist.h
 tpe_msg.o : tpe_msg.h tpe.h
 ai_smith.o: tpe_obj.h tpe.h tpe_event.h tpe_msg.h tpe_orders.h tpe_ship.h \
 		tpe_util.h
 
+
+$Iarrowright.png : $Imailviewer.svg
+	inkscape -j --export-id=path5138 --export-png $@ $<
+
+$Iarrowleft.png : $Imailviewer.svg
+	inkscape -j --export-id=use5148 --export-png $@ $<
+
+$Imessagewindow.png : $Imailviewer.svg
+	inkscape -j --export-id=${@F} --export-png $@ $<
+
+$Imailbox.png : $Imailbox.svg
+	inkscape -j --export-id=${@F} --export-png $@  $<
+
+$Ibg.png : $IBG1.svg
+	inkscape -j --export-background=black --export-png $@ $<
+
 clean: 
-	rm -f *.o ailist.h
+	rm -f *.o ailist.h ${IMAGES} ${EDJE}
 

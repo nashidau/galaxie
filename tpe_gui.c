@@ -803,7 +803,7 @@ tpe_gui_board_update(void *data, int eventid, void *event){
 		evas_object_show(o);
 		/* FIXME: position not on top of other boards... */
 		evas_object_move(o, 0,20); /* FIXME: Want this on the right */
-		evas_object_resize(o,32,32);
+		evas_object_resize(o,50,32);
 		board->state = BOARD_READ;	
 
 		if (update->name)

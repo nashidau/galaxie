@@ -170,7 +170,7 @@ group {
 		    offset: -1 16;
 		}
 		image {
-		    normal: "arrow-right-ugly.png";
+		    normal: "arrowright.png";
 		}
 	    }
 	}
@@ -230,7 +230,7 @@ group {
 		    offset: -1 16;
 		}
 		image {
-		    normal: "arrow-left-ugly.png";
+		    normal: "arrowleft.png";
 		}
 	    }
 	}
