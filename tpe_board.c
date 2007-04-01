@@ -184,16 +184,18 @@ tpe_board_msg_message_receive(void *data, int type, void *event){
 	message->unread = 1;
 
 	/* FIXME: Doesn't handle reference system */
-	tpe_util_parse_packet(body, "iiassi", &message->board,
+	tpe_util_parse_packet(body, "iiassir", &message->board,
 			&message->slot, NULL, NULL,
 			&message->title,
 			&message->body,
-			&message->turn);
+			&message->turn,
+			&message->nrefs, &message->references);
 
 	fprintf(tpe->board->msglog,"Message is: Board %d Slot %d Turn %d\n"
-		"  Subject: %s\n  Body: %s\n",
+		"  Subject: %s\n  Body: %s\n"
+		"  Nrefs: %d\n",
 			message->board,message->slot,message->turn,
-			message->title, message->body);
+			message->title, message->body,message->nrefs);
 
 	board = tpe_board_board_get_by_id(tpe, message->board);
 	if (board == NULL){

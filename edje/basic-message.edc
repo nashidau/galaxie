@@ -18,7 +18,7 @@ Can emit:
 styles {
     style {
 	name: "message_style";
-	base: "font=Edje-Vera font_size=10 align=left color=#000 text_class=tb_plain wrap=word";
+	base: "font=Edje-Vera font_size=10 align=left color=#fff text_class=tb_plain wrap=word";
 	tag:  "br" "\n";
     }
 }
@@ -62,7 +62,7 @@ group {
 		state: "default" 0.0;
 		rel1 {
 		    relative: 0.0 0.0;
-		    offset: 5 1;
+		    offset: 33 4;
 		    to: "background";
 		}
 		rel2 {
@@ -87,12 +87,12 @@ group {
 		state: "default" 0.0;
 		rel1 {
 		    relative: 0.0 0.0;
-		    offset: 10 14;
+		    offset: 10 18;
 		    to: "background";
 		}
 		rel2 {
 		    relative: 1.0 0.0;
-		    offset: -10 26;
+		    offset: -10 30;
 		    to: "background";
 		}
 		text {
@@ -111,12 +111,12 @@ group {
 		state: "default" 0.0;
 		rel1 { 
 		    relative: 0.0 0.0;
-		    offset: 10 25;
+		    offset: 15 40;
 		    to: "background";
 		}
 		rel2 {
 		    relative: 1.0 1.0;
-		    offset: -10 -15;
+		    offset: -15 -15;
 		    to: "background";
 		}
 		text {

@@ -19,6 +19,10 @@ struct message {
 	char *body;
 	int turn;
 	int unread;
+
+	int nrefs;
+	struct reference *references;
+
 };
 
 

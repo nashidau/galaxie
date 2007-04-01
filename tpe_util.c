@@ -65,6 +65,7 @@ tpe_util_dump_packet(void *pdata){
  *  i: int - 32 bit int
  *  l: long long int - 64 bit int
  *  a: Array of ints
+ *  r: Array of generic references
  *  O: Array of Oids
  *  S: Array of ships
  *  R: Array of Planet resources 
@@ -219,6 +220,8 @@ tpe_util_parse_packet(void *pdata, char *format, ...){
 				*adest = pdata;
 				break;
 			}
+
+
 			/* Array of order arguments */
 			case 'Q':{
 				struct order_arg **adest;
@@ -241,12 +244,14 @@ tpe_util_parse_packet(void *pdata, char *format, ...){
 
 				for (i = 0 ; i < len ; i ++){
 					(*adest)[i].name = 
-						tpe_util_string_extract(idata, 
+						tpe_util_string_extract(
+								(void *)idata, 
 								NULL, 
 								(void *)&idata);
 					(*adest)[i].arg_type = ntohl(*idata ++);
 					(*adest)[i].description = 
-						tpe_util_string_extract(idata, 
+						tpe_util_string_extract(
+								(void *)idata, 
 								NULL, 
 								(void *)&idata);
 				}
@@ -256,6 +261,39 @@ tpe_util_parse_packet(void *pdata, char *format, ...){
 				parsed ++;
 				break;
 			}
+			/* Array of order arguments */
+			case 'r':{
+				struct reference **adest;
+				int len;
+				int *idata;
+				int *cdest;
+				int i;
+				
+				idata = pdata;
+				len = ntohl(*idata);
+				idata++;
+
+				cdest = va_arg(ap, int *);
+				adest = va_arg(ap, struct reference **);
+
+				if (cdest) *cdest = len;
+	
+				*adest = realloc(*adest, (len+1)*
+						sizeof(struct reference));
+
+				for (i = 0 ; i < len ; i ++){
+					(*adest)[i].type = ntohl(*idata);
+					idata ++;
+					(*adest)[i].value = ntohl(*idata);
+					idata ++;
+				}
+
+				pdata = (char *)idata;
+				format ++;
+				parsed ++;
+				break;
+			}
+
 			/* Arg type '6'
 			 * 	An array returned when querying orders */
 			case '6':{
@@ -280,7 +318,8 @@ tpe_util_parse_packet(void *pdata, char *format, ...){
 				for (i = 0 ; i < len ; i ++){
 					(*adest)[i].id = ntohl(*idata ++);
 					(*adest)[i].name = 
-						tpe_util_string_extract(idata, 
+						tpe_util_string_extract(
+								(void*)idata, 
 								NULL, 
 								(void *)&idata);
 					(*adest)[i].max = ntohl(*idata ++);
@@ -305,7 +344,7 @@ tpe_util_parse_packet(void *pdata, char *format, ...){
 				idata++;
 
 				cdest = va_arg(ap, int *);
-				adest = va_arg(ap, struct arg_type6 **);
+				adest = va_arg(ap, struct build_resources **);
 
 				if (cdest) *cdest = len;
 	

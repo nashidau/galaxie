@@ -19,6 +19,7 @@
 #include "tpe_obj.h"
 #include "tpe_orders.h"
 #include "tpe_ship.h"
+#include "tpe_util.h" /* For struct reference */
 
 enum board_state {
 	BOARD_UNREAD,
@@ -927,7 +928,7 @@ tpe_gui_messagebox_add(struct tpe_gui *gui){
 	/* FIXME: Place intelligently */
 	evas_object_move(o, rand() % 400 ,rand() % 320);
 	evas_object_show(o);
-	evas_object_resize(o, 200,150);
+	evas_object_resize(o, 300,200);
 	edje_object_signal_callback_add(o,
 			"mouse,clicked,*", "Next", 
 			tpe_gui_edje_message_change, gui);
@@ -953,6 +954,7 @@ static void
 tpe_gui_messagebox_message_set(struct tpe_gui *gui, 
 		Evas_Object *messagebox, struct message *msg){
 	char buf[100];
+	int i;
 
 	if (gui == NULL || messagebox == NULL) return;
 	if (msg == NULL) return;
@@ -966,6 +968,19 @@ tpe_gui_messagebox_message_set(struct tpe_gui *gui,
 	tpe_board_board_message_read(gui->tpe, msg);
 
 	evas_object_data_set(messagebox, "Message", msg);
+
+	for (i = 0 ; i < msg->nrefs ; i ++){
+		switch(msg->references[i].type){
+		case 1:  /* Object */ /* FIXME: Magic */
+			/* Get object/image */
+			
+			/* Add object ref */
+
+			break;
+		default:
+			printf("Don't handle this ref type\n");
+		}
+	}
 }
 
 
