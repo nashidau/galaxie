@@ -60,6 +60,9 @@ struct tpe_gui {
 	Ecore_List *visible;
 
 	Ecore_List *boards;
+
+	/* If set will take a screen shot every turn */
+	int record;
 };
 
 struct gui_board {
@@ -131,7 +134,7 @@ static void map_key_down(void *data, Evas *e, Evas_Object *obj, void *event);
 static void window_resize(Ecore_Evas *ee);
 static void tpe_gui_redraw(struct tpe_gui *gui);
 
-static void tpe_gui_screengrab(struct tpe_gui *gui);
+static int tpe_gui_screengrab(struct tpe_gui *gui);
 
 
 static const char *star_summary(struct tpe *tpe, struct object *object);
@@ -292,6 +295,12 @@ tpe_gui_new_turn(void *data, int eventid, void *event){
 	snprintf(buf,200,"Thousand Parsec :: %s :: Turn %d", 
 			gui->tpe->racename, gui->tpe->turn);
 	ecore_evas_title_set(gui->ee,buf);
+
+	if (gui->record){
+		/* Give it 5 seconds for dumping */
+		ecore_timer_add(5,(int(*)(void*))tpe_gui_screengrab,gui);
+	}
+
 
 	return 1;
 }
@@ -718,7 +727,12 @@ map_key_down(void *data, Evas *e, Evas_Object *obj, void *event){
 		ecore_evas_fullscreen_set(gui->ee,
 				!ecore_evas_fullscreen_get(gui->ee));
 	} else if (strcmp(key->keyname, "Print") == 0){
-		tpe_gui_screengrab(gui);
+		if (evas_key_modifier_is_set(
+				evas_key_modifier_get(e), "Shift")){
+			gui->record = !gui->record;
+		} else 
+			tpe_gui_screengrab(gui);
+
 	} else {
 		return;
 	}
@@ -1050,10 +1064,21 @@ tpe_gui_edje_message_change(void *data, Evas_Object *o, const char *emission,
 /**
  * X11 Specific Screengrab 
  */
-static void
+static int
 tpe_gui_screengrab(struct tpe_gui *gui){
+	static int count = 0;
 	int w,h,x,y;
+	char buf[BUFSIZ];
 	Imlib_Image im;
+	const char *path;
+	void *ecore_x_display_get(void);
+
+	path = getenv("TPE_SCREENSHOT_DIR");
+	if (path == NULL)	
+		path = "./";
+	snprintf(buf,BUFSIZ,"%s/Screenshot-%03d.png", path, count);
+	count ++;
+
 	ecore_evas_geometry_get(gui->ee,&x,&y,&w,&h);
 
 	imlib_context_set_display(ecore_x_display_get());
@@ -1068,6 +1093,8 @@ tpe_gui_screengrab(struct tpe_gui *gui){
 	imlib_context_set_image(im);
 	imlib_image_set_format("argb");
 	imlib_image_set_format("png");
-	imlib_save_image("/home/nash/test.png");
+	imlib_save_image(buf);
 	imlib_free_image_and_decache();
+
+	return 0;
 }
