@@ -92,6 +92,8 @@ tpe.o: ailist.h
 tpe_msg.o : tpe_msg.h tpe.h
 ai_smith.o: tpe_obj.h tpe.h tpe_event.h tpe_msg.h tpe_orders.h tpe_ship.h \
 		tpe_util.h
+tpe_gui.o: tpe.h tpe_gui.h tpe_board.h tpe_comm.h tpe_event.h tpe_obj.h \
+		tpe_orders.h tpe_ship.h tpe_util.h tpe_reference.h
 
 
 $Iarrowright.png : $Imailviewer.svg

@@ -69,7 +69,7 @@ tpe_util_dump_packet(void *pdata){
  *  O: Array of Oids
  *  S: Array of ships
  *  R: Array of Planet resources 
- *  B: Arrya of build resouts { int resource id, #required }
+ *  B: Array of build resouts { int resource id, #required }
  *  Q: Array of order description args
  *  6: Arg type 6: An array of { int, string, int }
  *  p: Save a pointer to the current offset
