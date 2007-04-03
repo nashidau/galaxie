@@ -22,6 +22,7 @@
 #include "tpe_orders.h"
 #include "tpe_ship.h"
 #include "tpe_util.h" /* For struct reference */
+#include "tpe_reference.h"
 
 enum board_state {
 	BOARD_UNREAD,
@@ -133,6 +134,10 @@ static void map_key_down(void *data, Evas *e, Evas_Object *obj, void *event);
 
 static void window_resize(Ecore_Evas *ee);
 static void tpe_gui_redraw(struct tpe_gui *gui);
+
+Evas_Object *tpe_gui_ref_object_get(struct tpe_gui *gui, struct reference *ref);
+Evas_Object *tpe_gui_object_icon_get(struct tpe_gui *gui, uint32_t oid, int active);
+
 
 static int tpe_gui_screengrab(struct tpe_gui *gui);
 
@@ -973,6 +978,7 @@ tpe_gui_messagebox_add(struct tpe_gui *gui){
 static void
 tpe_gui_messagebox_message_set(struct tpe_gui *gui, 
 		Evas_Object *messagebox, struct message *msg){
+	Evas_Object *obj;
 	char buf[100];
 	int i;
 
@@ -990,16 +996,15 @@ tpe_gui_messagebox_message_set(struct tpe_gui *gui,
 	evas_object_data_set(messagebox, "Message", msg);
 
 	for (i = 0 ; i < msg->nrefs ; i ++){
-		switch(msg->references[i].type){
-		case 1:  /* Object */ /* FIXME: Magic */
-			/* Get object/image */
-			
-			/* Add object ref */
-
-			break;
-		default:
-			printf("Don't handle this ref type\n");
+		obj = tpe_gui_ref_object_get(gui, &msg->references[i]);
+		if (obj == NULL){
+			printf("No object for reference %d/%d\n",
+					msg->references[i].type,
+					msg->references[i].value);
+			continue;
 		}
+		evas_object_move(obj,i * 64,0);
+		printf("FIXME: Need to do somethign with ref!\n");
 	}
 }
 
@@ -1060,6 +1065,95 @@ tpe_gui_edje_message_change(void *data, Evas_Object *o, const char *emission,
 	return;
 }
 
+
+/** ------------------------------
+ * TPE GUI Reference Functions
+ */
+/**
+ * Allocates a new reference object for the given reference.
+ *
+ * For Objects it gets their image, and sets up even handlers for 
+ */
+Evas_Object *
+tpe_gui_ref_object_get(struct tpe_gui *gui, struct reference *ref){
+
+	assert(gui);
+	assert(ref);
+	if (gui == NULL || ref == NULL) return NULL;
+
+	switch (ref->type){
+	case REFTYPE_OBJECT:
+		return tpe_gui_object_icon_get(gui,ref->value,1);
+		break;
+	default:
+		printf("Unknown ref %d\n",ref->type);
+	}
+	return NULL;
+}
+
+/**
+ * Gets a visual representation for an object.
+ *
+ * Returns it as an Evas_Image.
+ *
+ * If @ref 'active' is set, will return an object that responds to mouse overs
+ * and mouse downs.
+ *
+ */
+Evas_Object *
+tpe_gui_object_icon_get(struct tpe_gui *gui, uint32_t oid, int active){
+	Evas_Object *icon;
+	struct object *obj;
+	assert(gui);
+	assert(oid);
+	
+	if (gui == NULL) return NULL;
+	
+	obj = tpe_obj_obj_get_by_id(gui->tpe->obj, oid);
+	if (obj == NULL){
+		printf("Object icon get: Could not find %d\n",oid);
+		return NULL;
+	}
+
+	icon = evas_object_image_add(gui->e);
+	if (icon == NULL) return NULL;
+
+	/* FIXME: need to use media */
+	switch(obj->type){
+	case OBJTYPE_UNIVERSE:
+		evas_object_image_file_set(icon, "edje/images/universe.png",0);
+		break;
+	case OBJTYPE_GALAXY:
+		printf("Oops - don't handle galaxy\n");
+		return NULL;
+		break;
+	case OBJTYPE_SYSTEM:
+		evas_object_image_file_set(icon, "edje/images/star.png",0);
+		break;
+	case OBJTYPE_PLANET:
+		evas_object_image_file_set(icon, 
+			"edje/images/kathleen/planet.png", NULL);
+		break;
+	case OBJTYPE_FLEET:
+		evas_object_image_file_set(icon,
+			"edje/images/fleet.png", NULL);
+		break;
+	default:
+		printf("Unknown object!!\n");
+		return NULL;
+		break;
+	}
+	evas_object_resize(icon,64,64);
+	evas_object_image_fill_set(icon,0,0,64,64);
+	evas_object_show(icon);
+
+	return icon;
+}
+
+
+/** -------------------------------- 
+ * Screen shot code
+ */
 
 /**
  * X11 Specific Screengrab 

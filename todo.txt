@@ -56,6 +56,8 @@
  	- Menus
  	- Icons in the menus
 	- Move to styles for the text everywhere
+ * 64 bit cleaness
+ * Type checking for protocol data: uint32_t, int32_t and the like
  * Resiliance - Double Initialisation
 	- tpe_comm
 	- tpe_event
