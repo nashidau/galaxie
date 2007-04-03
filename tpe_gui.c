@@ -1132,11 +1132,11 @@ tpe_gui_object_icon_get(struct tpe_gui *gui, uint32_t oid, int active){
 		break;
 	case OBJTYPE_PLANET:
 		evas_object_image_file_set(icon, 
-			"edje/image/kathleen/planet.png", NULL);
+			"edje/images/kathleen/planet.png", NULL);
 		break;
 	case OBJTYPE_FLEET:
 		evas_object_image_file_set(icon,
-			"edje/image/fleet.png", NULL);
+			"edje/images/fleet.png", NULL);
 		break;
 	default:
 		printf("Unknown object!!\n");

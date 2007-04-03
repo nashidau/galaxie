@@ -136,6 +136,7 @@ collections {
     #include "basic-info.edc"
     #include "basic-message.edc"
     #include "basic-menu.edc"
+    #include "basic-refs.edc"
     #include "basic-ships.edc"
     #include "basic-stars.edc"
 

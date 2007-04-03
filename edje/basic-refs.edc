@@ -1,0 +1,22 @@
+/**
+ * Basic-References
+ *
+ * Reference objects are primarily built around a swallowed object, 
+ * generally an icon from the GUI system
+ */
+group {
+    name: "ReferenceObject";
+    parts {
+	part {
+	    name: "object";
+	    mouse_events: 1;
+	    type: SWALLOW;
+	    description {
+		state: "default" 0.0;
+	    }
+	}
+    }
+}
+
+/* vim:set sw=4 sts=4 : */
+
