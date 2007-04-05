@@ -91,6 +91,8 @@ enum {
 	DEFAULT_ZOOM = 1 << 22,
 };
 
+#define KEY_TPE_GUI	"TPEGUI"
+
 static void tpe_gui_edje_splash_connect(void *data, Evas_Object *o, 
 		const char *emission, const char *source);
 
@@ -137,7 +139,7 @@ static void tpe_gui_redraw(struct tpe_gui *gui);
 
 Evas_Object *tpe_gui_ref_object_get(struct tpe_gui *gui, struct reference *ref);
 Evas_Object *tpe_gui_object_icon_get(struct tpe_gui *gui, uint32_t oid, int active);
-
+static void reference_object_show(void *idv, Evas *e, Evas_Object *eo, void *event);
 
 static int tpe_gui_screengrab(struct tpe_gui *gui);
 
@@ -1103,6 +1105,7 @@ tpe_gui_ref_object_get(struct tpe_gui *gui, struct reference *ref){
 Evas_Object *
 tpe_gui_object_icon_get(struct tpe_gui *gui, uint32_t oid, int active){
 	Evas_Object *icon;
+	Evas_Object *eo;
 	struct object *obj;
 	assert(gui);
 	assert(oid);
@@ -1114,6 +1117,11 @@ tpe_gui_object_icon_get(struct tpe_gui *gui, uint32_t oid, int active){
 		printf("Object icon get: Could not find %d\n",oid);
 		return NULL;
 	}
+
+	eo = edje_object_add(gui->e);
+	edje_object_file_set(eo, "edje/basic.edj", "ReferenceObject");
+	evas_object_show(eo);
+	evas_object_resize(eo,64,64);
 
 	icon = evas_object_image_add(gui->e);
 	if (icon == NULL) return NULL;
@@ -1143,12 +1151,73 @@ tpe_gui_object_icon_get(struct tpe_gui *gui, uint32_t oid, int active){
 		return NULL;
 		break;
 	}
-	evas_object_resize(icon,64,64);
+	//evas_object_resize(icon,64,64);
 	evas_object_image_fill_set(icon,0,0,64,64);
-	evas_object_show(icon);
+	evas_object_pass_events_set(icon,1);
 
-	return icon;
+	edje_object_part_swallow(eo, "object", icon);
+
+	edje_object_part_text_set(eo, "Name", obj->name);
+
+	if (active){
+		/* XXX: this is not portable (oid in void*) */
+		evas_object_event_callback_add(eo,
+						EVAS_CALLBACK_MOUSE_DOWN,
+						reference_object_show,
+						(void*)obj->oid);
+		evas_object_data_set(eo, KEY_TPE_GUI, gui);
+	}
+
+	return eo;
 }
+
+
+static void
+reference_object_show(void *idv, Evas *e, Evas_Object *eo, void *event){
+	struct tpe_gui *gui;
+	struct object *obj;
+	uint32_t oid;
+	Evas_Object *o;
+
+	gui = evas_object_data_get(eo, KEY_TPE_GUI);
+
+	oid = (uint32_t)idv;
+
+	obj = tpe_obj_obj_get_by_id(gui->tpe->obj, oid);
+	if (obj == NULL){
+		/* Object gone?? */
+		return;
+	}
+
+	/* FIXME: This should be "objectbox_add" */
+	o = edje_object_add(gui->e);
+	edje_object_file_set(o,"edje/basic.edj", "ObjectInfo");
+	evas_object_move(o, rand() % 200, rand() % 200);
+	evas_object_resize(o, 200,200);
+
+
+	edje_object_signal_callback_add(o,
+			"mouse,clicked,*", "Next", 
+			tpe_gui_edje_object_change, gui);
+	edje_object_signal_callback_add(o,
+			"mouse,clicked,*", "Prev", 
+			tpe_gui_edje_object_change, gui);
+	edje_object_signal_callback_add(o,
+			"mouse,clicked,*", "Child", 
+			tpe_gui_edje_object_change, gui);
+	edje_object_signal_callback_add(o,
+			"mouse,clicked,*", "Parent", 
+			tpe_gui_edje_object_change, gui);
+	edje_object_signal_callback_add(o,
+			"mouse,clicked,*", "Close", 
+			(void*)evas_object_del, o);
+
+	tpe_gui_objectbox_object_set(gui, o, obj);
+
+	evas_object_show(o);
+
+}
+
 
 
 /** -------------------------------- 

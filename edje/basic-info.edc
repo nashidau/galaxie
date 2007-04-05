@@ -15,7 +15,7 @@ group {
     name: "ObjectInfo";
     min: 50 50;
     parts {
-	part { 
+	part {
 	    /* FIXME: This should be a nice image */
 	    name: "background";
 	    mouse_events: 1;
@@ -25,7 +25,7 @@ group {
 		y: 1 1 0;
 	    }
 	    description {
-		state:	"default" 0.0;
+		state:  "default" 0.0;
 		rel1 {
 		    relative: 0.0 0.0;
 		    offset: 0 0 ;
@@ -46,12 +46,10 @@ group {
 		rel1 {
 		    relative: 0.0 0.0;
 		    offset: 0 0;
-		    to: "background";
 		}
 		rel2 {
 		    relative: 0.0 0.0;
 		    offset: 32 32;
-		    to: "background";
 		}
 		color: 12 12 12 255;
 	    }
