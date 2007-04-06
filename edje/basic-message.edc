@@ -111,12 +111,12 @@ group {
 		state: "default" 0.0;
 		rel1 { 
 		    relative: 0.0 0.0;
-		    offset: 15 40;
+		    offset: 15 50;
 		    to: "background";
 		}
 		rel2 {
 		    relative: 1.0 1.0;
-		    offset: -15 -15;
+		    offset: -15 -80;
 		    to: "background";
 		}
 		text {
@@ -186,8 +186,57 @@ group {
 		}
 	    }
 	}
-
-
+	part {
+	    name: "Reference1";
+	    type: SWALLOW;
+	    description {
+		state: "default" 0.0;
+		rel1 {
+		    to: "background";
+		    relative: 0.0 1.0;
+		    offset: 15 -80;
+		}
+		rel2 {
+		    to: "background";
+		    relative: 0.0 1.0;
+		    offset: 79 -15;
+		}
+	    }
+	}	
+	part {
+	    name: "Reference2";
+	    type: SWALLOW;
+	    description {
+		state: "default" 0.0;
+		rel1 {
+		    to: "background";
+		    relative: 0.0 1.0;
+		    offset: 85 -80;
+		}
+		rel2 {
+		    to: "background";
+		    relative: 0.0 1.0;
+		    offset: 149 -15;
+		}
+	    }
+	}	
+	part {
+	    name: "Reference3";
+	    type: SWALLOW;
+	    description {
+		state: "default" 0.0;
+		rel1 {
+		    to: "background";
+		    relative: 0.0 1.0;
+		    offset: 154 -80;
+		}
+		rel2 {
+		    to: "background";
+		    relative: 0.0 1.0;
+		    offset: 203 -15;
+		}
+	    }
+	}	
 
     }
 }

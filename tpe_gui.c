@@ -955,7 +955,7 @@ tpe_gui_messagebox_add(struct tpe_gui *gui){
 	/* FIXME: Place intelligently */
 	evas_object_move(o, rand() % 400 ,rand() % 320);
 	evas_object_show(o);
-	evas_object_resize(o, 300,200);
+	evas_object_resize(o, 289,304);
 	edje_object_signal_callback_add(o,
 			"mouse,clicked,*", "Next", 
 			tpe_gui_edje_message_change, gui);
@@ -981,11 +981,25 @@ static void
 tpe_gui_messagebox_message_set(struct tpe_gui *gui, 
 		Evas_Object *messagebox, struct message *msg){
 	Evas_Object *obj;
+	Evas_Object *icon;
 	char buf[100];
 	int i;
+	int ref;
 
 	if (gui == NULL || messagebox == NULL) return;
 	if (msg == NULL) return;
+
+	/* Remove old swallowed objects */
+	for (i = 1 ; i < 4 ; i ++){
+		snprintf(buf,100,"Reference%d",i);
+		obj = edje_object_part_swallow_get(messagebox, buf);
+		printf("Obj is %p\n",obj);
+		if (obj == NULL) break;
+		edje_object_part_unswallow(messagebox, obj);
+		icon = edje_object_part_swallow_get(obj, "object");
+		evas_object_del(obj);
+		if (icon) evas_object_del(icon);
+	}
 
 	snprintf(buf,100,"Message: %d  Turn: %d", msg->slot + 1, msg->turn);
 	edje_object_part_text_set(messagebox, "MessageNumber", buf);
@@ -997,6 +1011,7 @@ tpe_gui_messagebox_message_set(struct tpe_gui *gui,
 
 	evas_object_data_set(messagebox, "Message", msg);
 
+	ref = 0;
 	for (i = 0 ; i < msg->nrefs ; i ++){
 		obj = tpe_gui_ref_object_get(gui, &msg->references[i]);
 		if (obj == NULL){
@@ -1005,8 +1020,12 @@ tpe_gui_messagebox_message_set(struct tpe_gui *gui,
 					msg->references[i].value);
 			continue;
 		}
-		evas_object_move(obj,i * 64,0);
-		printf("FIXME: Need to do somethign with ref!\n");
+		/* FIXME: Handle gracefully */
+		if (ref >= 3)
+			break;
+		ref ++;
+		snprintf(buf,100,"Reference%d",ref);
+		edje_object_part_swallow(messagebox, buf, obj);
 	}
 }
 
