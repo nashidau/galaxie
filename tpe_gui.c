@@ -123,6 +123,7 @@ static void tpe_gui_edje_message_change(void *data, Evas_Object *o,
 			const char *emission, const char *source);
 static void tpe_gui_messagebox_message_set(struct tpe_gui *gui, 
 			Evas_Object *messagebox, struct message *msg);
+static void tpe_gui_messagebox_ref_free(Evas_Object *messagebox);
 
 /* Gui event handlers */
 static void star_mouse_in(void *data, Evas *e, Evas_Object *obj, void *event);
@@ -966,9 +967,33 @@ tpe_gui_messagebox_add(struct tpe_gui *gui){
 	edje_object_signal_callback_add(o,
 			"mouse,clicked,*", "Close", 
 			(void*)evas_object_del, o);
+	evas_object_event_callback_add(o,
+			EVAS_CALLBACK_FREE, 
+			(void*)tpe_gui_messagebox_ref_free, o);
 
 	return o;
 }
+
+static void
+tpe_gui_messagebox_ref_free(Evas_Object *messagebox){
+	Evas_Object *obj;
+	Evas_Object *icon;
+	char buf[100];
+	int i;
+
+	/* Remove old swallowed objects */
+	for (i = 1 ; i < 4 ; i ++){
+		snprintf(buf,100,"Reference%d",i);
+		obj = edje_object_part_swallow_get(messagebox, buf);
+		if (obj == NULL) break;
+		edje_object_part_unswallow(messagebox, obj);
+		icon = edje_object_part_swallow_get(obj, "object");
+		evas_object_del(obj);
+		if (icon) evas_object_del(icon);
+	}
+}
+
+
 
 /**
  * Sets the message in a message box.
@@ -981,7 +1006,6 @@ static void
 tpe_gui_messagebox_message_set(struct tpe_gui *gui, 
 		Evas_Object *messagebox, struct message *msg){
 	Evas_Object *obj;
-	Evas_Object *icon;
 	char buf[100];
 	int i;
 	int ref;
@@ -989,17 +1013,7 @@ tpe_gui_messagebox_message_set(struct tpe_gui *gui,
 	if (gui == NULL || messagebox == NULL) return;
 	if (msg == NULL) return;
 
-	/* Remove old swallowed objects */
-	for (i = 1 ; i < 4 ; i ++){
-		snprintf(buf,100,"Reference%d",i);
-		obj = edje_object_part_swallow_get(messagebox, buf);
-		printf("Obj is %p\n",obj);
-		if (obj == NULL) break;
-		edje_object_part_unswallow(messagebox, obj);
-		icon = edje_object_part_swallow_get(obj, "object");
-		evas_object_del(obj);
-		if (icon) evas_object_del(icon);
-	}
+	tpe_gui_messagebox_ref_free(messagebox);
 
 	snprintf(buf,100,"Message: %d  Turn: %d", msg->slot + 1, msg->turn);
 	edje_object_part_text_set(messagebox, "MessageNumber", buf);
