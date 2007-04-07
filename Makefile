@@ -45,8 +45,9 @@ IMAGES=				\
 	$Iarrowright.png	\
 	$Iarrowleft.png		\
 	$Ibg.png		\
+	$Imailbox.png		\
 	$Imessagewindow.png	\
-	$Imailbox.png	
+	$Iobjectwindow.png	
 
 
 EDJE=edje/basic.edj 
@@ -79,7 +80,7 @@ sparse:
 testedje: ${EDJE}
 	edje ${EDJE}
 
-edje/basic.edj: ${BASICTHEME} ${IMAGES}
+edje/basic.edj: ${BASICTHEME} ${IMAGES} Makefile
 
 tags:
 	cscope -R -b -I/usr/local/include 			\
@@ -111,6 +112,10 @@ $Imailbox.png : $Imailbox.svg
 
 $Ibg.png : $IBG1.svg
 	inkscape -j --export-background=black --export-png $@ $<
+
+$Iobjectwindow.png : $IObjectViewer.svg Makefile
+	inkscape -j --export-area-drawing -d 120 --export-png $@ $<
+
 
 clean: 
 	rm -f *.o ailist.h ${IMAGES} ${EDJE}

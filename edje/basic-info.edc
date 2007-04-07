@@ -1,3 +1,7 @@
+images {
+    image: "objectwindow.png" COMP;
+}
+
 
 styles {
     style {
@@ -19,7 +23,7 @@ group {
 	    /* FIXME: This should be a nice image */
 	    name: "background";
 	    mouse_events: 1;
-	    type:   RECT;
+	    type:   IMAGE;
 	    dragable {
 		x: 1 1 0;
 		y: 1 1 0;
@@ -34,7 +38,9 @@ group {
 		    relative: 1.0 1.0;
 		    offset: -1 -1;
 		}
-		color: 21 21 21 221;
+		image {
+		    normal: "objectwindow.png";
+		}
 	    }
 	}
 	part {
@@ -80,6 +86,41 @@ group {
 		}
 	    }
 	}
+	part {
+	    name: "icon";
+	    type: SWALLOW;
+	    description {
+		state: "default"  0.0;
+		rel1 {
+		    relative: 0.0 0.0;
+		    offset: 12 35;
+		    to: "background";
+		}
+		rel2 {
+		    relative: 0.0 0.0;
+		    offset: 77 99;
+		    to: "background";
+		}
+	    }
+	}
+	part {
+	    name: "parent";
+	    type: SWALLOW;
+	    description {
+		state: "default"  0.0;
+		rel1 {
+		    relative: 1.0 0.0;
+		    offset: -77 35;
+		    to: "background";
+		}
+		rel2 {
+		    relative: 1.0 0.0;
+		    offset: -12 99;
+		    to: "background";
+		}
+	    }
+	}
+
 	part {
 	    name: "Owner";
 	    mouse_events: 0;

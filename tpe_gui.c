@@ -113,6 +113,7 @@ static void board_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event);
 static void board_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event);
 
 /* Object window event handlers */
+static Evas_Object *tpe_gui_objectwindow_add(struct tpe_gui *gui);
 static void tpe_gui_edje_object_change(void *data, Evas_Object *objectbox, 
 		const char *emission, const char *source);
 static void tpe_gui_objectbox_object_set(struct tpe_gui *gui, Evas_Object *objectbox, struct object *object);
@@ -622,10 +623,7 @@ star_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 	//Evas_Event_Mouse_Down *mouse = event;
 	struct tpe_gui_obj *go = data;
 
-	o = edje_object_add(go->gui->e);
-	edje_object_file_set(o,"edje/basic.edj", "ObjectInfo");
-	evas_object_move(o, rand() % 200, rand() % 200);
-	evas_object_resize(o, 200,200);
+	o = tpe_gui_objectwindow_add(go->gui);
 
 	tpe_gui_objectbox_object_set(go->gui, o, go->object);
 
@@ -648,6 +646,22 @@ star_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 	evas_object_show(o);
 
 }
+
+
+
+
+static Evas_Object *
+tpe_gui_objectwindow_add(struct tpe_gui *gui){
+	Evas_Object *o;
+
+	o = edje_object_add(gui->e);
+	edje_object_file_set(o,"edje/basic.edj", "ObjectInfo");
+	evas_object_move(o, rand() % 200, rand() % 200);
+	evas_object_resize(o, 388, 419);
+
+	return o;
+}
+
 
 /**
  * Mouse click handler for mouse clicks in the Object view window.
@@ -680,8 +694,11 @@ tpe_gui_edje_object_change(void *data, Evas_Object *objectbox,
 static void
 tpe_gui_objectbox_object_set(struct tpe_gui *gui, Evas_Object *objectbox,
 		struct object *object){
+	Evas_Object *icon;
 	const char *orderstr;
 	char buf[50];
+
+	/* FIXME: Need to clean up */
 
 	edje_object_part_text_set(objectbox, "Name", object->name);
 	/* FIXME: Get the player name */
@@ -698,6 +715,16 @@ tpe_gui_objectbox_object_set(struct tpe_gui *gui, Evas_Object *objectbox,
 	edje_object_part_text_set(objectbox, "Orders", orderstr);
 
 	evas_object_data_set(objectbox, "Object", object);
+
+	/* Get the icon for the object */
+	icon = tpe_gui_object_icon_get(gui, object->oid, 0);
+	if (icon) edje_object_part_swallow(objectbox, "icon", icon);
+
+	icon = tpe_gui_object_icon_get(gui, object->parent, 1);
+	if (icon) edje_object_part_swallow(objectbox, "parent", icon);
+
+
+
 
 }
 
@@ -1222,12 +1249,7 @@ reference_object_show(void *idv, Evas *e, Evas_Object *eo, void *event){
 		return;
 	}
 
-	/* FIXME: This should be "objectbox_add" */
-	o = edje_object_add(gui->e);
-	edje_object_file_set(o,"edje/basic.edj", "ObjectInfo");
-	evas_object_move(o, rand() % 200, rand() % 200);
-	evas_object_resize(o, 200,200);
-
+	o = tpe_gui_objectwindow_add(gui);
 
 	edje_object_signal_callback_add(o,
 			"mouse,clicked,*", "Next", 
