@@ -117,6 +117,7 @@ static Evas_Object *tpe_gui_objectwindow_add(struct tpe_gui *gui);
 static void tpe_gui_edje_object_change(void *data, Evas_Object *objectbox, 
 		const char *emission, const char *source);
 static void tpe_gui_objectbox_object_set(struct tpe_gui *gui, Evas_Object *objectbox, struct object *object);
+static void tpe_gui_objectbox_clean(Evas_Object *objectbox);
 
 /* Message Window event handlers */
 static Evas_Object *tpe_gui_messagebox_add(struct tpe_gui *gui);
@@ -142,6 +143,7 @@ static void tpe_gui_redraw(struct tpe_gui *gui);
 Evas_Object *tpe_gui_ref_object_get(struct tpe_gui *gui, struct reference *ref);
 Evas_Object *tpe_gui_object_icon_get(struct tpe_gui *gui, uint32_t oid, int active);
 static void reference_object_show(void *idv, Evas *e, Evas_Object *eo, void *event);
+static void tpe_gui_icon_del_cb(Evas_Object *icon);
 
 static int tpe_gui_screengrab(struct tpe_gui *gui);
 
@@ -627,22 +629,6 @@ star_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 
 	tpe_gui_objectbox_object_set(go->gui, o, go->object);
 
-	edje_object_signal_callback_add(o,
-			"mouse,clicked,*", "Next", 
-			tpe_gui_edje_object_change, go->gui);
-	edje_object_signal_callback_add(o,
-			"mouse,clicked,*", "Prev", 
-			tpe_gui_edje_object_change, go->gui);
-	edje_object_signal_callback_add(o,
-			"mouse,clicked,*", "Child", 
-			tpe_gui_edje_object_change, go->gui);
-	edje_object_signal_callback_add(o,
-			"mouse,clicked,*", "Parent", 
-			tpe_gui_edje_object_change, go->gui);
-	edje_object_signal_callback_add(o,
-			"mouse,clicked,*", "Close", 
-			(void*)evas_object_del, o);
-
 	evas_object_show(o);
 
 }
@@ -658,6 +644,25 @@ tpe_gui_objectwindow_add(struct tpe_gui *gui){
 	edje_object_file_set(o,"edje/basic.edj", "ObjectInfo");
 	evas_object_move(o, rand() % 200, rand() % 200);
 	evas_object_resize(o, 388, 419);
+
+	edje_object_signal_callback_add(o,
+			"mouse,clicked,*", "Next", 
+			tpe_gui_edje_object_change, gui);
+	edje_object_signal_callback_add(o,
+			"mouse,clicked,*", "Prev", 
+			tpe_gui_edje_object_change, gui);
+	edje_object_signal_callback_add(o,
+			"mouse,clicked,*", "Child", 
+			tpe_gui_edje_object_change, gui);
+	edje_object_signal_callback_add(o,
+			"mouse,clicked,*", "Parent", 
+			tpe_gui_edje_object_change, gui);
+	edje_object_signal_callback_add(o,
+			"mouse,clicked,*", "Close", 
+			(void*)evas_object_del, o);
+
+	evas_object_event_callback_add(o, EVAS_CALLBACK_FREE,
+			(void*)tpe_gui_objectbox_clean, o);
 
 	return o;
 }
@@ -699,6 +704,7 @@ tpe_gui_objectbox_object_set(struct tpe_gui *gui, Evas_Object *objectbox,
 	char buf[50];
 
 	/* FIXME: Need to clean up */
+	tpe_gui_objectbox_clean(objectbox);
 
 	edje_object_part_text_set(objectbox, "Name", object->name);
 	/* FIXME: Get the player name */
@@ -723,8 +729,22 @@ tpe_gui_objectbox_object_set(struct tpe_gui *gui, Evas_Object *objectbox,
 	icon = tpe_gui_object_icon_get(gui, object->parent, 1);
 	if (icon) edje_object_part_swallow(objectbox, "parent", icon);
 
+}
 
+static void
+tpe_gui_objectbox_clean(Evas_Object *objectbox){
+	Evas_Object *obj;
 
+	obj = edje_object_part_swallow_get(objectbox, "icon");
+	if (obj){
+		edje_object_part_unswallow(objectbox, obj);
+		evas_object_del(obj);
+	}
+	obj = edje_object_part_swallow_get(objectbox, "parent");
+	if (obj){
+		edje_object_part_unswallow(objectbox, obj);
+		evas_object_del(obj);
+	}
 
 }
 
@@ -1219,6 +1239,9 @@ tpe_gui_object_icon_get(struct tpe_gui *gui, uint32_t oid, int active){
 
 	edje_object_part_text_set(eo, "Name", obj->name);
 
+	evas_object_event_callback_add(eo, EVAS_CALLBACK_FREE,
+				(void*)tpe_gui_icon_del_cb, eo);
+
 	if (active){
 		/* XXX: this is not portable (oid in void*) */
 		evas_object_event_callback_add(eo,
@@ -1229,6 +1252,17 @@ tpe_gui_object_icon_get(struct tpe_gui *gui, uint32_t oid, int active){
 	}
 
 	return eo;
+}
+
+static void
+tpe_gui_icon_del_cb(Evas_Object *icon){
+	Evas_Object *o;
+
+	o = edje_object_part_swallow_get(icon,"object");
+	if (o){
+		edje_object_part_unswallow(icon, o);
+		evas_object_del(o);
+	}
 }
 
 
@@ -1250,22 +1284,6 @@ reference_object_show(void *idv, Evas *e, Evas_Object *eo, void *event){
 	}
 
 	o = tpe_gui_objectwindow_add(gui);
-
-	edje_object_signal_callback_add(o,
-			"mouse,clicked,*", "Next", 
-			tpe_gui_edje_object_change, gui);
-	edje_object_signal_callback_add(o,
-			"mouse,clicked,*", "Prev", 
-			tpe_gui_edje_object_change, gui);
-	edje_object_signal_callback_add(o,
-			"mouse,clicked,*", "Child", 
-			tpe_gui_edje_object_change, gui);
-	edje_object_signal_callback_add(o,
-			"mouse,clicked,*", "Parent", 
-			tpe_gui_edje_object_change, gui);
-	edje_object_signal_callback_add(o,
-			"mouse,clicked,*", "Close", 
-			(void*)evas_object_del, o);
 
 	tpe_gui_objectbox_object_set(gui, o, obj);
 
