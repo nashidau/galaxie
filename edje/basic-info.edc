@@ -267,12 +267,12 @@ group {
 		rel1 {			    \
 		    to: "background";	    \
 		    relative: 0.0 0.0;	    \
-		    offset: startx 306;	    \
+		    offset: startx 326;	    \
 		}			    \
 		rel2 {			    \
 		    to: "background";	    \
 		    relative: 0.0 0.0;	    \
-		    offset: endx 370;	    \
+		    offset: endx 390;	    \
 		}			    \
 	    }				    \
 	}
