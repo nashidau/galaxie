@@ -234,15 +234,15 @@
      inkscape:pageshadow="2"
      inkscape:zoom="1.8775"
      inkscape:cx="254.5297"
-     inkscape:cy="211.47382"
+     inkscape:cy="211.20751"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      width="400px"
      height="400px"
      inkscape:window-width="1270"
      inkscape:window-height="945"
-     inkscape:window-x="0"
-     inkscape:window-y="25" />
+     inkscape:window-x="328"
+     inkscape:window-y="188" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -306,16 +306,6 @@
        transform="matrix(0.8777219,0,0,0.7500001,5.0799938,11.984017)" />
     <text
        xml:space="preserve"
-       style="font-size:8;font-style:normal;font-weight:bold;writing-mode:lr-tb;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:DejaVu Serif"
-       x="169.9068"
-       y="55.392811"
-       id="text3308"><tspan
-         sodipodi:role="line"
-         id="tspan3310"
-         x="169.9068"
-         y="55.392811">Name</tspan></text>
-    <text
-       xml:space="preserve"
        style="font-size:8px;font-style:normal;font-weight:bold;writing-mode:lr-tb;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:DejaVu Serif"
        x="123.03595"
        y="113.98136"
@@ -371,15 +361,6 @@
          id="tspan3358"
          x="49.533951"
          y="270.03995">Chrilden</tspan></text>
-    <rect
-       style="opacity:0.73655916;fill:none;fill-opacity:1;stroke:#f4fbf4;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="rect3362"
-       width="52.729694"
-       height="59.653793"
-       x="137.9494"
-       y="285.48602"
-       rx="3.7437732"
-       ry="4.4645572" />
     <g
        id="g4521"
        transform="matrix(0.7801407,0,0,0.7193942,-83.951125,54.507917)">
@@ -431,24 +412,6 @@
            id="tspan4007"
            sodipodi:role="line">Edit Orders</tspan></text>
     </g>
-    <rect
-       ry="4.4645572"
-       rx="3.7437732"
-       y="286.01865"
-       x="66.577896"
-       height="59.653793"
-       width="52.729694"
-       id="rect4411"
-       style="opacity:0.73655916;fill:none;fill-opacity:1;stroke:#f4fbf4;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-    <rect
-       ry="4.4645572"
-       rx="3.7437732"
-       y="286.01865"
-       x="203.46205"
-       height="59.653793"
-       width="52.729694"
-       id="rect4413"
-       style="opacity:0.73655916;fill:none;fill-opacity:1;stroke:#f4fbf4;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
     <g
        id="g4429"
        transform="matrix(1.0299224,0,0,0.9939011,-5.0755557,1.0184332)">
