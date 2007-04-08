@@ -1,3 +1,8 @@
+ * Finish Jones
+ 	- Find a planet - kill it
+ * Orders
+ 	- Display
+	- Enter
  * New art for:
 	- Friendly Shared:	Purple
  * Colour coded fleets
