@@ -312,13 +312,23 @@ static void
 tpe_msg_handle_packet(struct tpe_msg *msg, int seq, int type, 
 			int len, void *data){
 	struct tpe_msg_cb *cb,*next;
+	const char *event = "Unknown";
+	int i;
+
+	for (i = 0 ; i < 100 ; i ++){ /* FIXME: Not 100 */
+		if (msgnames[i].tp03 == type){
+			event = msgnames[i].name;
+			break;
+		}
+	}
+
 
 	if (seq){
 		for (cb = msg->cbs ; cb ; cb = next){
 			next = cb->next;
 			if (cb->seq == seq){
 				if (cb->cb)
-					cb->cb(cb->userdata, "FIXME", len, 
+					cb->cb(cb->userdata, event, len, 
 							(char*)data + 16);
 				cb->deleteme = 1;
 			} 
@@ -343,15 +353,7 @@ tpe_msg_handle_packet(struct tpe_msg *msg, int seq, int type,
 
 	{
 		/* FIXME: Neeed to process this a little */
-		int *edata,i;
-		const char *event = "None!";
-		for (i = 0 ; i < 100 ; i ++){ /* FIXME: Not 100 */
-			if (msgnames[i].tp03 == type){
-				event = msgnames[i].name;
-				break;
-			}
-		}
-		//printf("Handling a %s (%d) (response: %d)\n",event,type,seq);
+		int *edata;
 
 		edata = malloc(16 + len);
 		memcpy(edata,data,16+len);
