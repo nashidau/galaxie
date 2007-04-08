@@ -1,7 +1,3 @@
- * Command line parsing:
-  	- Generic AI parsing
-	- List AIs
-	- Connect to tp:// url
  * New art for:
 	- Friendly Shared:	Purple
  * Colour coded fleets
@@ -26,12 +22,7 @@
  * Connect handle failures
  * [UI] Display systems with fleets
  * Nail some fixmes (50 at last count)
- * Board/Messages: Handle object references
-	- tpe_board
-	- [UI] Interface to go to object if appropriate
- * Command line:
- 	- Process arguments for server & game support
- * Support mulitple games
+ * Support games: So can log into a non-default game
  * Protocol support for
  	- SSL
 	- HTTP
@@ -45,10 +36,7 @@
 		- Designs
  * [UI] Send messages
  * [UI] Clean up messages in one click (close all windows)
- * Ability to save screenshots
- 	[Work begins on screenshot branch]
- 	- Single shot
-	- 1/turn (make a video of the game ;-)
+ * Ability to save screenshots, on non-X11
  * MTSec support
  	- Design
  * Start looking at TP04 support
