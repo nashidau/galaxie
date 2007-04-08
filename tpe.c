@@ -186,8 +186,7 @@ main(int argc, char **argv){
 		tpe->gui = tpe_gui_init(tpe, opt->theme, opt->fullscreen);
 	if (opt->ai && opt->ai->init)	
 		tpe->ai = opt->ai->init(tpe);
-printf("server %s username %s password %s port %d\n",opt->server,opt->username, 
-		opt->password,opt->port);
+
 	if (opt->server && opt->username && opt->password)
 		tpe_comm_connect(tpe->comm, opt->server, opt->port, 
 				opt->username, opt->password);
@@ -266,9 +265,14 @@ parse_ai(struct startopt *opt, int i, char **args){
 	int j;
 
 	p = parse_option(args, &i);
+	if (p == NULL){
+		printf("You must pass an AI\n");
+		return i;
+	}
 	for (j = 0 ; j < N_AIS ; j ++){
 		if (strcasecmp(ai_info[j].name,p) == 0){
 			opt->ai = ai_info + j;
+			break;
 		}
 	}
 	if (j == N_AIS)
