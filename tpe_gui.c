@@ -1212,6 +1212,7 @@ tpe_gui_object_icon_get(struct tpe_gui *gui, uint32_t oid, int active){
 		evas_object_image_file_set(icon, "edje/images/universe.png",0);
 		break;
 	case OBJTYPE_GALAXY:
+		evas_object_del(eo);
 		printf("Oops - don't handle galaxy\n");
 		return NULL;
 		break;
