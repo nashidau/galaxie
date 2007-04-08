@@ -88,7 +88,7 @@ struct tpe_gui_obj {
 enum {
 	WIDTH = 640,
 	HEIGHT = 480,
-	DEFAULT_ZOOM = 1 << 22,
+	DEFAULT_ZOOM = 1 << 23,
 };
 
 #define KEY_TPE_GUI	"TPEGUI"
