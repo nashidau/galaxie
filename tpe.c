@@ -123,13 +123,28 @@ static const char *urlpattern =
 	"(\\+?http)?"    /* 1: Use Http */
 	"(s)?" 		/* 2: ssh */
 	"://"		
-	"([[:alnum:]]+"	/* 3: Username */
-	"(:[[:alnum:]]+)?" /* 4: Password */
+
+	"("		/* 3: Start optional pass/username */
+	"([[:alnum:]]+)"	/* 4: Username */
+	"(:"		/* 5: Start optional password */
+	"([[:alnum:]]+)" /* 6: Password */
+	")?"		
 	"@)?"		/*   - End username */
-	"([[:alnum:].]+)" /* 5: Server */
-	"(:[[:digit:]]+)?" /* 6: Port */
-	"/([[:alnum:]]+)?" /* 7: Game */
+	"([[:alnum:].]+)" /* 7: Server */
+	"(:([[:digit:]]+))?" /* 9: Port */
+	"/([[:alnum:]]+)?" /* 10: Game */
 	"$";		/* Terminating '/' */
+
+enum {
+	REGEX_HTTP = 1,
+	REGEX_SSH = 2,
+	REGEX_USERNAME = 4,
+	REGEX_PASSWORD = 6,
+	REGEX_SERVER = 7,
+	REGEX_PORT = 9,
+	REGEX_GAME = 10,
+};
+
 
 #define MATCH(match,offset) 	(match[offset].rm_so != match[offset].rm_eo &&\
 				match[offset].rm_so != -1)
@@ -171,8 +186,9 @@ main(int argc, char **argv){
 		tpe->gui = tpe_gui_init(tpe, opt->theme, opt->fullscreen);
 	if (opt->ai && opt->ai->init)	
 		tpe->ai = opt->ai->init(tpe);
-
-	if (opt->server && opt->username && opt->server)
+printf("server %s username %s password %s port %d\n",opt->server,opt->username, 
+		opt->password,opt->port);
+	if (opt->server && opt->username && opt->password)
 		tpe_comm_connect(tpe->comm, opt->server, opt->port, 
 				opt->username, opt->password);
 
@@ -391,41 +407,41 @@ parse_url(struct startopt *opt, int i, char **args){
 	}
 
 	/* 1: Http */
-	if (MATCH(matches,1)){
+	if (MATCH(matches,REGEX_HTTP)){
 		opt->http = 1;
 	}
 
 	/* 2: ssh */
-	if (MATCH(matches,2)){
+	if (MATCH(matches,REGEX_SSH)){
 		opt->ssl = 1;
 	}
 
 	/* 3: Username */
-	if (MATCH(matches,3)){
-		opt->username = EXTRACT(str,matches,3);
+	if (MATCH(matches,REGEX_USERNAME)){
+		opt->username = EXTRACT(str,matches,REGEX_USERNAME);
 	}
 	/* 4: Password */
-	if (MATCH(matches,4)){
+	if (MATCH(matches,REGEX_PASSWORD)){
 		if (opt->password) free(opt->password);
-		opt->password = EXTRACT(str,matches,4);
+		opt->password = EXTRACT(str,matches,REGEX_PASSWORD);
 	}
 
 	/* 5: Server */
-	if (MATCH(matches,5)){
+	if (MATCH(matches,REGEX_SERVER)){
 		if (opt->server) free(opt->server);
-		opt->server = EXTRACT(str,matches,5);
+		opt->server = EXTRACT(str,matches,REGEX_SERVER);
 	}	
 
 	/* 6: Port */
-	if (MATCH(matches, 6)){
-		opt->port = strtol(str + matches[6].rm_eo,0,10);
+	if (MATCH(matches, REGEX_PORT)){
+		opt->port = strtol(str + matches[REGEX_PORT].rm_so,0,10);
 	}
 
 
 	/* 4: Game name */
-	if (MATCH(matches,7)){
+	if (MATCH(matches,REGEX_GAME)){
 		if (opt->game) free(opt->game);
-		opt->game = EXTRACT(str,matches,7);
+		opt->game = EXTRACT(str,matches,REGEX_GAME);
 	}
 
 
