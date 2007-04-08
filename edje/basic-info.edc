@@ -257,6 +257,33 @@ group {
 	    }
 	}
 
+/* FIXME: These should be in a box. */
+#define CHILD(childname, startx, endx)	    \
+	part {				    \
+	    name: childname;		    \
+	    type: SWALLOW;		    \
+	    description {		    \
+		state:	"default"   0.0;    \
+		rel1 {			    \
+		    to: "background";	    \
+		    relative: 0.0 0.0;	    \
+		    offset: startx 306;	    \
+		}			    \
+		rel2 {			    \
+		    to: "background";	    \
+		    relative: 0.0 0.0;	    \
+		    offset: endx 370;	    \
+		}			    \
+	    }				    \
+	}
+
+	CHILD("Child00", 14, 78);
+	CHILD("Child01", 88, 152);
+	CHILD("Child02", 162, 226);
+	CHILD("Child03", 236, 300);
+	CHILD("Child04", 310, 374);
+
+
 
     }		    
 

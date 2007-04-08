@@ -702,6 +702,7 @@ tpe_gui_objectbox_object_set(struct tpe_gui *gui, Evas_Object *objectbox,
 	Evas_Object *icon;
 	const char *orderstr;
 	char buf[50];
+	int i,nchild;
 
 	/* FIXME: Need to clean up */
 	tpe_gui_objectbox_clean(objectbox);
@@ -729,11 +730,24 @@ tpe_gui_objectbox_object_set(struct tpe_gui *gui, Evas_Object *objectbox,
 	icon = tpe_gui_object_icon_get(gui, object->parent, 1);
 	if (icon) edje_object_part_swallow(objectbox, "parent", icon);
 
+	/* Children */
+	for (i = 0, nchild = 0 ; i < object->nchildren && nchild < 5 ; i ++){
+		printf("Doing child: %d\n",object->children[i]);
+		icon = tpe_gui_object_icon_get(gui, object->children[i], 1);
+		if (icon) {
+			snprintf(buf,50,"Child%02d", nchild);
+			printf("Bhild obj %s\n", buf);
+			edje_object_part_swallow(objectbox, buf, icon);
+			nchild ++;
+		}
+	}
 }
 
 static void
 tpe_gui_objectbox_clean(Evas_Object *objectbox){
 	Evas_Object *obj;
+	char buf[50];
+	int i;
 
 	obj = edje_object_part_swallow_get(objectbox, "icon");
 	if (obj){
@@ -744,6 +758,16 @@ tpe_gui_objectbox_clean(Evas_Object *objectbox){
 	if (obj){
 		edje_object_part_unswallow(objectbox, obj);
 		evas_object_del(obj);
+	}
+
+	for (i = 0 ; i < 5 ; i ++){
+		snprintf(buf,50,"Child%02d",i);
+		obj = edje_object_part_swallow_get(objectbox, buf);
+		if (obj){
+			edje_object_part_unswallow(objectbox, obj);
+			evas_object_del(obj);
+
+		}
 	}
 
 }
