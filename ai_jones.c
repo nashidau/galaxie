@@ -27,6 +27,8 @@ struct ai {
 };
 
 static int jones_order_planet(void *data, int type, void *event);
+static int jones_order_insert_cb(void *userdata, const char *msgtype,
+		int len, void *edata);
 
 TPE_AI("jones", "Jones - Aggresive Minisec AI", ai_jones_init)
 
@@ -57,6 +59,27 @@ jones_order_planet(void *aiv, int type, void *planetv){
 	buildid = tpe_order_get_type_by_name(jones->tpe, "BuildFleet");
 	if (buildid == -1) return 1;
 	
+	tpe_msg_send_format(jones->tpe->msg, "MsgProbeOrder",
+			jones_order_insert_cb, jones,
+			"iii000000", planet->oid, -1, buildid);
 
 	return 1;
 }
+
+/**
+ * Handler for the probem order response 
+ */
+static int 
+jones_order_insert_cb(void *userdata, const char *msgtype,
+		int len, void *edata){
+	
+	if (strcmp(msgtype, "MsgOrder") != 0){
+		printf("Got a %s back!\n", msgtype);
+	}
+
+	printf("Need to handle this\n");
+
+	return 1;
+}
+	
+
