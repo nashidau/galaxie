@@ -45,6 +45,7 @@ IMAGES=				\
 	$Iarrowright.png	\
 	$Iarrowleft.png		\
 	$Ibg.png		\
+	$Ibutton.png		\
 	$Imailbox.png		\
 	$Imessagewindow.png	\
 	$Iobjectwindow.png	
@@ -114,8 +115,10 @@ $Ibg.png : $IBG1.svg
 	inkscape -j --export-background=black --export-png $@ $<
 
 $Iobjectwindow.png : $IObjectViewer.svg Makefile
-	inkscape -j --export-area-drawing -d 120 --export-png $@ $<
+	inkscape -j --export-id=${@F} -d 120 --export-png $@ $<
 
+$Ibutton.png : $IObjectViewer.svg  Makefile
+	inkscape -j --export-id=${@F} -w 200 -h 50 --export-png $@ $<
 
 clean: 
 	rm -f *.o ailist.h ${IMAGES} ${EDJE}

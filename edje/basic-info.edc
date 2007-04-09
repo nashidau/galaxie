@@ -1,7 +1,7 @@
 images {
     image: "objectwindow.png" COMP;
+    image: "button.png" COMP;
 }
-
 
 styles {
     style {
@@ -136,13 +136,13 @@ group {
 	    description {
 		state: "default" 0.0;
 		rel1 {
-		    relative: 0.0 1.0;
-		    offset: 0 5;
-		    to: "Owner";
+		    relative: 0.0 0.0;
+		    offset: 18 170;
+		    to: "background";
 		}
 		rel2 {
-		    relative: 1.0 1.0;
-		    offset: 0 -5;
+		    relative: 0.0 0.0;
+		    offset: 160 270;
 		    to: "background";
 		}
 		text {
@@ -153,6 +153,27 @@ group {
 
 		 }
 
+	    }
+	}
+	part {
+	    name: "EditOrders";
+	    mouse_events: 1;
+	    type: IMAGE;
+	    description {
+		state: "default" 0.0;
+		rel1 {
+		    relative: 0.0 0.0;
+		    offset: 100 140;
+		    to: "background";
+		}
+		rel2 {
+		    relative: 0.0 0.0;
+		    offset: 160 160;
+		    to: "background";
+		}
+		image {
+		    normal: "button.png";
+		}
 	    }
 	}
 	part {
@@ -175,86 +196,6 @@ group {
 		}
 	    }
 
-	}
-	part {
-	    name: "Next";
-	    type: IMAGE;
-	    description {
-	    state: "default" 0.0;
-		rel1 { 
-		    to: "Close";
-		    relative: 0.0 0.0;
-		    offset: -17 0;
-		}
-		rel2 {
-		    to: "Close";
-		    relative: 0.0 0.0;
-		    offset: -1 16;
-		}
-		image {
-		    normal: "arrowright.png";
-		}
-	    }
-	}
-	part {
-	    name: "Parent";
-	    type: IMAGE;
-	    description {
-		state: "default" 0.0;
-		rel1 { 
-		    to: "Next";
-		    relative: 0.0 0.0;
-		    offset: -17 0;
-		}
-		rel2 {
-		    to: "Next";
-		    relative: 0.0 0.0;
-		    offset: -1 16;
-		}
-		image {
-		    normal: "arrow-up-ugly.png";
-		}
-	    }
-	}
-	part {
-	    name: "Child";
-	    type: IMAGE;
-	    description {
-		state: "default" 0.0;
-		rel1 { 
-		    to: "Parent";
-		    relative: 0.0 0.0;
-		    offset: -17 0;
-		}
-		rel2 {
-		    to: "Parent";
-		    relative: 0.0 0.0;
-		    offset: -1 16;
-		}
-		image {
-		    normal: "arrow-down-ugly.png";
-		}
-	    }
-	}
-	part {
-	    name: "Prev";
-	    type: IMAGE;
-	    description {
-		state: "default" 0.0;
-		rel1 { 
-		    to: "Child";
-		    relative: 0.0 0.0;
-		    offset: -17 0;
-		}
-		rel2 {
-		    to: "Child";
-		    relative: 0.0 0.0;
-		    offset: -1 16;
-		}
-		image {
-		    normal: "arrowleft.png";
-		}
-	    }
 	}
 
 /* FIXME: These should be in a box. */
