@@ -24,6 +24,10 @@
  * [UI] Planet popup improve
  * [UI] Object display
  * [UI] Smart window placement
+ * Tpe orders: Should have a better probe/build call -
+ 	A single call so you can do:
+		tpe_order_build(.., "BattleShip", 8, ..);
+		and it all just works
  * Connect handle failures
  * [UI] Display systems with fleets
  * Nail some fixmes (50 at last count)
