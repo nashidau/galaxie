@@ -33,6 +33,8 @@ int tpe_orders_object_move_object(struct tpe *tpe, struct object *obj, int slot,
 		struct object *dest);
 int tpe_orders_object_colonise(struct tpe *tpe, struct object *obj, int slot,
 		struct object *what);
+int tpe_orders_object_build(struct tpe *tpe, struct object *obj, int slot,
+		const char *name, ...);
 	
 
 uint64_t tpe_orders_order_desc_updated(struct tpe *tpe, uint32_t id);

@@ -454,10 +454,12 @@ tpe_msg_send_strings(struct tpe_msg *msg, const char *msgtype,
 /* 
  *
  * Format options:
+ *  V : Dump the raw packet before it is sent (no args)
  *  i : Integer (one arg: int32_t)
  *  l : Long integer (one arg: uint64_t)
  *  0 : A zero (no arg)
  *  s : String (one arg: char *)
+ *  r : Raw data (pre-formatted, two args, len (ints) data pointer 
  */
 int 
 tpe_msg_send_format(struct tpe_msg *msg, const char *type,
@@ -493,6 +495,7 @@ format_msg(int32_t *buf, const char *format, va_list ap){
 	int64_t val64;
 	char *str;
 	int pos;
+	int dump = 0;
 
 	pos = 0;
 
@@ -537,9 +540,31 @@ format_msg(int32_t *buf, const char *format, va_list ap){
 				strncpy((char*)(buf + pos),str,padlen);
 			pos += padlen / 4;
 			break;
-			
+		case 'r':
+			len = va_arg(ap, int);
+			str = va_arg(ap, void *);
+			if (buf)
+				memcpy(buf + pos, str, sizeof(int32_t) * len);
+			pos += len;
+			break;
+		case 'V':
+			dump ++;
+			break;
+		default:
+			fprintf(stderr,"unknown format character %c\n",
+					*format);
+			exit(1);
 		}
 		format ++;
+	}
+
+	if (buf && dump){
+		int i;
+		for (i = 0 ; i < pos ; i ++){
+			printf("%08x ",ntohl(buf[i]));
+			if (i % 8 == 7) printf("\n");
+		}
+		printf("\n");
 	}
 
 	return pos;

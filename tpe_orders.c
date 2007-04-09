@@ -4,6 +4,7 @@
 #include <arpa/inet.h>
 #include <assert.h>
 #include <inttypes.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -504,6 +505,71 @@ tpe_orders_object_colonise(struct tpe *tpe, struct object *obj, int slot,
 			"iii00i",
 			obj->oid, slot, colorder, what->oid);
 }
+
+
+/**
+ * Send a build order in the standard format.
+ *
+ * The var_arg format is:
+ *  Type
+ *  Number
+ * A type of -1 ends the list.
+ *
+ * @param  tpe TPE structure
+ * @param obj to do building
+ * @param Slot to insert into
+ * @param Name of hte object
+ * @return -1 on error, 0 on sucess.
+ */
+int 
+tpe_orders_object_build(struct tpe *tpe, struct object *obj, int slot,
+		const char *name, ...){
+	va_list ap;
+	uint32_t type, count;
+	int *buf;
+	int items;
+	int buildorder;
+	int i;
+
+
+	buildorder = tpe_order_get_type_by_name(tpe,"BuildFleet");
+
+	/* First pass - count */
+	va_start(ap,name);
+	items = 0;
+	do {
+		type = va_arg(ap, uint32_t);
+		if (type == (uint32_t)-1 || type == 0)
+			break;
+		count = va_arg(ap, uint32_t);
+		if (count == 0)
+			break;
+		items ++;
+	} while (1);
+	va_end(ap);
+
+	if (items){
+		va_start(ap,name);
+		buf = malloc(sizeof(uint32_t) * items * 2 + sizeof(uint32_t));
+		buf[0] = htonl(items);
+		for (i = 0 ; i < items; i ++){
+			buf[i * 2 + 1] = htonl(va_arg(ap, uint32_t));
+			buf[i * 2 + 2] = htonl(va_arg(ap, uint32_t));
+		}
+		va_end(ap);
+		return tpe_msg_send_format(tpe->msg, "MsgInsertOrder",
+					NULL, NULL,
+					"V" "iii000r0s",
+					obj->oid, slot,
+					buildorder,
+					items * 2 + 1, buf,
+					name);
+	}
+
+	return -1;
+}
+
+
 
 int 
 tpe_orders_object_clear(struct tpe *tpe, struct object *obj){
