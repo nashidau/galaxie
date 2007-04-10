@@ -10,3 +10,6 @@ Message Window
 
 Fleets (Part Name "Fleet")
 	Have a text property called "Name" which is the name of the fleet
+
+Styles:
+	tooltip: Text which appears as a tool tip
