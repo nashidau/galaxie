@@ -183,7 +183,6 @@ tpe_board_msg_message_receive(void *data, int type, void *event){
 	message = calloc(1,sizeof(struct message));
 	message->unread = 1;
 
-	/* FIXME: Doesn't handle reference system */
 	tpe_util_parse_packet(body, "iiassir", &message->board,
 			&message->slot, NULL, NULL,
 			&message->title,
