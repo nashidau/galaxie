@@ -802,8 +802,13 @@ tpe_gui_objectbox_ordersedit(void *data, Evas_Object *objectbox,
 	struct object *object;
 
 	object = evas_object_data_get(objectbox, "Object");
-
 	if (object == NULL) return;
+
+	/* FIXME: 
+	 * 	- Open an order window 
+	 * 		- or find one already open 
+	 * 	- Set it focused if necesary
+	 */
 }
 
 
