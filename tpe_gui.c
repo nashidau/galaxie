@@ -73,6 +73,9 @@ struct gui_board {
 	int state;
 	const char *name;
 	const char *desc;
+
+	/* Last visible state */
+	const char *state;
 };
 
 
@@ -557,9 +560,8 @@ star_update(struct tpe *tpe, struct object *object){
 	else if (nowned > 0)
 		state = "Own";
 	
-	/* FIXME: Should only emit if not in the right state */
-	if (state){
-		printf("Emit %s\n",state);
+	if (state && object->gui->state != state){
+		object->gui->state = state;
 		edje_object_signal_emit(object->gui->obj, state, "app");
 	}
 	
