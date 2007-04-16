@@ -113,6 +113,7 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
 	struct tpe *tpe;
 	char *body;
 	struct board *board;
+	struct message *nm;
 	int32_t id;
 	int32_t *toget;
 	int ntoget;
