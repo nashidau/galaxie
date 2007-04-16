@@ -123,7 +123,7 @@ static void board_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event);
 static void board_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event);
 
 /* Object window event handlers */
-/* FIXME: objectwindow or object or obhectbox - pick one */
+/* FIXME: objectwindow or object or objectbox - pick one */
 static Evas_Object *tpe_gui_objectwindow_add(struct tpe_gui *gui);
 static void tpe_gui_edje_object_change(void *data, Evas_Object *objectbox, 
 		const char *emission, const char *source);
