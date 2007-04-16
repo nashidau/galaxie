@@ -113,7 +113,7 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
 	struct tpe *tpe;
 	char *body;
 	struct board *board;
-	struct message *nm;
+	struct message **nm;
 	int32_t id;
 	int32_t *toget;
 	int ntoget;
@@ -144,7 +144,7 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
 			sizeof(struct message) * board->nmessages);
 	if (nm == NULL){
 		/* XXX: Need an error reporting system */
-		return; 
+		return 1; 
 	}
 	board->messages = nm;
 
