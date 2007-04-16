@@ -140,9 +140,13 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
 		return 1;
 
 
-	/* FIXME: Realloc can fail (and leak) */
-	board->messages = realloc(board->messages, 
+	nm = realloc(board->messages, 
 			sizeof(struct message) * board->nmessages);
+	if (nm == NULL){
+		/* XXX: Need an error reporting system */
+		return; 
+	}
+	board->messages = nm;
 
 	ntoget = board->nmessages - board->nalloced;
 	toget = malloc(sizeof(int32_t) * (ntoget + 2));
