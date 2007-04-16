@@ -13,7 +13,6 @@
 #include "tpe_util.h"
 
 struct tpe_board {
-	FILE *msglog;
 	Ecore_List *boards;
 };
 
@@ -41,7 +40,6 @@ static int tpe_board_board_changed_notify(struct tpe *tpe, struct board *board);
 struct tpe_board *
 tpe_board_init(struct tpe *tpe){
 	struct tpe_board *board;
-	FILE *msglog;
 
 	if (tpe->board != NULL) return tpe->board;
 
@@ -63,10 +61,6 @@ tpe_board_init(struct tpe *tpe){
 				"MsgListOfBoards", 
 				"MsgGetBoards",
 				tpe_board_board_updated_get, NULL, NULL);
-
-	/* FIXME: For now... we log messages */
-	msglog = fopen("msglog.txt","w");
-	board->msglog = msglog;
 
 	return board;
 }
@@ -194,12 +188,6 @@ tpe_board_msg_message_receive(void *data, int type, void *event){
 			&message->body,
 			&message->turn,
 			&message->nrefs, &message->references);
-
-	fprintf(tpe->board->msglog,"Message is: Board %d Slot %d Turn %d\n"
-		"  Subject: %s\n  Body: %s\n"
-		"  Nrefs: %d\n",
-			message->board,message->slot,message->turn,
-			message->title, message->body,message->nrefs);
 
 	board = tpe_board_board_get_by_id(tpe, message->board);
 	if (board == NULL){
