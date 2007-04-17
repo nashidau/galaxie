@@ -1326,6 +1326,11 @@ tpe_gui_object_icon_get(struct tpe_gui *gui, uint32_t oid, int active){
 static void
 tpe_gui_icon_del_cb(Evas_Object *icon){
 	Evas_Object *o;
+	int *data;
+	
+	data = evas_object_event_callback_del(icon, EVAS_CALLBACK_MOUSE_DOWN, 
+			reference_object_show);
+	if (data) free(data);
 
 	o = edje_object_part_swallow_get(icon,"object");
 	if (o){
