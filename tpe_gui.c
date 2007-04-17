@@ -74,8 +74,6 @@ struct gui_board {
 	const char *name;
 	const char *desc;
 
-	/* Last visible state */
-	const char *state;
 };
 
 
@@ -93,6 +91,10 @@ struct tpe_gui_obj {
 
 	/* The info window (if any) for this object */
 	Evas_Object *info;
+
+	/* Last visible state */
+	const char *state;
+
 };
 
 enum {
@@ -1254,7 +1256,6 @@ tpe_gui_object_icon_get(struct tpe_gui *gui, uint32_t oid, int active){
 	Evas_Object *eo;
 	struct object *obj;
 	assert(gui);
-	assert(oid);
 	
 	if (gui == NULL) return NULL;
 	
@@ -1278,9 +1279,7 @@ tpe_gui_object_icon_get(struct tpe_gui *gui, uint32_t oid, int active){
 		evas_object_image_file_set(icon, "edje/images/universe.png",0);
 		break;
 	case OBJTYPE_GALAXY:
-		evas_object_del(eo);
-		printf("Oops - don't handle galaxy\n");
-		return NULL;
+		evas_object_image_file_set(icon, "edje/images/galaxy64.png",0);
 		break;
 	case OBJTYPE_SYSTEM:
 		evas_object_image_file_set(icon, "edje/images/star.png",0);
@@ -1310,11 +1309,14 @@ tpe_gui_object_icon_get(struct tpe_gui *gui, uint32_t oid, int active){
 				(void*)tpe_gui_icon_del_cb, eo);
 
 	if (active){
-		/* XXX: this is not portable (oid in void*) */
+		int *oid;
+		oid = malloc(sizeof(int));
+		if (!oid) return eo;
+		*oid = obj->oid;
 		evas_object_event_callback_add(eo,
 						EVAS_CALLBACK_MOUSE_DOWN,
 						reference_object_show,
-						(void*)obj->oid);
+						oid);
 		evas_object_data_set(eo, KEY_TPE_GUI, gui);
 	}
 
@@ -1343,7 +1345,7 @@ reference_object_show(void *idv, Evas *e, Evas_Object *eo, void *event){
 
 	gui = evas_object_data_get(eo, KEY_TPE_GUI);
 
-	oid = (uint32_t)idv;
+	oid = *(uint32_t *)idv;
 
 	obj = tpe_obj_obj_get_by_id(gui->tpe->obj, oid);
 	if (obj == NULL){
