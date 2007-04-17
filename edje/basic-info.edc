@@ -1,6 +1,7 @@
 images {
     image: "objectwindow.png" COMP;
     image: "button.png" COMP;
+    image: "close.png" COMP;
 }
 
 styles {
@@ -184,18 +185,17 @@ group {
 		rel1 { 
 		    to: "background";
 		    relative: 1.0 0;
-		    offset: -20 0;
+		    offset: -20 3;
 		}
 		rel2 {
 		    to: "background";
 		    relative: 1.0 0;
-		    offset: -4 16;
+		    offset: -7 16;
 		}
 		image {
-		    normal: "window-close-ugly.png";
+		    normal: "close.png";
 		}
 	    }
-
 	}
 
 /* FIXME: These should be in a box. */
