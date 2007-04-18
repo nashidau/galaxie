@@ -83,6 +83,8 @@ static void dump_options(struct startopt *);
 
 char *substringdup(const char *str, int start, int end);
 
+static int tpe_regerror(int errcode, const regex_t *regex);
+
 static struct args {
 	const char *arg;
 	int (*fn)(struct startopt *opt, int i, char **args);
@@ -392,9 +394,8 @@ parse_url(struct startopt *opt, int i, char **args){
 
 	str = args[i];
 
-	if (regcomp(&re, urlpattern, REG_EXTENDED) != 0){
-		/* FIXME: perror doesn't work here */
-		perror("regcomp:");
+	if ((rv = regcomp(&re, urlpattern, REG_EXTENDED)) != 0){
+		tpe_regerror(rv,&re);
 		return -1;
 	}
 
@@ -406,8 +407,8 @@ parse_url(struct startopt *opt, int i, char **args){
 
 	rv = regexec(&re, str, re.re_nsub, matches, 0);
 	if (rv != 0){
-		/* FIXME: perror doesn't work here */
-		perror("regexec");
+		tpe_regerror(rv,&re);
+		return -1;
 	}
 
 	/* 1: Http */
@@ -513,4 +514,14 @@ substringdup(const char *str, int start, int end){
 	buf = calloc(end - start + 1,sizeof(char));
 	strncpy(buf,str + start,end - start);
 	return buf;
+}
+
+
+static int
+tpe_regerror(int errcode, const regex_t *regex){
+	char buf[BUFSIZ];
+
+	regerror(errcode,regex,buf,BUFSIZ);
+	fprintf(stderr,"Regular expression error: %s\n",buf);
+	return 0;
 }

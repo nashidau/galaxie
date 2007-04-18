@@ -13,7 +13,6 @@
 #include "tpe_util.h"
 
 struct tpe_board {
-	FILE *msglog;
 	Ecore_List *boards;
 };
 
@@ -41,7 +40,6 @@ static int tpe_board_board_changed_notify(struct tpe *tpe, struct board *board);
 struct tpe_board *
 tpe_board_init(struct tpe *tpe){
 	struct tpe_board *board;
-	FILE *msglog;
 
 	if (tpe->board != NULL) return tpe->board;
 
@@ -63,10 +61,6 @@ tpe_board_init(struct tpe *tpe){
 				"MsgListOfBoards", 
 				"MsgGetBoards",
 				tpe_board_board_updated_get, NULL, NULL);
-
-	/* FIXME: For now... we log messages */
-	msglog = fopen("msglog.txt","w");
-	board->msglog = msglog;
 
 	return board;
 }
@@ -113,6 +107,7 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
 	struct tpe *tpe;
 	char *body;
 	struct board *board;
+	struct message **nm;
 	int32_t id;
 	int32_t *toget;
 	int ntoget;
@@ -139,9 +134,13 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
 		return 1;
 
 
-	/* FIXME: Realloc can fail (and leak) */
-	board->messages = realloc(board->messages, 
+	nm = realloc(board->messages, 
 			sizeof(struct message) * board->nmessages);
+	if (nm == NULL){
+		/* XXX: Need an error reporting system */
+		return 1; 
+	}
+	board->messages = nm;
 
 	ntoget = board->nmessages - board->nalloced;
 	toget = malloc(sizeof(int32_t) * (ntoget + 2));
@@ -183,19 +182,12 @@ tpe_board_msg_message_receive(void *data, int type, void *event){
 	message = calloc(1,sizeof(struct message));
 	message->unread = 1;
 
-	/* FIXME: Doesn't handle reference system */
 	tpe_util_parse_packet(body, "iiassir", &message->board,
 			&message->slot, NULL, NULL,
 			&message->title,
 			&message->body,
 			&message->turn,
 			&message->nrefs, &message->references);
-
-	fprintf(tpe->board->msglog,"Message is: Board %d Slot %d Turn %d\n"
-		"  Subject: %s\n  Body: %s\n"
-		"  Nrefs: %d\n",
-			message->board,message->slot,message->turn,
-			message->title, message->body,message->nrefs);
 
 	board = tpe_board_board_get_by_id(tpe, message->board);
 	if (board == NULL){

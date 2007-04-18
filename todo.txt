@@ -1,8 +1,21 @@
+Major Tasks:
+ * Order input
+ 	- Design GUI
+	- Create Window
+	- Display
+ * Object Display
+ 	- Show all details
+		- Orders
+		- Components
  * Finish Jones
  	- Find a planet - kill it
- * Orders
- 	- Display
-	- Enter
+ * Scheme integration
+
+Important:
+ * Lists -> Hashes in Object list
+ 	- Probably maintain both (B+tree)?
+
+Minor Tasks 
  * New art for:
 	- Friendly Shared:	Purple
  * Colour coded fleets
@@ -19,18 +32,18 @@
 	- Recover from being shut down
 		- Find ships with colonisation orders
  * [UI] Fix popup over boards to show details about them
- * [UI] Fix map zoom and pan
- * [UI] orders
+ * [UI] Fix map zoom
  * [UI] Planet popup improve
  * [UI] Object display
  * [UI] Smart window placement
+ * [UI] Window placement on resize of screen
  * Tpe orders: Should have a better probe/build call -
  	A single call so you can do:
 		tpe_order_build(.., "BattleShip", 8, ..);
 		and it all just works
  * Connect handle failures
  * [UI] Display systems with fleets
- * Nail some fixmes (50 at last count)
+ * Nail some fixmes (58 at last count)
  * Support games: So can log into a non-default game
  * Protocol support for
  	- SSL
@@ -39,10 +52,6 @@
  * Register tp:// handler
  * Metaserver queries
  * Avahi/zeroconf queries
- * Improve some of the data structures
- 	- Lists could become hashes in many places
-		- Objects (Planets)
-		- Designs
  * [UI] Send messages
  * [UI] Clean up messages in one click (close all windows)
  * Ability to save screenshots, on non-X11

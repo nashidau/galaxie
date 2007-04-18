@@ -73,9 +73,14 @@ struct gui_board {
 	int state;
 	const char *name;
 	const char *desc;
+
 };
 
 
+/**
+ * Gui data attached to an object
+ *
+ */
 struct tpe_gui_obj {
 	Evas_Object *obj;
 
@@ -83,6 +88,13 @@ struct tpe_gui_obj {
 	struct object *object;
 
 	int nplanets;
+
+	/* The info window (if any) for this object */
+	Evas_Object *info;
+
+	/* Last visible state */
+	const char *state;
+
 };
 
 enum {
@@ -113,11 +125,16 @@ static void board_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event);
 static void board_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event);
 
 /* Object window event handlers */
+/* FIXME: objectwindow or object or objectbox - pick one */
 static Evas_Object *tpe_gui_objectwindow_add(struct tpe_gui *gui);
 static void tpe_gui_edje_object_change(void *data, Evas_Object *objectbox, 
 		const char *emission, const char *source);
 static void tpe_gui_objectbox_object_set(struct tpe_gui *gui, Evas_Object *objectbox, struct object *object);
 static void tpe_gui_objectbox_clean(Evas_Object *objectbox);
+static void tpe_gui_objectbox_ordersedit(void *gui, Evas_Object *orderbox, 
+		const char *emission, const char *source);
+
+/* Order window functions */
 
 /* Message Window event handlers */
 static Evas_Object *tpe_gui_messagebox_add(struct tpe_gui *gui);
@@ -160,8 +177,6 @@ tpe_gui_init(struct tpe *tpe, const char *theme, unsigned int fullscreen){
 	gui->map.left = WIDTH / 2;
 	gui->map.top = HEIGHT / 2;
 	
-	/* FIXME: Should check for --nogui option */
-
 	gui->ee = ecore_evas_software_x11_new(NULL, 0,  0, 0, WIDTH, HEIGHT);
 	if (gui->ee == NULL) {
 		printf("Could not create ecore_evas_xll.\n");
@@ -547,9 +562,8 @@ star_update(struct tpe *tpe, struct object *object){
 	else if (nowned > 0)
 		state = "Own";
 	
-	/* FIXME: Should only emit if not in the right state */
-	if (state){
-		printf("Emit %s\n",state);
+	if (state && object->gui->state != state){
+		object->gui->state = state;
 		edje_object_signal_emit(object->gui->obj, state, "app");
 	}
 	
@@ -565,6 +579,8 @@ star_update(struct tpe *tpe, struct object *object){
  * @param event Object being deleted.
  * @return 1 Always (propogate event).
  */
+/* FIXME: Need to delete any object references to this object 
+ * 	For instance in a object window */
 static int 
 tpe_gui_object_delete(void *data, int eventid, void *event){
 	struct object *obj;
@@ -576,6 +592,10 @@ tpe_gui_object_delete(void *data, int eventid, void *event){
 	if (obj->gui == NULL) return 1;
 
 	go = obj->gui;
+
+	if (go->info){
+		evas_object_del(go->info);
+	}
 
 	ecore_list_goto(go->gui->visible, obj);
 	ecore_list_remove(go->gui->visible);
@@ -625,17 +645,27 @@ star_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 	//Evas_Event_Mouse_Down *mouse = event;
 	struct tpe_gui_obj *go = data;
 
-	o = tpe_gui_objectwindow_add(go->gui);
+	if (go->info){
+		evas_object_raise(go->info);
+	} else {
 
-	tpe_gui_objectbox_object_set(go->gui, o, go->object);
+		o = tpe_gui_objectwindow_add(go->gui);
 
-	evas_object_show(o);
+		tpe_gui_objectbox_object_set(go->gui, o, go->object);
+
+		evas_object_show(o);
+
+		go->info = o;
+	}
 
 }
 
 
 
-
+/**
+ * Creates a new message window.
+ *
+ */
 static Evas_Object *
 tpe_gui_objectwindow_add(struct tpe_gui *gui){
 	Evas_Object *o;
@@ -646,20 +676,14 @@ tpe_gui_objectwindow_add(struct tpe_gui *gui){
 	evas_object_resize(o, 388, 419);
 
 	edje_object_signal_callback_add(o,
-			"mouse,clicked,*", "Next", 
-			tpe_gui_edje_object_change, gui);
-	edje_object_signal_callback_add(o,
-			"mouse,clicked,*", "Prev", 
-			tpe_gui_edje_object_change, gui);
-	edje_object_signal_callback_add(o,
-			"mouse,clicked,*", "Child", 
-			tpe_gui_edje_object_change, gui);
-	edje_object_signal_callback_add(o,
 			"mouse,clicked,*", "Parent", 
 			tpe_gui_edje_object_change, gui);
 	edje_object_signal_callback_add(o,
 			"mouse,clicked,*", "Close", 
 			(void*)evas_object_del, o);
+	edje_object_signal_callback_add(o,
+			"mouse,clicked,*", "EditOrders",
+			tpe_gui_objectbox_ordersedit, gui);
 
 	evas_object_event_callback_add(o, EVAS_CALLBACK_FREE,
 			(void*)tpe_gui_objectbox_clean, o);
@@ -704,10 +728,10 @@ tpe_gui_objectbox_object_set(struct tpe_gui *gui, Evas_Object *objectbox,
 	char buf[50];
 	int i,nchild;
 
-	/* FIXME: Need to clean up */
 	tpe_gui_objectbox_clean(objectbox);
 
 	edje_object_part_text_set(objectbox, "Name", object->name);
+	
 	/* FIXME: Get the player name */
 	if (object->owner == -1)
 		edje_object_part_text_set(objectbox, "Owner", "Unowned");
@@ -732,11 +756,9 @@ tpe_gui_objectbox_object_set(struct tpe_gui *gui, Evas_Object *objectbox,
 
 	/* Children */
 	for (i = 0, nchild = 0 ; i < object->nchildren && nchild < 5 ; i ++){
-		printf("Doing child: %d\n",object->children[i]);
 		icon = tpe_gui_object_icon_get(gui, object->children[i], 1);
 		if (icon) {
 			snprintf(buf,50,"Child%02d", nchild);
-			printf("Bhild obj %s\n", buf);
 			edje_object_part_swallow(objectbox, buf, icon);
 			nchild ++;
 		}
@@ -748,6 +770,8 @@ tpe_gui_objectbox_clean(Evas_Object *objectbox){
 	Evas_Object *obj;
 	char buf[50];
 	int i;
+
+	evas_object_data_set(objectbox, "Object", NULL);
 
 	obj = edje_object_part_swallow_get(objectbox, "icon");
 	if (obj){
@@ -771,6 +795,26 @@ tpe_gui_objectbox_clean(Evas_Object *objectbox){
 	}
 
 }
+
+
+/**
+ * Callback for when someone clicks the 'edit orders' button.
+ */
+static void
+tpe_gui_objectbox_ordersedit(void *data, Evas_Object *objectbox, 
+		const char *emission, const char *source){
+	struct object *object;
+
+	object = evas_object_data_get(objectbox, "Object");
+	if (object == NULL) return;
+
+	/* FIXME: 
+	 * 	- Open an order window 
+	 * 		- or find one already open 
+	 * 	- Set it focused if necesary
+	 */
+}
+
 
 
 static void
@@ -1212,7 +1256,6 @@ tpe_gui_object_icon_get(struct tpe_gui *gui, uint32_t oid, int active){
 	Evas_Object *eo;
 	struct object *obj;
 	assert(gui);
-	assert(oid);
 	
 	if (gui == NULL) return NULL;
 	
@@ -1236,9 +1279,7 @@ tpe_gui_object_icon_get(struct tpe_gui *gui, uint32_t oid, int active){
 		evas_object_image_file_set(icon, "edje/images/universe.png",0);
 		break;
 	case OBJTYPE_GALAXY:
-		evas_object_del(eo);
-		printf("Oops - don't handle galaxy\n");
-		return NULL;
+		evas_object_image_file_set(icon, "edje/images/galaxy64.png",0);
 		break;
 	case OBJTYPE_SYSTEM:
 		evas_object_image_file_set(icon, "edje/images/star.png",0);
@@ -1268,11 +1309,14 @@ tpe_gui_object_icon_get(struct tpe_gui *gui, uint32_t oid, int active){
 				(void*)tpe_gui_icon_del_cb, eo);
 
 	if (active){
-		/* XXX: this is not portable (oid in void*) */
+		int *oid;
+		oid = malloc(sizeof(int));
+		if (!oid) return eo;
+		*oid = obj->oid;
 		evas_object_event_callback_add(eo,
 						EVAS_CALLBACK_MOUSE_DOWN,
 						reference_object_show,
-						(void*)obj->oid);
+						oid);
 		evas_object_data_set(eo, KEY_TPE_GUI, gui);
 	}
 
@@ -1282,6 +1326,11 @@ tpe_gui_object_icon_get(struct tpe_gui *gui, uint32_t oid, int active){
 static void
 tpe_gui_icon_del_cb(Evas_Object *icon){
 	Evas_Object *o;
+	int *data;
+	
+	data = evas_object_event_callback_del(icon, EVAS_CALLBACK_MOUSE_DOWN, 
+			reference_object_show);
+	if (data) free(data);
 
 	o = edje_object_part_swallow_get(icon,"object");
 	if (o){
@@ -1293,6 +1342,7 @@ tpe_gui_icon_del_cb(Evas_Object *icon){
 
 static void
 reference_object_show(void *idv, Evas *e, Evas_Object *eo, void *event){
+	struct tpe_gui_obj *guiobj;
 	struct tpe_gui *gui;
 	struct object *obj;
 	uint32_t oid;
@@ -1300,7 +1350,7 @@ reference_object_show(void *idv, Evas *e, Evas_Object *eo, void *event){
 
 	gui = evas_object_data_get(eo, KEY_TPE_GUI);
 
-	oid = (uint32_t)idv;
+	oid = *(uint32_t *)idv;
 
 	obj = tpe_obj_obj_get_by_id(gui->tpe->obj, oid);
 	if (obj == NULL){
@@ -1308,11 +1358,23 @@ reference_object_show(void *idv, Evas *e, Evas_Object *eo, void *event){
 		return;
 	}
 
-	o = tpe_gui_objectwindow_add(gui);
+	guiobj = obj->gui;
+	if (guiobj && guiobj->info){
+		/* FXME: Warp pointer to window? */
+		evas_object_raise(guiobj->info);
+	} else {
+		o = tpe_gui_objectwindow_add(gui);
 
-	tpe_gui_objectbox_object_set(gui, o, obj);
+		tpe_gui_objectbox_object_set(gui, o, obj);
 
-	evas_object_show(o);
+		evas_object_show(o);
+
+		if (guiobj == NULL){
+			guiobj = obj->gui = calloc(1,
+					sizeof(struct tpe_gui_obj));
+		}
+		guiobj->info = o;
+	}
 
 }
 

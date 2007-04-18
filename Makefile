@@ -47,6 +47,7 @@ IMAGES=				\
 	$Ibg.png		\
 	$Ibutton.png		\
 	$Imailbox.png		\
+	$Iclose.png		\
 	$Imessagewindow.png	\
 	$Iobjectwindow.png	
 
@@ -118,6 +119,9 @@ $Iobjectwindow.png : $IObjectViewer.svg Makefile
 	inkscape -j --export-id=${@F} -d 120 --export-png $@ $<
 
 $Ibutton.png : $IObjectViewer.svg  Makefile
+	inkscape -j --export-id=${@F} -w 200 -h 50 --export-png $@ $<
+
+$Iclose.png : $IObjectViewer.svg  Makefile
 	inkscape -j --export-id=${@F} -w 200 -h 50 --export-png $@ $<
 
 clean: 
