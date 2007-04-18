@@ -1,6 +1,9 @@
-/* * General object related functions.
+/* 
+ * General object related functions.
  *
- * TODO: Better data structure then a linked list 
+ * Objects are inserted into two data structures -
+ * 	a linked list
+ * 	a hash table
  */
 #include <arpa/inet.h>
 #include <stdio.h>
@@ -20,7 +23,7 @@
 
 struct tpe_obj {
 	struct tpe *tpe;
-	Ecore_List *objs;
+	Ecore_Hash *objhash;
 	int check;
 };
 
@@ -31,6 +34,10 @@ static void tpe_obj_list_begin(struct tpe *tpe);
 static void tpe_obj_list_end(struct tpe *tpe);
 
 static void tpe_obj_cleanup(struct tpe *tpe, struct object *o);
+
+//static int tpe_obj_hash_compare_data(const void *, const void *);
+//static int tpe_obj_hash_func(const void *);
+//	ecore_hash_dump_graph
 
 struct tpe_obj *
 tpe_obj_init(struct tpe *tpe){
@@ -60,7 +67,7 @@ tpe_obj_init(struct tpe *tpe){
 			tpe_obj_list_begin,
 			tpe_obj_list_end);
 
-	obj->objs = ecore_list_new();
+	obj->objhash = ecore_hash_new(NULL,NULL);
 
 	return obj;
 }
@@ -203,13 +210,9 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 
 struct object *
 tpe_obj_obj_get_by_id(struct tpe_obj *obj, uint32_t oid){
-	struct object *o;
-	ecore_list_goto_first(obj->objs);
-	while ((o = ecore_list_next(obj->objs)))
-		if (o->oid == oid)
-			return o;
+	if (obj == NULL) return NULL;
 
-	return NULL;
+	return ecore_hash_get(obj->objhash, (void*)oid);
 }
 
 struct object *
@@ -219,7 +222,7 @@ tpe_obj_obj_add(struct tpe_obj *obj, int oid){
 	o = calloc(1,sizeof(struct object));
 	o->oid = oid;
 	o->tpe = obj->tpe;
-	ecore_list_append(obj->objs, o);
+	ecore_hash_set(obj->objhash, (void*)oid, obj);
 	return o;	
 }
 
@@ -249,9 +252,11 @@ tpe_obj_obj_dump(struct object *o){
 	return 0;
 }
 
+/* This needs to be removed */
 Ecore_List *
 tpe_obj_obj_list(struct tpe_obj *obj){
-	return obj->objs;
+	if (obj == NULL) return NULL;
+	return ecore_hash_keys(obj->objhash);
 }
 
 uint64_t 
@@ -332,28 +337,40 @@ tpe_obj_list_begin(struct tpe *tpe){
 	} while (tpe->obj->check == 0);
 }
 
+struct listcbdata {
+	struct tpe *tpe;
+	int check;
+};
+
+static void
+tpe_obj_list_cleanup_cb(void *node, void *checkdata){
+	struct listcbdata *cbdata;
+	struct object *o;
+
+	o = node;
+	cbdata = checkdata;
+	if (cbdata->check != o->ref)
+		tpe_event_send(cbdata->tpe->event, "ObjectDelete", o,
+				(void(*)(void*,void*))tpe_obj_cleanup, 
+				cbdata->tpe);
+
+}
+
 static void
 tpe_obj_list_end(struct tpe *tpe){
-	struct object *o;
-	int check;
+	struct listcbdata data;
 
-	check = tpe->obj->check;
+	data.check = tpe->obj->check;
+	data.tpe = tpe;
 
-	ecore_list_goto_first(tpe->obj->objs);
-	while ((o = ecore_list_next(tpe->obj->objs))){
-		if (check != o->ref){
-			tpe_event_send(tpe->event, "ObjectDelete", o,
-					(void(*)(void*,void*))tpe_obj_cleanup, tpe);
-		}
-	}
+	ecore_hash_for_each_node(tpe->obj->objhash, tpe_obj_list_cleanup_cb, tpe);
 }
 
 static void
 tpe_obj_cleanup(struct tpe *tpe, struct object *o){
 	int i;
 
-	ecore_list_goto(tpe->obj->objs,o);
-	ecore_list_remove(tpe->obj->objs);
+	ecore_hash_remove(tpe->obj->objhash,(void*)o->oid);
 
 	o->tpe = NULL;
 	o->oid = -1;
@@ -376,4 +393,5 @@ tpe_obj_cleanup(struct tpe *tpe, struct object *o){
 	}
 	free(o);
 }
+
 
