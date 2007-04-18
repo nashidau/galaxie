@@ -128,7 +128,7 @@ tpe_comm_socket_connect(void *data, struct tpe_msg_connection *mcon){
 	msg = tpe->msg;
 
 	tpe_msg_send_strings(msg,"MsgConnect", tpe_comm_may_login, comm,
-				"EClient", NULL);
+				"GalaxiE", NULL);
 	return 1;
 }
 
@@ -137,14 +137,20 @@ tpe_comm_may_login(void *data, const char *msgtype, int len, void *mdata){
 	struct tpe_comm *comm;
 	struct tpe *tpe;
 	struct tpe_msg *msg;
+	char buf[100];
 
 	comm = data;
 	tpe = comm->tpe;
 	msg = tpe->msg;
 
+	if (comm->game){
+		snprintf(buf, 100, "%s@%s", comm->user, comm->game);
+	} else {
+		snprintf(buf, 100, "%s", comm->user);
+	}
 
 	tpe_msg_send_strings(msg, "MsgLogin",  tpe_comm_logged_in, comm,
-			comm->user, comm->pass, 0);
+			buf, comm->pass, 0);
 	tpe_msg_send(msg, "MsgGetFeatures", NULL,NULL,NULL,0);
 
 	return 0;
