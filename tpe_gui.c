@@ -259,7 +259,7 @@ tpe_gui_edje_splash_connect(void *data, Evas_Object *o,
 	tpe = data;
 	gui = tpe->gui;
 
-	tpe_comm_connect(tpe->comm, "tranquillity.nash.id.au", 6923, "nash", "password");
+	tpe_comm_connect(tpe->comm, "tranquillity.nash.id.au", 6923, "default", "nash", "password");
 }
 
 

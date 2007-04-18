@@ -43,8 +43,6 @@ struct tpe_comm {
 	struct connect *connect;
 };
 
-int tpe_comm_connect(struct tpe_comm *comm, const char *server, int port, 
-			const char *user, const char *pass);
 static int tpe_comm_socket_connect(void *data, struct tpe_msg_connection *);
 static int tpe_comm_may_login(void *data, const char *msgtype, int len, void *mdata);
 static int tpe_comm_logged_in(void *data, const char *msgtype, int len, void *mdata);
@@ -86,7 +84,9 @@ tpe_comm_init(struct tpe *tpe){
 
 
 int
-tpe_comm_connect(struct tpe_comm *comm, const char *server, int port, 
+tpe_comm_connect(struct tpe_comm *comm, 
+			const char *server, int port, 
+			const char *game,
 			const char *user, const char *pass){
 	struct tpe *tpe;
 	struct connect *connect;
@@ -102,7 +102,7 @@ tpe_comm_connect(struct tpe_comm *comm, const char *server, int port,
 	connect = calloc(1,sizeof(struct connect));
 	connect->server = comm->server;
 	connect->user = comm->user;
-	connect->game = "Default";
+	connect->game = game;
 	connect->status = CONSTATUS_CONNECTING;
 
 	comm->connect = connect;
