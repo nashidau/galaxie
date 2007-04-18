@@ -32,7 +32,7 @@ enum {
 	HEADER_SIZE = 16
 };
 
-#define ID "Thousand Parsec - Enlightened Client"
+#define ID "GalaxiE"
 
 
 static const struct msgname {
