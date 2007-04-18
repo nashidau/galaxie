@@ -103,7 +103,7 @@ static const struct msgname {
 	{ "MsgLIST_OF_PROPERTY_IDS", 		61 },
 	{ "MsgACCOUNT_CREATE", 			62 },
 };
-
+#define N_MESSAGETYPES (sizeof(msgnames)/sizeof(msgnames[0]))
 
 
 
@@ -315,7 +315,7 @@ tpe_msg_handle_packet(struct tpe_msg *msg, int seq, int type,
 	const char *event = "Unknown";
 	int i;
 
-	for (i = 0 ; i < 100 ; i ++){ /* FIXME: Not 100 */
+	for (i = 0 ; i < N_MESSAGETYPES ; i ++){ 
 		if (msgnames[i].tp03 == type){
 			event = msgnames[i].name;
 			break;
@@ -370,15 +370,14 @@ tpe_msg_send(struct tpe_msg *msg, const char *msgtype,
 		void *data, int len){
 	unsigned int *buf;	
 	int type = -1;
-	int i,n;
+	int i;
 
 	if (msg == NULL) exit(1);
 	if (len > 100000) exit(1);
 	if (data == NULL && len != 0) exit(1);
 
 	/* FIXME: Better then linear would be nice .. */
-	n = sizeof(msgnames)/sizeof(msgnames[0]);
-	for (i = 0 ; i < n ; i ++){
+	for (i = 0 ; i < N_MESSAGETYPES ; i ++){
 		if (strcmp(msgtype,msgnames[i].name) == 0)
 			type = msgnames[i].tp03;
 	}
