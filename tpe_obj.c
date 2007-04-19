@@ -222,7 +222,7 @@ tpe_obj_obj_add(struct tpe_obj *obj, int oid){
 	o = calloc(1,sizeof(struct object));
 	o->oid = oid;
 	o->tpe = obj->tpe;
-	ecore_hash_set(obj->objhash, (void*)oid, obj);
+	ecore_hash_set(obj->objhash, (void*)oid, o);
 	return o;	
 }
 
