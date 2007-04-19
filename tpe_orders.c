@@ -272,7 +272,7 @@ tpe_orders_msg_order(void *data, int type, void *event){
 		/* Free it */
 		tpe_orders_order_free(order);
 	} else {
-		object = tpe_obj_obj_get_by_id(tpe->obj, order->oid);
+		object = tpe_obj_obj_get_by_id(tpe, order->oid);
 		if (object == NULL){
 			printf("! Have order for object I don't have: "
 					"Obj: %d Slot %d\n",
@@ -429,7 +429,7 @@ tpe_order_arg_format(struct tpe *tpe, char *buf, int pos, int maxlen,
 
 		break;
 	case ARG_OBJECT:
-		obj = tpe_obj_obj_get_by_id(tpe->obj,
+		obj = tpe_obj_obj_get_by_id(tpe,
 				order->args[argnum]->object.oid);
 		if (obj)
 			pos += snprintf(buf + pos, maxlen - pos,

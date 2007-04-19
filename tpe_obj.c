@@ -50,7 +50,7 @@ tpe_obj_init(struct tpe *tpe){
 	obj->tpe = tpe;
 
 	tpe_event_handler_add(event, "MsgObject",
-			tpe_obj_data_receive, obj);
+			tpe_obj_data_receive, tpe);
 
 	tpe_event_type_add(event, "ObjectNew");
 	tpe_event_type_add(event, "ObjectChanged");
@@ -78,6 +78,7 @@ tpe_obj_init(struct tpe *tpe){
  */
 static int
 tpe_obj_data_receive(void *data, int eventid, void *edata){
+	struct tpe *tpe;
 	struct tpe_obj *obj;
 	struct object *o,*child;
 	int id,n,i;
@@ -86,14 +87,15 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 	int oldowner;
 	void *end;
 	
-	obj = data;
+	tpe = data;
+	obj = tpe->obj;
 
 	edata = ((char *)edata + 16);
 	tpe_util_parse_packet(edata, "i", &id);
 
 	isnew = 0;
 
-	o = tpe_obj_obj_get_by_id(obj,id);
+	o = tpe_obj_obj_get_by_id(tpe,id);
 	if (o == NULL){
 		isnew = 1;
 		o = tpe_obj_obj_add(obj,id);
@@ -101,7 +103,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 
 	/* Unlink children */
 	for (i = 0 ; i < o->nchildren ; i ++){
-		child = tpe_obj_obj_get_by_id(obj,o->children[i]);
+		child = tpe_obj_obj_get_by_id(tpe,o->children[i]);
 		if (child)
 			child->parent = 0;
 	}
@@ -130,7 +132,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 
 	/* Link children */
 	for (i = 0 ; i < o->nchildren ; i ++){
-		child = tpe_obj_obj_get_by_id(obj,o->children[i]);
+		child = tpe_obj_obj_get_by_id(tpe,o->children[i]);
 		if (!child)
 			child = tpe_obj_obj_add(obj,o->children[i]);
 		child->parent = id;
@@ -209,10 +211,11 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 }
 
 struct object *
-tpe_obj_obj_get_by_id(struct tpe_obj *obj, uint32_t oid){
-	if (obj == NULL) return NULL;
+tpe_obj_obj_get_by_id(struct tpe *tpe, uint32_t oid){
+	if (tpe == NULL) return NULL;
+	if (tpe->obj == NULL) return NULL;
 
-	return ecore_hash_get(obj->objhash, (void*)oid);
+	return ecore_hash_get(tpe->obj->objhash, (void*)oid);
 }
 
 struct object *
@@ -263,7 +266,7 @@ uint64_t
 tpe_obj_object_updated(struct tpe *tpe, uint32_t oid){
 	struct object *obj;
 
-	obj = tpe_obj_obj_get_by_id(tpe->obj,oid);
+	obj = tpe_obj_obj_get_by_id(tpe,oid);
 	if (obj == NULL)
 		return 0;
 
@@ -294,7 +297,7 @@ tpe_obj_obj_sibling_get(struct tpe *tpe, struct object *obj, int next){
 		return NULL;
 	}
 
-	parent = tpe_obj_obj_get_by_id(tpe->obj, obj->parent);
+	parent = tpe_obj_obj_get_by_id(tpe, obj->parent);
 	if (parent == NULL) return NULL;
 
 	for (i = 0 ; i < parent->nchildren ; i ++){
@@ -306,9 +309,9 @@ tpe_obj_obj_sibling_get(struct tpe *tpe, struct object *obj, int next){
 	if (i == parent->nchildren -1 && next) return NULL;
 
 	if (next)
-		return tpe_obj_obj_get_by_id(tpe->obj,parent->children[i + 1]);
+		return tpe_obj_obj_get_by_id(tpe,parent->children[i + 1]);
 	else
-		return tpe_obj_obj_get_by_id(tpe->obj,parent->children[i - 1]);
+		return tpe_obj_obj_get_by_id(tpe,parent->children[i - 1]);
 }
 
 struct object *
@@ -317,7 +320,7 @@ tpe_obj_obj_child_get(struct tpe *tpe, struct object *obj){
 	if (obj == NULL) return NULL;
 	if (obj->nchildren == 0) return NULL;
 
-	return tpe_obj_obj_get_by_id(tpe->obj, obj->children[0]);
+	return tpe_obj_obj_get_by_id(tpe, obj->children[0]);
 }
 
 struct object *
@@ -326,7 +329,7 @@ tpe_obj_obj_parent_get(struct tpe *tpe, struct object *obj){
 	if (obj == NULL) return NULL;
 	if (obj->parent == -1) return NULL;
 
-	return tpe_obj_obj_get_by_id(tpe->obj, obj->parent);
+	return tpe_obj_obj_get_by_id(tpe, obj->parent);
 }
 
 static void
@@ -343,11 +346,12 @@ struct listcbdata {
 };
 
 static void
-tpe_obj_list_cleanup_cb(void *node, void *checkdata){
+tpe_obj_list_cleanup_cb(void *nodev, void *checkdata){
 	struct listcbdata *cbdata;
+	Ecore_Hash_Node *node = nodev;
 	struct object *o;
 
-	o = node;
+	o = node->value;
 	cbdata = checkdata;
 	if (cbdata->check != o->ref)
 		tpe_event_send(cbdata->tpe->event, "ObjectDelete", o,
@@ -363,7 +367,8 @@ tpe_obj_list_end(struct tpe *tpe){
 	data.check = tpe->obj->check;
 	data.tpe = tpe;
 
-	ecore_hash_for_each_node(tpe->obj->objhash, tpe_obj_list_cleanup_cb, tpe);
+	ecore_hash_for_each_node(tpe->obj->objhash, tpe_obj_list_cleanup_cb, 
+			&data);
 }
 
 static void
