@@ -101,6 +101,8 @@ enum {
 	WIDTH = 640,
 	HEIGHT = 480,
 	DEFAULT_ZOOM = 1 << 23,
+
+	LAYER_WINDOW = 10,
 };
 
 #define KEY_TPE_GUI	"TPEGUI"
@@ -672,6 +674,7 @@ tpe_gui_objectwindow_add(struct tpe_gui *gui){
 
 	o = edje_object_add(gui->e);
 	edje_object_file_set(o,"edje/basic.edj", "ObjectInfo");
+	evas_object_layer_set(o,LAYER_WINDOW);
 	evas_object_move(o, rand() % 200, rand() % 200);
 	evas_object_resize(o, 388, 419);
 
@@ -1080,6 +1083,7 @@ tpe_gui_messagebox_add(struct tpe_gui *gui){
 	o = edje_object_add(gui->e);
 
 	edje_object_file_set(o, "edje/basic.edj", "MessageBox");
+	evas_object_layer_set(o, LAYER_WINDOW);
 	/* FIXME: Place intelligently */
 	evas_object_move(o, rand() % 400 ,rand() % 320);
 	evas_object_show(o);
