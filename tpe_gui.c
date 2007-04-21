@@ -183,7 +183,7 @@ tpe_gui_init(struct tpe *tpe, const char *theme, unsigned int fullscreen){
 		printf("Check you built evas and ecore with x11 support\n");
 		return NULL;
 	}
-	ecore_evas_title_set(gui->ee, "Thousand Parsec (E-Client)");
+	ecore_evas_title_set(gui->ee, "GalaxiE");
 	ecore_evas_borderless_set(gui->ee, 0);
 	ecore_evas_show(gui->ee);
 	if (fullscreen)
@@ -259,7 +259,7 @@ tpe_gui_edje_splash_connect(void *data, Evas_Object *o,
 	tpe = data;
 	gui = tpe->gui;
 
-	tpe_comm_connect(tpe->comm, "tranquillity.nash.id.au", 6923, "nash", "password");
+	tpe_comm_connect(tpe->comm, "tranquillity.nash.id.au", 6923, "default", "nash", "password");
 }
 
 
@@ -318,7 +318,7 @@ tpe_gui_new_turn(void *data, int eventid, void *event){
 	struct tpe_gui *gui = data;
 	char buf[200];
 
-	snprintf(buf,200,"Thousand Parsec :: %s :: Turn %d", 
+	snprintf(buf,200,"GalaxiE :: %s :: Turn %d", 
 			gui->tpe->racename, gui->tpe->turn);
 	ecore_evas_title_set(gui->ee,buf);
 
@@ -1034,7 +1034,6 @@ board_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 
 	/* FIXME: Check on screen */
 
-	/* FIXME: Fix hard coded board IDs here */
 	message = tpe_board_board_message_unread_get(board->gui->tpe, 
 			board->boardid);
 	if (message == NULL){

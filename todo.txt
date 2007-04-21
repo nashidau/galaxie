@@ -43,7 +43,7 @@ Minor Tasks
 		and it all just works
  * Connect handle failures
  * [UI] Display systems with fleets
- * Nail some fixmes (58 at last count)
+ * Nail some fixmes (52 at last count)
  * Support games: So can log into a non-default game
  * Protocol support for
  	- SSL

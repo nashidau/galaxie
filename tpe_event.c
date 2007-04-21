@@ -55,7 +55,7 @@ tpe_event_type_add(struct tpe_event *tpeev, const char *name){
 	einfo->ecore_event = ecore_event_type_new();
 	einfo->handlers = 0;
 	
-	/* FIXME: This cast needs to go */
+	/* XXX: This cast needs to go: Needs a fix in ecore however */
 	ecore_hash_set(tpeev->hash, (void*)name, einfo);	
 	return 0;
 }
