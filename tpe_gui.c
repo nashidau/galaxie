@@ -826,7 +826,7 @@ tpe_gui_objectbox_ordersedit(void *data, Evas_Object *objectbox,
 
 	object = evas_object_data_get(objectbox, "Object");
 	if (object == NULL) {
-		fprintf(stderr,"Could not find obejct for orderbox!\n");
+		fprintf(stderr,"Could not find object for orderbox!\n");
 		return;
 	}
 
