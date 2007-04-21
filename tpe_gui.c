@@ -1034,7 +1034,6 @@ board_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 
 	/* FIXME: Check on screen */
 
-	/* FIXME: Fix hard coded board IDs here */
 	message = tpe_board_board_message_unread_get(board->gui->tpe, 
 			board->boardid);
 	if (message == NULL){

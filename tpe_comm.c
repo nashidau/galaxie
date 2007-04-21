@@ -39,6 +39,7 @@ struct tpe_comm {
 	int port;
 	const char *user;
 	const char *pass;
+	const char *game;
 
 	struct connect *connect;
 };
