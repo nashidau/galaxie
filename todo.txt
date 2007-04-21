@@ -51,6 +51,7 @@ Minor Tasks
 	- HTTPS
  * Register tp:// handler
  * Metaserver queries
+ 	- Pending metaserver updates
  * Avahi/zeroconf queries
  * [UI] Send messages
  * [UI] Clean up messages in one click (close all windows)
