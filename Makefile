@@ -12,7 +12,7 @@ endif
 I=edje/images/
 
 OBJECTS=		\
-	tpe.o		\
+	galaxie.o	\
 	tpe_board.o	\
 	tpe_comm.o	\
 	tpe_event.o	\
@@ -56,22 +56,19 @@ EDJE=edje/basic.edj
 EDJE_FLAGS=-id edje/images
 
 
-TARGETS: tpe tpai ${EDJE}
+TARGETS: galaxie ${EDJE}
 
 %.edj : %.edc
 	edje_cc ${EDJE_FLAGS} $<
 
 # Big FIXME: install edje data, and make sure binaries can find it
 install:
-	cp tpe tpai ${PREFIX}/bin
+	cp galaxie ${PREFIX}/bin
 
 ailist.h:  ${AI_SRCS}
 	grep -h TPE_AI ${AI_SRCS} > ailist.h
 
-tpai: 
-	ln -s tpe tpai
-
-tpe: ${OBJECTS} ${AIS} 
+galaxie: ${OBJECTS} ${AIS} 
 
 doc:
 	doxygen Doxygen.conf
@@ -92,7 +89,7 @@ tags:
 		-s/home/nash/work/e17--cvs/libs/ecore/src/lib
 
 
-tpe.o: ailist.h
+galaxie.o: ailist.h
 tpe_msg.o : tpe_msg.h tpe.h
 ai_smith.o: tpe_obj.h tpe.h tpe_event.h tpe_msg.h tpe_orders.h tpe_ship.h \
 		tpe_util.h
@@ -125,5 +122,8 @@ $Iclose.png : $IObjectViewer.svg  Makefile
 	inkscape -j --export-id=${@F} -w 200 -h 50 --export-png $@ $<
 
 clean: 
-	rm -f *.o ailist.h ${IMAGES} ${EDJE}
+	rm -f *.o ailist.h ${EDJE}
+
+veryclean: clean
+	rm -f  ${IMAGES}
 
