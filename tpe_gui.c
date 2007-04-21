@@ -8,6 +8,7 @@
 #include <Ecore.h>
 #include <Ecore_Evas.h>
 #include <Ecore_Data.h>
+#include <Ecore_Job.h>
 #include <Evas.h>
 #include <Edje.h>
 
@@ -777,9 +778,17 @@ tpe_gui_objectbox_object_set(struct tpe_gui *gui, Evas_Object *objectbox,
 
 static void
 tpe_gui_objectbox_clean(Evas_Object *objectbox){
+	struct object *object;
 	Evas_Object *obj;
 	char buf[50];
 	int i;
+
+	object = evas_object_data_get(objectbox, "Object");
+	if (object){
+		assert(object->gui);
+		assert(object->gui->info == objectbox);
+		object->gui->info = NULL;
+	}
 
 	evas_object_data_set(objectbox, "Object", NULL);
 
@@ -1088,6 +1097,7 @@ tpe_gui_messagebox_add(struct tpe_gui *gui){
 	evas_object_move(o, rand() % 400 ,rand() % 320);
 	evas_object_show(o);
 	evas_object_resize(o, 289,304);
+
 	edje_object_signal_callback_add(o,
 			"mouse,clicked,*", "Next", 
 			tpe_gui_edje_message_change, gui);
@@ -1101,6 +1111,9 @@ tpe_gui_messagebox_add(struct tpe_gui *gui){
 	evas_object_event_callback_add(o,
 			EVAS_CALLBACK_FREE, 
 			(void*)tpe_gui_messagebox_ref_free, o);
+
+	evas_object_event_callback_add(o, EVAS_CALLBACK_MOUSE_DOWN,
+			(void*)evas_object_raise, o);
 
 	return o;
 }
@@ -1391,6 +1404,8 @@ reference_object_show(void *idv, Evas *e, Evas_Object *eo, void *event){
 		}
 		guiobj->info = o;
 	}
+	/* FIXME: This is a bit seedy */
+	ecore_job_add((void*)evas_object_raise, guiobj->info);
 
 }
 
