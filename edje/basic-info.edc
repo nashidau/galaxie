@@ -175,6 +175,12 @@ group {
 		image {
 		    normal: "button.png";
 		}
+		color: 50 50 50 120;
+	    }
+	    description {
+		state: "active" 0.0;
+		inherit: "default" 0.0;
+		color: 255 255 255 255;
 	    }
 	}
 	part {
@@ -223,10 +229,25 @@ group {
 	CHILD("Child02", 162, 226);
 	CHILD("Child03", 236, 300);
 	CHILD("Child04", 310, 374);
-
-
-
     }		    
+
+    /* FIXME: Also should have a program to cause "NewMessages" to flash */
+    program {
+	name, "editorders";
+	signal, "EditOrders";
+	source, "app";
+	action, STATE_SET "active" 0.0;
+	transition, LINEAR 0.5;
+	target, "EditOrders";
+    }
+    program {
+	name, "noeditorders";
+	signal, "NoEditOrders";
+	source, "app";
+	action, STATE_SET "default" 0.0;
+	transition, LINEAR 0.5;
+	target: "EditOrders";
+    }
 
 }
 

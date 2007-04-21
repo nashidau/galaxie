@@ -745,6 +745,13 @@ tpe_gui_objectbox_object_set(struct tpe_gui *gui, Evas_Object *objectbox,
 	orderstr = tpe_orders_str_get(gui->tpe, object);
 	edje_object_part_text_set(objectbox, "Orders", orderstr);
 
+	if (object->nordertypes)
+		/* Some orders are possible - set the orders active */
+		edje_object_signal_emit(objectbox, "EditOrders", "app");
+	else
+		/* None, set the state off */
+		edje_object_signal_emit(objectbox, "NoEditOrders", "app");
+
 	evas_object_data_set(objectbox, "Object", object);
 
 	/* Get the icon for the object */
@@ -806,8 +813,14 @@ tpe_gui_objectbox_ordersedit(void *data, Evas_Object *objectbox,
 	struct object *object;
 
 	object = evas_object_data_get(objectbox, "Object");
-	if (object == NULL) return;
+	if (object == NULL) {
+		fprintf(stderr,"Could not find obejct for orderbox!\n");
+		return;
+	}
 
+	if (object->nordertypes < 1) return;
+
+printf("Orderable!\n");
 	/* FIXME: 
 	 * 	- Open an order window 
 	 * 		- or find one already open 
