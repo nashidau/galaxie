@@ -15,7 +15,6 @@
 #include <Imlib2.h>	/* For screenshots */
 
 #include "tpe.h"
-#include "tpe_gui.h"
 #include "tpe_board.h"
 #include "tpe_comm.h"
 #include "tpe_event.h"
@@ -25,28 +24,10 @@
 #include "tpe_util.h" /* For struct reference */
 #include "tpe_reference.h"
 
+
+#include "tpe_gui.h"
 #include "tpe_gui_private.h"
 #include "tpe_gui_orders.h"
-
-/**
- * Gui data attached to an object
- *
- */
-struct gui_obj {
-	Evas_Object *obj;
-
-	struct gui *gui;
-	struct object *object;
-
-	int nplanets;
-
-	/* The info window (if any) for this object */
-	Evas_Object *info;
-
-	/* Last visible state */
-	const char *state;
-
-};
 
 enum {
 	WIDTH = 640,
@@ -342,7 +323,7 @@ gui_object_update(void *data, int eventid, void *event){
 					ecore_list_remove(gui->visible);
 			}
 		} else {
-	
+			/* FIXME: Move to generic function */	
 			if (obj->gui == NULL){
 				go = calloc(1,sizeof(struct gui_obj));
 				go->object = obj;
@@ -1360,6 +1341,31 @@ reference_object_show(void *idv, Evas *e, Evas_Object *eo, void *event){
 
 }
 
+/**
+ * Gets the object data for an object 
+ *
+ * FIXME: This should go into a support file... or more of this file should go
+ * into other files.
+ *
+ * FIXME: This doc bites
+ *
+ * @param obj object
+ * @reutrn go data for object 
+ */
+struct gui_obj *
+gui_object_data_get(struct gui *gui, struct object *obj){
+	struct gui_obj *go;
+	assert(obj);
+
+	if (obj->gui) return obj->gui;
+
+	go = calloc(1,sizeof(struct gui_obj));
+	go->object = obj;
+	go->gui = gui;
+	obj->gui = go;
+
+	return go;
+}
 
 
 /** -------------------------------- 

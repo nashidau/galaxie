@@ -38,6 +38,8 @@ struct gui {
 
 	/* If set will take a screen shot every turn */
 	int record;
+
+	Ecore_List *windows;
 };
 
 struct gui_board {
@@ -47,6 +49,30 @@ struct gui_board {
 	int state;
 	const char *name;
 	const char *desc;
+
+};
+
+
+/**
+ * Gui data attached to an object
+ *
+ */
+struct gui_obj {
+	Evas_Object *obj;
+
+	struct gui *gui;
+	struct object *object;
+
+	int nplanets;
+
+	/* The info window (if any) for this object */
+	Evas_Object *info;
+
+	/* Order window - if any */
+	Evas_Object *orders;
+
+	/* Last visible state */
+	const char *state;
 
 };
 

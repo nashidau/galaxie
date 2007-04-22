@@ -27,7 +27,8 @@ OBJECTS=		\
 
 GUI=			\
 	tpe_gui.o	\
-	tpe_gui_orders.o	
+	tpe_gui_orders.o	\
+	gui_window.o
 
 AIS=			\
 	ai_smith.o	\
