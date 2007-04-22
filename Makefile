@@ -16,7 +16,6 @@ OBJECTS=		\
 	tpe_board.o	\
 	tpe_comm.o	\
 	tpe_event.o	\
-	tpe_gui.o	\
 	tpe_msg.o	\
 	tpe_obj.o	\
 	tpe_orders.o	\
@@ -25,6 +24,10 @@ OBJECTS=		\
 	tpe_ship.o	\
 	tpe_util.o	\
 	ai_util.o
+
+GUI=			\
+	tpe_gui.o	\
+	tpe_gui_orders.o	
 
 AIS=			\
 	ai_smith.o	\
@@ -68,7 +71,7 @@ install:
 ailist.h:  ${AI_SRCS}
 	grep -h TPE_AI ${AI_SRCS} > ailist.h
 
-galaxie: ${OBJECTS} ${AIS} 
+galaxie: ${OBJECTS} ${GUI} ${AIS} 
 
 doc:
 	doxygen Doxygen.conf
@@ -94,8 +97,9 @@ tpe_msg.o : tpe_msg.h tpe.h
 ai_smith.o: tpe_obj.h tpe.h tpe_event.h tpe_msg.h tpe_orders.h tpe_ship.h \
 		tpe_util.h
 tpe_gui.o: tpe.h tpe_gui.h tpe_board.h tpe_comm.h tpe_event.h tpe_obj.h \
-		tpe_orders.h tpe_ship.h tpe_util.h tpe_reference.h
-
+		tpe_orders.h tpe_ship.h tpe_util.h tpe_reference.h \
+		tpe_gui_private.h
+tpe_gui_orders.o: tpe.h tpe_gui_private.h
 
 $Iarrowright.png : $Imailviewer.svg
 	inkscape -j --export-id=path5138 --export-png $@ $<

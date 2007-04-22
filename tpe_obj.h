@@ -67,7 +67,7 @@ struct object {
 	struct object_fleet *fleet;
 	struct object_planet *planet;
 
-	struct tpe_gui_obj *gui;
+	struct gui_obj *gui;
 	struct ai_obj *ai;
 
 	int ref;
