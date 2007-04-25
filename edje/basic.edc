@@ -139,6 +139,7 @@ collections {
     #include "basic-refs.edc"
     #include "basic-ships.edc"
     #include "basic-stars.edc"
+    #include "basic-orders.edc"
 
     /* The Information about a single Star 
 	Appears as a popup on mouse-over */

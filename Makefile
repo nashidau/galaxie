@@ -41,6 +41,7 @@ BASICTHEME=			\
 	edje/basic-info.edc	\
 	edje/basic-menu.edc	\
 	edje/basic-message.edc	\
+	edje/basic-orders.edc	\
 	edje/basic-refs.edc	\
 	edje/basic-ships.edc	\
 	edje/basic-stars.edc

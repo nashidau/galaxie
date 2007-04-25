@@ -594,6 +594,31 @@ star_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 
 }
 
+static void
+test_orders_show(void *ob, Evas *e,Evas_Object *tb, void *mouse){
+	Evas_Event_Mouse_Down *down = mouse;
+	Evas_Coord x,y;
+	Evas_Textblock_Cursor *cur;
+
+	printf("Got mouse down: %d %d\n",down->canvas.x,down->canvas.y);
+	printf("              : %d %d\n",down->output.x,down->output.y);
+	evas_object_geometry_get(tb,&x,&y,0,0);
+	x = down->canvas.x - x;
+	y = down->canvas.y - y;
+
+	cur = evas_object_textblock_cursor_new(tb);
+	evas_textblock_cursor_char_coord_set(cur, x,y);
+
+	printf("Node text is %s\n", evas_textblock_cursor_node_text_get(cur));
+	printf("Node is %s\n", evas_textblock_cursor_node_format_get(cur));
+	printf("Pos is  %d\n", evas_textblock_cursor_pos_get(cur));
+/*
+evas_textblock_cursor_char_geometry_get
+evas_textblock_cursor_char_geometry_get
+evas_textblock_cursor_node_format_get
+evas_textblock_cursor_node_text_get
+evas_textblock_cursor_pos_get*/
+}
 
 
 /**
@@ -603,6 +628,7 @@ star_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 static Evas_Object *
 gui_objectwindow_add(struct gui *gui){
 	Evas_Object *o;
+	Evas_Object *tb;
 
 	o = edje_object_add(gui->e);
 	edje_object_file_set(o,"edje/basic.edj", "ObjectInfo");
@@ -622,6 +648,13 @@ gui_objectwindow_add(struct gui *gui){
 
 	evas_object_event_callback_add(o, EVAS_CALLBACK_FREE,
 			(void*)gui_objectbox_clean, o);
+
+	tb=  edje_object_part_object_get(o,"Orders");
+	printf("Got orders\n");
+	if (tb){
+		evas_object_event_callback_add(tb, EVAS_CALLBACK_MOUSE_DOWN,
+			(void*)test_orders_show,o);
+	}
 
 	return o;
 }
