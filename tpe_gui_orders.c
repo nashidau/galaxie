@@ -83,6 +83,8 @@ gui_orders_object_set(struct gui *gui, Evas_Object *ow, struct object *obj){
 	assert(obj);
 	assert(ow);
 
+	
+
 	edje_object_part_text_set(ow, "Name", obj->name);
 
 	evas_object_data_set(ow, "Object", obj);
