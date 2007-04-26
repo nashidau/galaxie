@@ -101,7 +101,8 @@ ai_smith.o: tpe_obj.h tpe.h tpe_event.h tpe_msg.h tpe_orders.h tpe_ship.h \
 tpe_gui.o: tpe.h tpe_gui.h tpe_board.h tpe_comm.h tpe_event.h tpe_obj.h \
 		tpe_orders.h tpe_ship.h tpe_util.h tpe_reference.h \
 		tpe_gui_private.h
-tpe_gui_orders.o: tpe.h tpe_gui_private.h
+tpe_gui_orders.o: tpe.h tpe_gui.h tpe_gui_private.h
+gui_window.o: tpe.h tpe_gui.h tpe_gui_private.h
 
 $Iarrowright.png : $Imailviewer.svg
 	inkscape -j --export-id=path5138 --export-png $@ $<
@@ -118,13 +119,13 @@ $Imailbox.png : $Imailbox.svg
 $Ibg.png : $IBG1.svg
 	inkscape -j --export-background=black --export-png $@ $<
 
-$Iobjectwindow.png : $IObjectViewer.svg Makefile
+$Iobjectwindow.png : $IObjectViewer.svg
 	inkscape -j --export-id=${@F} -d 120 --export-png $@ $<
 
-$Ibutton.png : $IObjectViewer.svg  Makefile
+$Ibutton.png : $IObjectViewer.svg
 	inkscape -j --export-id=${@F} -w 200 -h 50 --export-png $@ $<
 
-$Iclose.png : $IObjectViewer.svg  Makefile
+$Iclose.png : $IObjectViewer.svg
 	inkscape -j --export-id=${@F} -w 200 -h 50 --export-png $@ $<
 
 clean: 
