@@ -16,7 +16,7 @@
 
 static Evas_Object *gui_orders_add(struct gui *gui);
 static int gui_orders_object_set(struct gui *gui, Evas_Object *, struct object *obj);
-static void gui_orders_cleanup(void *guiv, Evas *e, Evas_Object *ow, void *dummy);
+static void gui_orders_cleanup(void *guiv, Evas *e, Evas_Object *ow, void *);
 
 
 
@@ -87,7 +87,7 @@ gui_orders_object_set(struct gui *gui, Evas_Object *ow, struct object *obj){
 
 	evas_object_data_set(ow, "Object", obj);
 
-	return -1;
+	return 0;
 }
 
 

@@ -4,6 +4,8 @@ enum board_state {
 };
 
 struct gui {
+	const char *magic;
+
 	struct tpe *tpe;
 
 	Ecore_Evas  *ee;
@@ -45,6 +47,8 @@ struct gui {
 };
 
 struct gui_board {
+	const char *magic;
+
 	struct gui *gui;
 	Evas_Object *obj;
 	uint32_t boardid;
@@ -60,6 +64,8 @@ struct gui_board {
  *
  */
 struct gui_obj {
+	const char *magic;
+
 	Evas_Object *obj;
 
 	struct gui *gui;
