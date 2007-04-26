@@ -25,7 +25,7 @@ group {
 	    }
 	}
 	part {
-	    name: "objectname";
+	    name: "Name";
 	    mouse_events: 0;
 	    type: TEXT;
 	    effect: SOFT_OUTLINE;
@@ -49,6 +49,7 @@ group {
 		}
 	    }
 	}
+	STANDARD_CLOSE
 
     }
 }

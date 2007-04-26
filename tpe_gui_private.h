@@ -13,6 +13,8 @@ struct gui {
 
 	Evas_Object *background;
 
+	int screenw, screenh;
+
 	struct {
 		uint64_t zoom;
 		int top,left;

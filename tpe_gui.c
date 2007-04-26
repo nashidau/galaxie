@@ -24,17 +24,15 @@
 #include "tpe_util.h" /* For struct reference */
 #include "tpe_reference.h"
 
-
 #include "tpe_gui.h"
 #include "tpe_gui_private.h"
 #include "tpe_gui_orders.h"
+#include "gui_window.h"
 
 enum {
 	WIDTH = 640,
 	HEIGHT = 480,
 	DEFAULT_ZOOM = 1 << 23,
-
-	LAYER_WINDOW = 10,
 };
 
 #define KEY_TPE_GUI	"TPEGUI"
@@ -117,6 +115,8 @@ gui_init(struct tpe *tpe, const char *theme, unsigned int fullscreen){
 		printf("Check you built evas and ecore with x11 support\n");
 		return NULL;
 	}
+	gui->screenw = WIDTH;
+	gui->screenh = HEIGHT;
 	ecore_evas_title_set(gui->ee, "GalaxiE");
 	ecore_evas_borderless_set(gui->ee, 0);
 	ecore_evas_show(gui->ee);
@@ -632,16 +632,12 @@ gui_objectwindow_add(struct gui *gui){
 
 	o = edje_object_add(gui->e);
 	edje_object_file_set(o,"edje/basic.edj", "ObjectInfo");
-	evas_object_layer_set(o,LAYER_WINDOW);
-	evas_object_move(o, rand() % 200, rand() % 200);
 	evas_object_resize(o, 388, 419);
+	gui_window_add(gui, o);
 
 	edje_object_signal_callback_add(o,
 			"mouse,clicked,*", "Parent", 
 			gui_edje_object_change, gui);
-	edje_object_signal_callback_add(o,
-			"mouse,clicked,*", "Close", 
-			(void*)evas_object_del, o);
 	edje_object_signal_callback_add(o,
 			"mouse,clicked,*", "EditOrders",
 			gui_objectbox_ordersedit, gui);
@@ -649,8 +645,7 @@ gui_objectwindow_add(struct gui *gui){
 	evas_object_event_callback_add(o, EVAS_CALLBACK_FREE,
 			(void*)gui_objectbox_clean, o);
 
-	tb=  edje_object_part_object_get(o,"Orders");
-	printf("Got orders\n");
+	tb = edje_object_part_object_get(o,"Orders");
 	if (tb){
 		evas_object_event_callback_add(tb, EVAS_CALLBACK_MOUSE_DOWN,
 			(void*)test_orders_show,o);
@@ -797,12 +792,10 @@ gui_objectbox_ordersedit(void *data, Evas_Object *objectbox,
 
 	if (object->nordertypes < 1) return;
 
-	gui_orders_edit(gui, object);
-	/* FIXME: 
-	 * 	- Open an order window 
-	 * 		- or find one already open 
-	 * 	- Set it focused if necesary
-	 */
+	if (gui_orders_edit(gui, object) != 0){
+		assert(!"Error opening order window\n");
+		fprintf(stderr,"Error opening order window\n");
+	}
 }
 
 
@@ -1055,13 +1048,9 @@ gui_messagebox_add(struct gui *gui){
 	Evas_Object *o;
 	
 	o = edje_object_add(gui->e);
-
 	edje_object_file_set(o, "edje/basic.edj", "MessageBox");
-	evas_object_layer_set(o, LAYER_WINDOW);
-	/* FIXME: Place intelligently */
-	evas_object_move(o, rand() % 400 ,rand() % 320);
-	evas_object_show(o);
 	evas_object_resize(o, 289,304);
+	gui_window_add(gui, o);
 
 	edje_object_signal_callback_add(o,
 			"mouse,clicked,*", "Next", 
@@ -1070,9 +1059,6 @@ gui_messagebox_add(struct gui *gui){
 			"mouse,clicked,*", "Prev", 
 			gui_edje_message_change, gui);
 
-	edje_object_signal_callback_add(o,
-			"mouse,clicked,*", "Close", 
-			(void*)evas_object_del, o);
 	evas_object_event_callback_add(o,
 			EVAS_CALLBACK_FREE, 
 			(void*)gui_messagebox_ref_free, o);
@@ -1369,8 +1355,8 @@ reference_object_show(void *idv, Evas *e, Evas_Object *eo, void *event){
 		}
 		guiobj->info = o;
 	}
-	/* FIXME: This is a bit seedy */
-	ecore_job_add((void*)evas_object_raise, guiobj->info);
+
+	gui_window_focus(gui, guiobj->info);
 
 }
 

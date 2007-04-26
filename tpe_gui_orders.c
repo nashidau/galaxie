@@ -16,7 +16,7 @@
 
 static Evas_Object *gui_orders_add(struct gui *gui);
 static int gui_orders_object_set(struct gui *gui, Evas_Object *, struct object *obj);
-
+static void gui_orders_cleanup(void *guiv, Evas *e, Evas_Object *ow, void *dummy);
 
 
 
@@ -34,11 +34,11 @@ gui_orders_edit(struct gui *gui, struct object *obj){
 
 	go = gui_object_data_get(gui,obj);
 
-	if (go->orders == NULL)
+	if (go->orders == NULL){
 		go->orders = gui_orders_add(gui);
-	if (go->orders == NULL) return -1;
-
-	gui_orders_object_set(gui, go->orders, obj);	
+		if (go->orders == NULL) return -1;
+		gui_orders_object_set(gui, go->orders, obj);	
+	}
 
 	gui_window_focus(gui, go->orders);
 		
@@ -63,22 +63,55 @@ gui_orders_add(struct gui *gui){
 
 	w = edje_object_add(gui->e);
 	edje_object_file_set(w,"edje/basic.edj", "OrderWindow");
-
+	evas_object_resize(w, 200,300);
 	gui_window_add(gui,w);
+
+	evas_object_event_callback_add(w, EVAS_CALLBACK_FREE, 
+			gui_orders_cleanup, gui);
 
 	return w;
 }
+
 
 /**
  * Populate an order window with data.
  */
 static int
-gui_orders_object_set(struct gui *gui, Evas_Object *o, struct object *obj){
+gui_orders_object_set(struct gui *gui, Evas_Object *ow, struct object *obj){
 
 	assert(gui);
 	assert(obj);
+	assert(ow);
+
+	edje_object_part_text_set(ow, "Name", obj->name);
+
+	evas_object_data_set(ow, "Object", obj);
 
 	return -1;
 }
 
 
+
+static void
+gui_orders_cleanup(void *guiv, Evas *e, Evas_Object *ow, void *dummy){
+	struct gui_obj *go;
+	struct gui *gui = guiv;
+	struct object *obj;
+
+	assert(gui); assert(ow); assert(e);
+	if (gui == NULL || ow == NULL) return;
+
+	obj = evas_object_data_get(ow, "Object");
+	assert(obj);
+	if (obj == NULL) return;
+
+	go = obj->gui;
+	assert(go != NULL);
+	assert(go->orders != NULL);
+
+	go->orders = NULL;
+	
+	/* Nothing else to free now */
+
+	return;
+}

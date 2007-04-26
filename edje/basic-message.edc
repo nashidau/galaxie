@@ -126,27 +126,8 @@ group {
 		}
 	    }
 	}
-	part {
-	    name: "Close";
-	    type: IMAGE;
-	    description {
-		state: "default" 0.0;
-		rel1 { 
-		    to: "background";
-		    relative: 1.0 0;
-		    offset: -20 0;
-		}
-		rel2 {
-		    to: "background";
-		    relative: 1.0 0;
-		    offset: -4 16;
-		}
-		image {
-		    normal: "window-close-ugly.png";
-		}
-	    }
+	STANDARD_CLOSE
 
-	}
 	part {
 	    name: "Next";
 	    type: IMAGE;

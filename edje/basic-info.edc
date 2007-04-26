@@ -183,26 +183,7 @@ group {
 		color: 255 255 255 255;
 	    }
 	}
-	part {
-	    name: "Close";
-	    type: IMAGE;
-	    description {
-		state: "default" 0.0;
-		rel1 { 
-		    to: "background";
-		    relative: 1.0 0;
-		    offset: -20 3;
-		}
-		rel2 {
-		    to: "background";
-		    relative: 1.0 0;
-		    offset: -7 16;
-		}
-		image {
-		    normal: "close.png";
-		}
-	    }
-	}
+	STANDARD_CLOSE
 
 /* FIXME: These should be in a box. */
 #define CHILD(childname, startx, endx)	    \
