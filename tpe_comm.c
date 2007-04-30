@@ -165,6 +165,16 @@ tpe_comm_logged_in(void *data, const char *msgtype, int len, void *mdata){
 	int buf[3];
 
 	/* FIXME: Need to check the access worked */
+	if (!msgtype || strcmp(msgtype,"MsgFail") == 0){
+		printf("Could not log in using the user name listed\n");
+		printf("GalaxiE: Does not support accoutn creation at "
+				"this time.\n");
+		/* FIXME: Need general error handling */
+		/* FIXME: Need to try and create the account */
+		exit(1);
+	}
+	
+
 	comm = data;
 	tpe = comm->tpe;
 	msg = tpe->msg;
@@ -196,7 +206,14 @@ static int
 tpe_comm_msg_player_id(void *userdata, const char *msgtype,
                 int len, void *edata){
 	struct tpe *tpe = userdata;
-	
+
+	if (msgtype != NULL && strcmp(msgtype, "MsgFail") == 0){
+		/* Message fail! */
+		/* FIXME: Need to trigger an 'Error' message */
+		assert(!"MsgFail");
+		exit(1);
+	}
+
 	tpe_util_parse_packet(edata, "iss", &tpe->player,
 			&tpe->racename, &tpe->playername);
 
