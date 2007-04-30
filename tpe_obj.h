@@ -81,7 +81,7 @@ struct build_resources {
 
 struct tpe_obj * tpe_obj_init(struct tpe *tpe);
 int tpe_obj_obj_dump(struct object *o);
-struct object *tpe_obj_obj_get_by_id(struct tpe_obj *obj, uint32_t oid);
+struct object *tpe_obj_obj_get_by_id(struct tpe *tpe, uint32_t oid);
 struct object *tpe_obj_obj_add(struct tpe_obj *obj, int );
 
 struct object *tpe_obj_obj_sibling_get(struct tpe *tpe, struct object *, int prev);

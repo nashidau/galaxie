@@ -39,12 +39,11 @@ struct tpe_comm {
 	int port;
 	const char *user;
 	const char *pass;
+	const char *game;
 
 	struct connect *connect;
 };
 
-int tpe_comm_connect(struct tpe_comm *comm, const char *server, int port, 
-			const char *user, const char *pass);
 static int tpe_comm_socket_connect(void *data, struct tpe_msg_connection *);
 static int tpe_comm_may_login(void *data, const char *msgtype, int len, void *mdata);
 static int tpe_comm_logged_in(void *data, const char *msgtype, int len, void *mdata);
@@ -86,7 +85,9 @@ tpe_comm_init(struct tpe *tpe){
 
 
 int
-tpe_comm_connect(struct tpe_comm *comm, const char *server, int port, 
+tpe_comm_connect(struct tpe_comm *comm, 
+			const char *server, int port, 
+			const char *game,
 			const char *user, const char *pass){
 	struct tpe *tpe;
 	struct connect *connect;
@@ -102,7 +103,7 @@ tpe_comm_connect(struct tpe_comm *comm, const char *server, int port,
 	connect = calloc(1,sizeof(struct connect));
 	connect->server = comm->server;
 	connect->user = comm->user;
-	connect->game = "Default";
+	connect->game = game;
 	connect->status = CONSTATUS_CONNECTING;
 
 	comm->connect = connect;
@@ -128,7 +129,7 @@ tpe_comm_socket_connect(void *data, struct tpe_msg_connection *mcon){
 	msg = tpe->msg;
 
 	tpe_msg_send_strings(msg,"MsgConnect", tpe_comm_may_login, comm,
-				"EClient", NULL);
+				"GalaxiE", NULL);
 	return 1;
 }
 
@@ -137,14 +138,20 @@ tpe_comm_may_login(void *data, const char *msgtype, int len, void *mdata){
 	struct tpe_comm *comm;
 	struct tpe *tpe;
 	struct tpe_msg *msg;
+	char buf[100];
 
 	comm = data;
 	tpe = comm->tpe;
 	msg = tpe->msg;
 
+	if (comm->game){
+		snprintf(buf, 100, "%s@%s", comm->user, comm->game);
+	} else {
+		snprintf(buf, 100, "%s", comm->user);
+	}
 
 	tpe_msg_send_strings(msg, "MsgLogin",  tpe_comm_logged_in, comm,
-			comm->user, comm->pass, 0);
+			buf, comm->pass, 0);
 	tpe_msg_send(msg, "MsgGetFeatures", NULL,NULL,NULL,0);
 
 	return 0;

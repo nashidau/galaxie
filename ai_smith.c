@@ -179,7 +179,8 @@ smith_order_fleet(void *data, int type, void *event){
 	struct object_fleet *fleet;
 	struct ai *smith = data;
 	const char *designtype;
-	int i;
+	int i,total;
+	uint32_t oid;
 
 	printf("$ Smith: Orders for Fleet %s\n",o->name);
 
@@ -203,7 +204,7 @@ smith_order_fleet(void *data, int type, void *event){
 	if (i == fleet->nships) return 1;
 	
 
-	parent = tpe_obj_obj_get_by_id(smith->tpe->obj, o->parent);
+	parent = tpe_obj_obj_get_by_id(smith->tpe, o->parent);
 	if (!parent) {
 		printf("$ Smith: No parent for %s\n",o->name);
 		return 1;
@@ -223,9 +224,12 @@ smith_order_fleet(void *data, int type, void *event){
 	printf("$ Seaching for somewhere for %s to colonise\n", o->name);
 	all = tpe_obj_obj_list(smith->tpe->obj);
 	ecore_list_goto_first(all);
+	total = ecore_list_nodes(all);
 	dest = NULL;
 	destdist = UINT64_MAX;
-	while ((cur = ecore_list_next(all))){
+	while ((total > ecore_list_index(all))){
+		oid = (uint32_t)ecore_list_next(all);
+		cur = tpe_obj_obj_get_by_id(smith->tpe, oid);
 		if (cur->type != OBJTYPE_PLANET) continue;
 		if (dest == NULL && cur->ai == NULL) {
 			dest = cur;
@@ -280,7 +284,7 @@ smith_planet_colonised(void *data, int type, void *event){
 
 	ai = o->ai;
 
-	colfleet = tpe_obj_obj_get_by_id(smith->tpe->obj, ai->fleet);
+	colfleet = tpe_obj_obj_get_by_id(smith->tpe, ai->fleet);
 	if (colfleet == NULL){
 		/* Fleet was destroyed - probably while trying to colonised */
 		free(o->ai);

@@ -183,7 +183,7 @@ tpe_gui_init(struct tpe *tpe, const char *theme, unsigned int fullscreen){
 		printf("Check you built evas and ecore with x11 support\n");
 		return NULL;
 	}
-	ecore_evas_title_set(gui->ee, "Thousand Parsec (E-Client)");
+	ecore_evas_title_set(gui->ee, "GalaxiE");
 	ecore_evas_borderless_set(gui->ee, 0);
 	ecore_evas_show(gui->ee);
 	if (fullscreen)
@@ -259,7 +259,7 @@ tpe_gui_edje_splash_connect(void *data, Evas_Object *o,
 	tpe = data;
 	gui = tpe->gui;
 
-	tpe_comm_connect(tpe->comm, "tranquillity.nash.id.au", 6923, "nash", "password");
+	tpe_comm_connect(tpe->comm, "tranquillity.nash.id.au", 6923, "default", "nash", "password");
 }
 
 
@@ -318,7 +318,7 @@ tpe_gui_new_turn(void *data, int eventid, void *event){
 	struct tpe_gui *gui = data;
 	char buf[200];
 
-	snprintf(buf,200,"Thousand Parsec :: %s :: Turn %d", 
+	snprintf(buf,200,"GalaxiE :: %s :: Turn %d", 
 			gui->tpe->racename, gui->tpe->turn);
 	ecore_evas_title_set(gui->ee,buf);
 
@@ -377,7 +377,7 @@ tpe_gui_object_update(void *data, int eventid, void *event){
 
 	}
 	if (obj->type == OBJTYPE_FLEET){
-		parent = tpe_obj_obj_get_by_id(gui->tpe->obj, obj->parent);
+		parent = tpe_obj_obj_get_by_id(gui->tpe, obj->parent);
 		if (parent != NULL && (parent->type == OBJTYPE_SYSTEM ||
 					parent->type == OBJTYPE_PLANET)){
 			if (obj->gui){
@@ -468,7 +468,7 @@ star_summary(struct tpe *tpe, struct object *object){
 	/* Now fleets */
 	for (i = 0 ; i < object->nchildren ; i ++){
 		oid = object->children[i];
-		child = tpe_obj_obj_get_by_id(tpe->obj, oid);
+		child = tpe_obj_obj_get_by_id(tpe, oid);
 		if (!child) continue;
 		if (child->type != OBJTYPE_FLEET) continue;
 		pos += snprintf(buf + pos,BUFSIZ - pos, 
@@ -485,7 +485,7 @@ star_summary(struct tpe *tpe, struct object *object){
 	/* Planets first */
 	for (k = 0 ; k < object->nchildren ; k ++){
 		oid = object->children[k];
-		child = tpe_obj_obj_get_by_id(tpe->obj, oid);
+		child = tpe_obj_obj_get_by_id(tpe, oid);
 		if (!child) continue;
 		if (child->type != OBJTYPE_PLANET) continue;
 		pos += snprintf(buf + pos,BUFSIZ - pos, 
@@ -493,7 +493,7 @@ star_summary(struct tpe *tpe, struct object *object){
 				(child->owner != -1) ? " *": "");
 		for (i = 0 ; i < child->nchildren ; i ++){
 			oid = child->children[i];
-			gchild = tpe_obj_obj_get_by_id(tpe->obj, oid);
+			gchild = tpe_obj_obj_get_by_id(tpe, oid);
 			if (!gchild) continue;
 			if (gchild->type != OBJTYPE_FLEET) continue;
 			pos += snprintf(buf + pos,BUFSIZ - pos, 
@@ -529,7 +529,7 @@ star_update(struct tpe *tpe, struct object *object){
 
 	if (object->type == OBJTYPE_PLANET){
 		childid = object->parent;
-		child = tpe_obj_obj_get_by_id(tpe->obj, childid);
+		child = tpe_obj_obj_get_by_id(tpe, childid);
 		if (child == NULL) return;
 		object = child;
 	}
@@ -541,7 +541,7 @@ star_update(struct tpe *tpe, struct object *object){
 
 	for (i = 0 ; i < object->nchildren ; i ++){
 		childid = object->children[i];
-		child = tpe_obj_obj_get_by_id(tpe->obj, childid);
+		child = tpe_obj_obj_get_by_id(tpe, childid);
 		if (child == NULL) continue;
 		if (child->type != OBJTYPE_PLANET) continue;
 		nchildren ++;
@@ -1034,7 +1034,6 @@ board_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 
 	/* FIXME: Check on screen */
 
-	/* FIXME: Fix hard coded board IDs here */
 	message = tpe_board_board_message_unread_get(board->gui->tpe, 
 			board->boardid);
 	if (message == NULL){
@@ -1259,7 +1258,7 @@ tpe_gui_object_icon_get(struct tpe_gui *gui, uint32_t oid, int active){
 	
 	if (gui == NULL) return NULL;
 	
-	obj = tpe_obj_obj_get_by_id(gui->tpe->obj, oid);
+	obj = tpe_obj_obj_get_by_id(gui->tpe, oid);
 	if (obj == NULL){
 		printf("Object icon get: Could not find %d\n",oid);
 		return NULL;
@@ -1352,7 +1351,7 @@ reference_object_show(void *idv, Evas *e, Evas_Object *eo, void *event){
 
 	oid = *(uint32_t *)idv;
 
-	obj = tpe_obj_obj_get_by_id(gui->tpe->obj, oid);
+	obj = tpe_obj_obj_get_by_id(gui->tpe, oid);
 	if (obj == NULL){
 		/* Object gone?? */
 		return;

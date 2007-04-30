@@ -191,6 +191,7 @@ main(int argc, char **argv){
 
 	if (opt->server && opt->username && opt->password)
 		tpe_comm_connect(tpe->comm, opt->server, opt->port, 
+				opt->game, 
 				opt->username, opt->password);
 
 	ecore_main_loop_begin();
@@ -221,6 +222,7 @@ parse_args(int argc, char **argv){
 		opt->username = strdup("smith");
 		opt->password = strdup("password");
 		opt->server = strdup("localhost");
+		opt->game = NULL;
 		opt->port = 6923;
 	} else {
 		/* Use defaults */
@@ -229,6 +231,7 @@ parse_args(int argc, char **argv){
 		opt->username = strdup("nash");
 		opt->password = strdup("password");
 		opt->server = strdup("localhost");
+		opt->game = NULL;
 		opt->port = 6923;
 	}
 
