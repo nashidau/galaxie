@@ -16,17 +16,24 @@
 #include "tpe_event.h"
 #include "tpe_util.h"
 
-static struct features {
+
+struct features {
 	int id;
 	const char *desc;
-} features[] =  {
-	{ 1,	"SSL connection on this port" },
-	{ 2,	"SSL connection on another port" },
-	{ 3,	"http connect on this port" },
-	{ 4,	"http connect on another port" },
-	{ 5,	"keep alive" },
-	{ 6,	"Serverside properties" },
-	{ 1000,	"Automatic account registration" },
+	void (*handler)(struct tpe *tpe, int id, struct features *);
+};
+
+static void feature_handler_autoaccount(struct tpe *tpe, int id, 
+		struct features *);
+
+static struct features features[] =  {
+	{ 1,	"SSL connection on this port",		NULL },
+	{ 2,	"SSL connection on another port",	NULL },
+	{ 3,	"http connect on this port",		NULL },
+	{ 4,	"http connect on another port",		NULL },
+	{ 5,	"keep alive",				NULL },
+	{ 6,	"Serverside properties",		NULL },
+	{ 1000,	"Automatic account registration", feature_handler_autoaccount },
 };
 #define N_FEATURES (sizeof(features)/sizeof(features[0]))
 
@@ -42,9 +49,14 @@ struct tpe_comm {
 	const char *game;
 
 	struct connect *connect;
+
+	unsigned int hasautoaccount	: 1;
+	unsigned int triedcreate	: 1;
 };
 
 static int tpe_comm_socket_connect(void *data, struct tpe_msg_connection *);
+static void tpe_comm_create_account(struct tpe *tpe);
+static int tpe_comm_create_account_cb(void *tpev, const char *msgtype, int len, void*data);
 static int tpe_comm_may_login(void *data, const char *msgtype, int len, void *mdata);
 static int tpe_comm_logged_in(void *data, const char *msgtype, int len, void *mdata);
 static int tpe_comm_msg_fail(void *udata, int type, void *event);
@@ -58,6 +70,8 @@ static int tpe_comm_get_time(void *msg);
 /* Generic handlers */
 static int tpe_comm_available_features_msg(void *udata, int type, void *event);
 
+
+
 struct tpe_comm *
 tpe_comm_init(struct tpe *tpe){
 	struct tpe_comm *comm;
@@ -68,7 +82,7 @@ tpe_comm_init(struct tpe *tpe){
 	comm->tpe = tpe;
 
 	tpe_event_handler_add(tpe->event, "MsgAvailableFeatures", 
-			tpe_comm_available_features_msg, comm);
+			tpe_comm_available_features_msg, tpe);
 	tpe_event_handler_add(tpe->event, "MsgFail",
 			tpe_comm_msg_fail, tpe);
 	tpe_event_handler_add(tpe->event, "MsgTimeRemaining",
@@ -157,6 +171,13 @@ tpe_comm_may_login(void *data, const char *msgtype, int len, void *mdata){
 	return 0;
 }
 
+/**
+ * Callback for 'logged in' - I hope.
+ *
+ * If autoconnect is set, and there is a failure, it will try once to register
+ * the account first.
+ *
+ */
 static int
 tpe_comm_logged_in(void *data, const char *msgtype, int len, void *mdata){
 	struct tpe_comm *comm;
@@ -164,20 +185,25 @@ tpe_comm_logged_in(void *data, const char *msgtype, int len, void *mdata){
 	struct tpe_msg *msg;
 	int buf[3];
 
+	assert(data); assert(msgtype); 
+
+	comm = data;
+	assert(comm->tpe);
+	tpe = comm->tpe;
+	assert(tpe->msg);
+	msg = tpe->msg;
+
 	/* FIXME: Need to check the access worked */
 	if (!msgtype || strcmp(msgtype,"MsgFail") == 0){
 		printf("Could not log in using the user name listed\n");
-		printf("GalaxiE: Does not support accoutn creation at "
-				"this time.\n");
 		/* FIXME: Need general error handling */
-		/* FIXME: Need to try and create the account */
-		exit(1);
+		if (comm->triedcreate == 0 && !comm->hasautoaccount)
+			tpe_comm_create_account(tpe);
+		else
+			exit(1);
 	}
 	
 
-	comm = data;
-	tpe = comm->tpe;
-	msg = tpe->msg;
 
 	tpe_msg_send(msg, "MsgGetTimeRemaining", NULL, NULL,NULL,0);
 
@@ -195,6 +221,61 @@ tpe_comm_logged_in(void *data, const char *msgtype, int len, void *mdata){
 
 	return 0;
 }
+
+/**
+ * Try to create an account - on success, will cause the system to login
+ * by default
+ *
+ */
+static void
+tpe_comm_create_account(struct tpe *tpe){
+	struct tpe_comm *comm;
+
+	assert(tpe);
+	assert(tpe->comm);
+	assert(tpe->comm->user); assert(tpe->comm->pass);
+
+	comm = tpe->comm;
+
+	tpe_msg_send_format(tpe->msg, "MsgCreateAccount", 
+			tpe_comm_create_account_cb, tpe,
+			"ssss", 
+				comm->user,
+				comm->pass,
+				""
+				"Another satisfied GalaxiE user.");
+	comm->triedcreate = 1;
+
+}
+
+static int
+tpe_comm_create_account_cb(void *tpev, const char *msgtype, int len, void*data){
+	struct tpe *tpe = tpev;
+	struct tpe_comm *comm;
+	char buf[100];
+
+	assert(tpe != NULL); assert(msgtype);
+	assert(tpe->comm);
+
+	comm = tpe->comm;
+
+	if (strcmp(msgtype, "MsgFail") == 0){
+		printf("Could not create account\n");
+	}
+
+	if (comm->game){
+		snprintf(buf,100,"%s@%s", comm->user, comm->game);
+	} else {
+		strncpy(buf,comm->user,100);
+	}
+
+	tpe_msg_send_strings(tpe->msg, "MsgLogin",  tpe_comm_logged_in, comm,
+			buf, comm->pass, 0);
+
+	return 0;
+
+}
+
 
 static int
 tpe_comm_get_time(void *msg){
@@ -229,6 +310,7 @@ tpe_comm_msg_player_id(void *userdata, const char *msgtype,
  */
 static int 
 tpe_comm_available_features_msg(void *udata, int type, void *event){
+	struct tpe *tpe = udata;
 	uint32_t *data;
 	int feature;
 	uint32_t i,j,len;
@@ -243,9 +325,14 @@ tpe_comm_available_features_msg(void *udata, int type, void *event){
 
 	for (i = 0 ; i < len ; i ++){
 		feature = ntohl(data[i + 1]);
-		for (j = 0 ; j < N_FEATURES ; j ++)
-			if (features[j].id == feature)
+		for (j = 0 ; j < N_FEATURES ; j ++){
+			if (features[j].id == feature){
 				printf("\tFeature: %s\n",features[j].desc);
+				if (features[j].handler){
+					features[j].handler(tpe,i,features + j);
+				}
+			}
+		}
 	}
 
 	return 1;
@@ -288,4 +375,19 @@ tpe_comm_time_remaining(void *udata, int type, void *event){
 	}
 
 	return 1;
+}
+
+
+static void 
+feature_handler_autoaccount(struct tpe *tpe, int id, struct features *feat){
+	struct tpe_comm *comm;
+
+	assert(tpe); assert(id); assert(feat); assert(tpe->comm);
+
+	if (!tpe || !id || !feat) return;
+	if (!tpe->comm) return;
+
+	comm = tpe->comm;
+
+	comm->hasautoaccount = 1;
 }
