@@ -215,25 +215,15 @@ parse_args(int argc, char **argv){
 		p = argv[0];
 	else 
 		p ++;
-	if (strcmp(p, "tpai") == 0){
-		/* Use AI defaults */
-		opt->usegui = 0; /* Default */ /* FIXME: Compile constant */
-		opt->ai = ai_info; /* FIXME: Compile constant */
-		opt->username = strdup("smith");
-		opt->password = strdup("password");
-		opt->server = strdup("localhost");
-		opt->game = NULL;
-		opt->port = 6923;
-	} else {
-		/* Use defaults */
-		opt->usegui = 1; /* Default */ /* FIXME: Compile constant */
-		opt->ai = ai_info; /* FIXME: Compile constant */
-		opt->username = strdup("nash");
-		opt->password = strdup("password");
-		opt->server = strdup("localhost");
-		opt->game = NULL;
-		opt->port = 6923;
-	}
+		
+	/* Use defaults */
+	opt->usegui = 1; /* Default */ /* FIXME: Compile constant */
+	opt->ai = ai_info; /* FIXME: Compile constant */
+	opt->username = strdup("nash");
+	opt->password = strdup("password");
+	opt->server = strdup("localhost");
+	opt->game = NULL;
+	opt->port = 6923;
 
 	for (i = 1 ; i < argc ; i ++){
 		for (j = 0 ; j < sizeof(args)/sizeof(args[0]) ; j ++)	

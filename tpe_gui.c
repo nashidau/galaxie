@@ -8,6 +8,7 @@
 #include <Ecore.h>
 #include <Ecore_Evas.h>
 #include <Ecore_Data.h>
+#include <Ecore_Job.h>
 #include <Evas.h>
 #include <Edje.h>
 
@@ -101,6 +102,8 @@ enum {
 	WIDTH = 640,
 	HEIGHT = 480,
 	DEFAULT_ZOOM = 1 << 23,
+
+	LAYER_WINDOW = 10,
 };
 
 #define KEY_TPE_GUI	"TPEGUI"
@@ -672,6 +675,7 @@ tpe_gui_objectwindow_add(struct tpe_gui *gui){
 
 	o = edje_object_add(gui->e);
 	edje_object_file_set(o,"edje/basic.edj", "ObjectInfo");
+	evas_object_layer_set(o,LAYER_WINDOW);
 	evas_object_move(o, rand() % 200, rand() % 200);
 	evas_object_resize(o, 388, 419);
 
@@ -745,6 +749,13 @@ tpe_gui_objectbox_object_set(struct tpe_gui *gui, Evas_Object *objectbox,
 	orderstr = tpe_orders_str_get(gui->tpe, object);
 	edje_object_part_text_set(objectbox, "Orders", orderstr);
 
+	if (object->nordertypes)
+		/* Some orders are possible - set the orders active */
+		edje_object_signal_emit(objectbox, "EditOrders", "app");
+	else
+		/* None, set the state off */
+		edje_object_signal_emit(objectbox, "NoEditOrders", "app");
+
 	evas_object_data_set(objectbox, "Object", object);
 
 	/* Get the icon for the object */
@@ -767,9 +778,17 @@ tpe_gui_objectbox_object_set(struct tpe_gui *gui, Evas_Object *objectbox,
 
 static void
 tpe_gui_objectbox_clean(Evas_Object *objectbox){
+	struct object *object;
 	Evas_Object *obj;
 	char buf[50];
 	int i;
+
+	object = evas_object_data_get(objectbox, "Object");
+	if (object){
+		assert(object->gui);
+		assert(object->gui->info == objectbox);
+		object->gui->info = NULL;
+	}
 
 	evas_object_data_set(objectbox, "Object", NULL);
 
@@ -806,8 +825,14 @@ tpe_gui_objectbox_ordersedit(void *data, Evas_Object *objectbox,
 	struct object *object;
 
 	object = evas_object_data_get(objectbox, "Object");
-	if (object == NULL) return;
+	if (object == NULL) {
+		fprintf(stderr,"Could not find object for orderbox!\n");
+		return;
+	}
 
+	if (object->nordertypes < 1) return;
+
+printf("Orderable!\n");
 	/* FIXME: 
 	 * 	- Open an order window 
 	 * 		- or find one already open 
@@ -1067,10 +1092,12 @@ tpe_gui_messagebox_add(struct tpe_gui *gui){
 	o = edje_object_add(gui->e);
 
 	edje_object_file_set(o, "edje/basic.edj", "MessageBox");
+	evas_object_layer_set(o, LAYER_WINDOW);
 	/* FIXME: Place intelligently */
 	evas_object_move(o, rand() % 400 ,rand() % 320);
 	evas_object_show(o);
 	evas_object_resize(o, 289,304);
+
 	edje_object_signal_callback_add(o,
 			"mouse,clicked,*", "Next", 
 			tpe_gui_edje_message_change, gui);
@@ -1084,6 +1111,9 @@ tpe_gui_messagebox_add(struct tpe_gui *gui){
 	evas_object_event_callback_add(o,
 			EVAS_CALLBACK_FREE, 
 			(void*)tpe_gui_messagebox_ref_free, o);
+
+	evas_object_event_callback_add(o, EVAS_CALLBACK_MOUSE_DOWN,
+			(void*)evas_object_raise, o);
 
 	return o;
 }
@@ -1374,6 +1404,8 @@ reference_object_show(void *idv, Evas *e, Evas_Object *eo, void *event){
 		}
 		guiobj->info = o;
 	}
+	/* FIXME: This is a bit seedy */
+	ecore_job_add((void*)evas_object_raise, guiobj->info);
 
 }
 

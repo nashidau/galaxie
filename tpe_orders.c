@@ -208,31 +208,39 @@ tpe_orders_msg_order_description(void *data, int type, void *edata){
 
 /* Update the order list for this object 
  *
- * FIXME: Need to prepare to fragment this packet 
- * 	There may me too many messages for one request 
  */
 static int 
 tpe_orders_object_update(void *tpev, int type, void *objv){
 	struct object *o = objv;
 	struct tpe *tpe = tpev;
 	int *toget,i;
+	int frag,fragments, items;
 
 	assert(o);
 	assert(tpe);
 
 	if (o->norders == 0) return 1;
 
-	toget = malloc((o->norders + 2) * sizeof(uint32_t));
-	toget[0] = htonl(o->oid);
-	toget[1] = htonl(o->norders);
+	fragments = (o->norders + 99)/ 100; /* XXX magic */ 	
 
-	for (i = 0 ; i < o->norders ; i ++)
-		toget[i + 2] = htonl(i);
-	
-	tpe_msg_send(tpe->msg, "MsgGetOrder", NULL, NULL,
-			toget, (o->norders + 2) * sizeof(uint32_t));
+	for (frag = 0 ; frag < fragments ; frag ++){
+		if (frag == fragments - 1)
+			items = o->norders % 100;
+		else 
+			items = 100;
+		toget = malloc((items + 2) * sizeof(uint32_t));
 
-	free(toget);
+		toget[0] = htonl(o->oid);
+		toget[1] = htonl(items);
+
+		for (i = 0 ; i < items ; i ++)
+			toget[i + 2] = htonl(i + frag * 100);
+
+		tpe_msg_send(tpe->msg, "MsgGetOrder", NULL, NULL,
+				toget, (items + 2) * sizeof(uint32_t));
+
+		free(toget);
+	}
 
 	return 1;
 }

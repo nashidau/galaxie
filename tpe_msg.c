@@ -376,7 +376,6 @@ tpe_msg_send(struct tpe_msg *msg, const char *msgtype,
 	if (len > 100000) exit(1);
 	if (data == NULL && len != 0) exit(1);
 
-	/* FIXME: Better then linear would be nice .. */
 	for (i = 0 ; i < N_MESSAGETYPES ; i ++){
 		if (strcmp(msgtype,msgnames[i].name) == 0)
 			type = msgnames[i].tp03;
@@ -398,8 +397,8 @@ tpe_msg_send(struct tpe_msg *msg, const char *msgtype,
 	buf[3] = htonl(len);
 	memcpy(buf + 4, data, len);
 
-	printf("Sending Seq %d Type %d [%s] Len: %d [%p]\n",msg->seq,type,msgtype,
-	len,cb);
+	//printf("Sending Seq %d Type %d [%s] Len: %d [%p]\n",
+	//		msg->seq,type,msgtype, len,cb);
 	ecore_con_server_send(msg->svr, buf, len + HEADER_SIZE);
 
 	free(buf);
