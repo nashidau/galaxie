@@ -399,19 +399,19 @@ parse_url(struct startopt *opt, int i, char **args){
 
 	if ((rv = regcomp(&re, urlpattern, REG_EXTENDED)) != 0){
 		tpe_regerror(rv,&re);
-		return -1;
+		return 1;
 	}
 
 	matches = calloc(re.re_nsub + 1, sizeof(regmatch_t));
 	if (matches == NULL){
 		perror("calloc");
-		return -1;
+		return 1;
 	}
 
 	rv = regexec(&re, str, re.re_nsub, matches, 0);
 	if (rv != 0){
 		tpe_regerror(rv,&re);
-		return -1;
+		return 1;
 	}
 
 	/* 1: Http */
