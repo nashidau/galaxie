@@ -45,32 +45,6 @@ group {
 	    }
 	}
 	part {
-	    name: "Name";
-	    mouse_events: 0;
-	    type: TEXT;
-	    effect: SOFT_OUTLINE;
-	    description {
-		state: "default" 0.0;
-		rel1 {
-		    relative: 0.0 0.0;
-		    offset: 2 4;
-		    to: "background";
-		}
-		rel2 {
-		    relative: 1.0 0.0;
-		    offset: 2 16;
-		    to: "background";
-		}
-		text {
-		    text:     "Title";
-		    font:     "Vera";
-		    size:     12;
-		    min:      1 1;
-		    align:    0.5 0.5;
-		}
-	    }
-	}
-	part {
 	    name: "icon";
 	    type: SWALLOW;
 	    description {
@@ -184,6 +158,7 @@ group {
 	    }
 	}
 	STANDARD_CLOSE
+	STANDARD_TITLE
 
 /* FIXME: These should be in a box. */
 #define CHILD(childname, startx, endx)	    \

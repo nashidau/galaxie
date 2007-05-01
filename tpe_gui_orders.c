@@ -12,6 +12,7 @@
 #include "tpe_gui.h"
 #include "tpe_gui_private.h"
 #include "tpe_gui_orders.h"
+#include "tpe_orders.h"
 #include "gui_window.h"
 
 static Evas_Object *gui_orders_add(struct gui *gui);
@@ -78,14 +79,13 @@ gui_orders_add(struct gui *gui){
  */
 static int
 gui_orders_object_set(struct gui *gui, Evas_Object *ow, struct object *obj){
+	const char *orderstr;
 
-	assert(gui);
-	assert(obj);
-	assert(ow);
-
-	
+	assert(gui); assert(obj); assert(ow);
 
 	edje_object_part_text_set(ow, "Name", obj->name);
+	orderstr = tpe_orders_str_get(gui->tpe, obj);
+	edje_object_part_text_set(ow, "Orders", orderstr);
 
 	evas_object_data_set(ow, "Object", obj);
 

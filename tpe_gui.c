@@ -527,14 +527,14 @@ gui_object_delete(void *data, int eventid, void *event){
 
 	go = obj->gui;
 
-	if (go->info){
-		evas_object_del(go->info);
-	}
+	if (go->info) evas_object_del(go->info);
+	if (go->orders) evas_object_del(go->orders);
 
-	ecore_list_goto(go->gui->visible, obj);
-	ecore_list_remove(go->gui->visible);
+	if (ecore_list_goto(go->gui->visible, obj))
+		ecore_list_remove(go->gui->visible);
 
 	if (go->obj) evas_object_del(go->obj);
+
 	memset(go, 0, sizeof(struct gui_obj));
 
 	free(go);
