@@ -1,5 +1,5 @@
 PKGCONFIG=pkg-config
-PKGS='evas ecore edje imlib2'
+PKGS='evas ecore ecore-con ecore-job edje imlib2'
 
 CFLAGS+=`${PKGCONFIG} --cflags ${PKGS}`
 LDFLAGS+=`${PKGCONFIG} --libs ${PKGS}`
