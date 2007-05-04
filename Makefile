@@ -1,5 +1,5 @@
 PKGCONFIG=pkg-config
-PKGS='evas ecore ecore-con ecore-job edje imlib2'
+PKGS='evas ecore ecore-con ecore-job edje imlib2 lua5.1'
 
 CFLAGS+=`${PKGCONFIG} --cflags ${PKGS}`
 LDFLAGS+=`${PKGCONFIG} --libs ${PKGS}`
