@@ -28,6 +28,7 @@ struct tpe_obj {
 };
 
 
+const char *const object_magic = "ObjectMagic";
 
 static int tpe_obj_data_receive(void *data, int eventid, void *event);
 static void tpe_obj_list_begin(struct tpe *tpe);
@@ -223,6 +224,7 @@ tpe_obj_obj_add(struct tpe_obj *obj, int oid){
 	struct object *o;
 
 	o = calloc(1,sizeof(struct object));
+	o->magic = object_magic;
 	o->oid = oid;
 	o->tpe = obj->tpe;
 	ecore_hash_set(obj->objhash, (void*)oid, o);

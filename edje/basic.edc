@@ -26,6 +26,58 @@ styles
 }
 
 
+/* For windows - all have a standard close button - so the gui_window system
+ * can find it easily
+ */
+#define STANDARD_CLOSE			    \
+	part {				    \
+	    name: "Close";		    \
+	    type: IMAGE;		    \
+	    description {		    \
+		state: "default" 0.0;	    \
+		rel1 {			    \
+		    to: "background";	    \
+		    relative: 1.0 0;	    \
+		    offset: -20 3;	    \
+		}			    \
+		rel2 {			    \
+		    to: "background";	    \
+		    relative: 1.0 0;	    \
+		    offset: -7 16;	    \
+		}			    \
+		image {			    \
+		    normal: "close.png";    \
+		}			    \
+	    }				    \
+	}
+#define STANDARD_TITLE			    \
+	part {				    \
+	    name: "Name";		    \
+	    mouse_events: 0;		    \
+	    type: TEXT;			    \
+	    effect: SOFT_OUTLINE;	    \
+	    description {		    \
+		state: "default" 0.0;	    \
+		rel1 {			    \
+		    relative: 0.0 0.0;	    \
+		    offset: 0 0;	    \
+		    to: "background";	    \
+		}			    \
+		rel2 {			    \
+		    relative: 1.0 0.0;	    \
+		    offset: -1 20;	    \
+		    to: "background";	    \
+		}			    \
+		text {			    \
+		    text: "Object";	    \
+		    font: "Vera";	    \
+		    size: 12;		    \
+		    align: 0.5 0.5;	    \
+		}			    \
+	    }				    \
+	}
+
+
 collections {
     group { 
 	name, 	"Splash";
@@ -139,6 +191,7 @@ collections {
     #include "basic-refs.edc"
     #include "basic-ships.edc"
     #include "basic-stars.edc"
+    #include "basic-orders.edc"
 
     /* The Information about a single Star 
 	Appears as a popup on mouse-over */

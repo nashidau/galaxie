@@ -40,6 +40,8 @@ struct object_fleet {
 
 /* Represents an object in the system */
 struct object {
+	const char *magic;
+
 	struct tpe *tpe;
 
 	uint32_t oid;	/* Unique ID */
@@ -67,7 +69,7 @@ struct object {
 	struct object_fleet *fleet;
 	struct object_planet *planet;
 
-	struct tpe_gui_obj *gui;
+	struct gui_obj *gui;
 	struct ai_obj *ai;
 
 	int ref;
@@ -78,6 +80,23 @@ struct build_resources {
 	int rid;
 	int cost;
 };
+
+extern const char *const object_magic;
+
+#ifndef OBJECT_MAGIC_CHECK
+#define OBJECT_MAGIC_CHECK(object)	\
+	do {							\
+		if (object == NULL) {				\
+			fprintf(stderr,"Object is NULL");	\
+			return;					\
+		}						\
+		if (object->magic == object_magic){		\
+			fprintf(stderr,"Incorrect object magic"); \
+			return;					\
+		}						\
+	}
+#endif
+
 
 struct tpe_obj * tpe_obj_init(struct tpe *tpe);
 int tpe_obj_obj_dump(struct object *o);

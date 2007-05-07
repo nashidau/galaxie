@@ -185,7 +185,7 @@ main(int argc, char **argv){
 	tpe->ship	= tpe_ship_init(tpe);
 
 	if (opt->usegui)
-		tpe->gui = tpe_gui_init(tpe, opt->theme, opt->fullscreen);
+		tpe->gui = gui_init(tpe, opt->theme, opt->fullscreen);
 	if (opt->ai && opt->ai->init)	
 		tpe->ai = opt->ai->init(tpe);
 

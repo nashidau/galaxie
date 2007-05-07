@@ -16,7 +16,6 @@ OBJECTS=		\
 	tpe_board.o	\
 	tpe_comm.o	\
 	tpe_event.o	\
-	tpe_gui.o	\
 	tpe_msg.o	\
 	tpe_obj.o	\
 	tpe_orders.o	\
@@ -25,6 +24,11 @@ OBJECTS=		\
 	tpe_ship.o	\
 	tpe_util.o	\
 	ai_util.o
+
+GUI=			\
+	tpe_gui.o	\
+	tpe_gui_orders.o	\
+	gui_window.o
 
 AIS=			\
 	ai_smith.o	\
@@ -37,6 +41,7 @@ BASICTHEME=			\
 	edje/basic-info.edc	\
 	edje/basic-menu.edc	\
 	edje/basic-message.edc	\
+	edje/basic-orders.edc	\
 	edje/basic-refs.edc	\
 	edje/basic-ships.edc	\
 	edje/basic-stars.edc
@@ -68,7 +73,7 @@ install:
 ailist.h:  ${AI_SRCS}
 	grep -h TPE_AI ${AI_SRCS} > ailist.h
 
-galaxie: ${OBJECTS} ${AIS} 
+galaxie: ${OBJECTS} ${GUI} ${AIS} 
 
 doc:
 	doxygen Doxygen.conf
@@ -124,13 +129,13 @@ $Imailbox.png : $Imailbox.svg
 $Ibg.png : $IBG1.svg
 	inkscape -j --export-background=black --export-png $@ $<
 
-$Iobjectwindow.png : $IObjectViewer.svg Makefile
+$Iobjectwindow.png : $IObjectViewer.svg
 	inkscape -j --export-id=${@F} -d 120 --export-png $@ $<
 
-$Ibutton.png : $IObjectViewer.svg  Makefile
+$Ibutton.png : $IObjectViewer.svg
 	inkscape -j --export-id=${@F} -w 200 -h 50 --export-png $@ $<
 
-$Iclose.png : $IObjectViewer.svg  Makefile
+$Iclose.png : $IObjectViewer.svg
 	inkscape -j --export-id=${@F} -w 200 -h 50 --export-png $@ $<
 
 clean: 
