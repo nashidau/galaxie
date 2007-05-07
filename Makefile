@@ -94,8 +94,7 @@ tpe_msg.o : tpe_msg.h tpe.h
 ai_smith.o: tpe_obj.h tpe.h tpe_event.h tpe_msg.h tpe_orders.h tpe_ship.h \
 		tpe_util.h
 tpe_gui.o: tpe.h tpe_gui.h tpe_board.h tpe_comm.h tpe_event.h tpe_obj.h \
-		tpe_orders.h tpe_ship.h tpe_util.h tpe_reference.h \
-		tpe_gui_private.h
+		tpe_orders.h tpe_ship.h tpe_util.h tpe_reference.h 
 tpe_gui_orders.o: tpe.h tpe_gui_private.h
 ai_jones.o : tpe.h
 ai_smith.o : tpe.h
