@@ -101,7 +101,7 @@ static const struct msgname {
 	{ "MsgPROPPERY", 			59 },
 	{ "MsgGET_PROPERTY_IDS", 		60 },
 	{ "MsgLIST_OF_PROPERTY_IDS", 		61 },
-	{ "MsgACCOUNT_CREATE", 			62 },
+	{ "MsgCreateAccount",			62 },
 };
 #define N_MESSAGETYPES (sizeof(msgnames)/sizeof(msgnames[0]))
 
