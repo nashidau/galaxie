@@ -156,6 +156,11 @@ group {
 		inherit: "default" 0.0;
 		color: 255 255 255 255;
 	    }
+	    description {
+		state: "active" 0.0;
+		inherit: "default" 0.0;
+		color: 255 255 255 255;
+	    }
 	}
 	STANDARD_CLOSE
 	STANDARD_TITLE

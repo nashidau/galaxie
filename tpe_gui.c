@@ -33,6 +33,8 @@ enum {
 	WIDTH = 640,
 	HEIGHT = 480,
 	DEFAULT_ZOOM = 1 << 23,
+
+	LAYER_WINDOW = 10,
 };
 
 #define KEY_TPE_GUI	"TPEGUI"
@@ -632,6 +634,11 @@ gui_objectwindow_add(struct gui *gui){
 
 	o = edje_object_add(gui->e);
 	edje_object_file_set(o,"edje/basic.edj", "ObjectInfo");
+<<<<<<< optimise
+=======
+	evas_object_layer_set(o,LAYER_WINDOW);
+	evas_object_move(o, rand() % 200, rand() % 200);
+>>>>>>> baboon
 	evas_object_resize(o, 388, 419);
 	gui_window_add(gui, o);
 
@@ -736,8 +743,13 @@ gui_objectbox_object_set(struct gui *gui, Evas_Object *objectbox,
 }
 
 static void
+<<<<<<< optimise
 gui_objectbox_clean(Evas_Object *objectbox){
 	struct object *object;
+=======
+tpe_gui_objectbox_clean(Evas_Object *objectbox){
+	struct object *object;
+>>>>>>> baboon
 	Evas_Object *obj;
 	char buf[50];
 	int i;
@@ -785,17 +797,35 @@ gui_objectbox_ordersedit(void *data, Evas_Object *objectbox,
 	struct gui *gui = data;
 
 	object = evas_object_data_get(objectbox, "Object");
+<<<<<<< optimise
+	if (object == NULL) {
+		fprintf(stderr,"Could not find object for orderbox!\n");
+		return;
+	}
+=======
 	if (object == NULL) {
 		fprintf(stderr,"Could not find object for orderbox!\n");
 		return;
 	}
 
 	if (object->nordertypes < 1) return;
+>>>>>>> baboon
+
+<<<<<<< optimise
+	if (object->nordertypes < 1) return;
 
 	if (gui_orders_edit(gui, object) != 0){
 		assert(!"Error opening order window\n");
 		fprintf(stderr,"Error opening order window\n");
 	}
+=======
+printf("Orderable!\n");
+	/* FIXME: 
+	 * 	- Open an order window 
+	 * 		- or find one already open 
+	 * 	- Set it focused if necesary
+	 */
+>>>>>>> baboon
 }
 
 
@@ -1049,9 +1079,20 @@ gui_messagebox_add(struct gui *gui){
 	
 	o = edje_object_add(gui->e);
 	edje_object_file_set(o, "edje/basic.edj", "MessageBox");
+<<<<<<< optimise
+=======
+	evas_object_layer_set(o, LAYER_WINDOW);
+	/* FIXME: Place intelligently */
+	evas_object_move(o, rand() % 400 ,rand() % 320);
+	evas_object_show(o);
+>>>>>>> baboon
 	evas_object_resize(o, 289,304);
+<<<<<<< optimise
 	gui_window_add(gui, o);
 
+=======
+
+>>>>>>> baboon
 	edje_object_signal_callback_add(o,
 			"mouse,clicked,*", "Next", 
 			gui_edje_message_change, gui);
@@ -1062,6 +1103,9 @@ gui_messagebox_add(struct gui *gui){
 	evas_object_event_callback_add(o,
 			EVAS_CALLBACK_FREE, 
 			(void*)gui_messagebox_ref_free, o);
+
+	evas_object_event_callback_add(o, EVAS_CALLBACK_MOUSE_DOWN,
+			(void*)evas_object_raise, o);
 
 	evas_object_event_callback_add(o, EVAS_CALLBACK_MOUSE_DOWN,
 			(void*)evas_object_raise, o);
@@ -1355,6 +1399,8 @@ reference_object_show(void *idv, Evas *e, Evas_Object *eo, void *event){
 		}
 		guiobj->info = o;
 	}
+	/* FIXME: This is a bit seedy */
+	ecore_job_add((void*)evas_object_raise, guiobj->info);
 
 	gui_window_focus(gui, guiobj->info);
 
