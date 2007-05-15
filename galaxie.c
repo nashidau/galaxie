@@ -356,7 +356,7 @@ dump_options(struct startopt *opt){
 			opt->password, 
 			opt->server,
 			opt->port,
-			opt->game);
+			opt->game ? "" : opt->game);
 	
 	if (opt->ai) printf("Ai is %s\n",opt->ai->name);
 	printf("Gui is %s\n",opt->usegui ? "On" : "Off");
