@@ -812,6 +812,7 @@ static void
 map_key_down(void *data, Evas *e, Evas_Object *obj, void *event){
 	Evas_Event_Key_Down *key = event;
 	struct gui *gui = data;
+	struct object *home;
 
 	/* FIXME: Need to recenter as I zoom in */
 	if (strcmp(key->keyname, "equal") == 0){
@@ -829,7 +830,11 @@ map_key_down(void *data, Evas *e, Evas_Object *obj, void *event){
 	else if (strcmp(key->keyname, "Down") == 0)
 		gui->map.top -= 100;	
 	else if (strcmp(key->keyname, "Home") == 0){
+		
 		/* FIXME: Find homeworld, and center map */
+		home = tpe_obj_home_get(gui->tpe);
+	
+		printf("Home is %s\n",home->name);
 	
 	} else if (strcmp(key->keyname, "F11") == 0){
 		ecore_evas_fullscreen_set(gui->ee,

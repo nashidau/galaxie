@@ -6,6 +6,7 @@
  * 	a hash table
  */
 #include <arpa/inet.h>
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,6 +19,7 @@
 #include "tpe_orders.h"
 #include "tpe_event.h"
 #include "tpe_msg.h"
+#include "tpe_resources.h"
 #include "tpe_sequence.h"
 #include "tpe_util.h"
 
@@ -25,6 +27,9 @@ struct tpe_obj {
 	struct tpe *tpe;
 	Ecore_Hash *objhash;
 	int check;
+
+	/* Special objects */
+	struct object *home;
 };
 
 
@@ -35,6 +40,8 @@ static void tpe_obj_list_begin(struct tpe *tpe);
 static void tpe_obj_list_end(struct tpe *tpe);
 
 static void tpe_obj_cleanup(struct tpe *tpe, struct object *o);
+
+static void tpe_obj_home_check(struct tpe *tpe, struct object *o);
 
 //static int tpe_obj_hash_compare_data(const void *, const void *);
 //static int tpe_obj_hash_func(const void *);
@@ -161,7 +168,6 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 	case OBJTYPE_SYSTEM:
 		break;
 	case OBJTYPE_PLANET:
-		/* FIXME: Also do resources */
 		if (o->planet == NULL){
 			o->planet = calloc(1,sizeof(struct object_planet));
 			o->owner = -1;
@@ -175,6 +181,9 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		if (o->owner != oldowner && o->owner != obj->tpe->player)
 			tpe_event_send(obj->tpe->event, "PlanetColonised", o,
 					tpe_event_nofree, NULL);
+
+		if (obj->home == NULL)
+			tpe_obj_home_check(tpe, o);
 
 		break;
 	case OBJTYPE_FLEET:
@@ -398,7 +407,48 @@ tpe_obj_cleanup(struct tpe *tpe, struct object *o){
 		if (o->planet->resources) free(o->planet->resources);
 		free(o->planet);
 	}
+
+	if (tpe->obj->home == o)
+		tpe->obj->home = 0;
 	free(o);
 }
+
+/**
+ * Check for home planet resource, and update 'home planet' special object.
+ *
+ */
+static void
+tpe_obj_home_check(struct tpe *tpe, struct object *o){
+	uint32_t hptype;
+	int i;
+
+	assert(tpe); assert(tpe->obj); assert(o);
+	assert(o->type == OBJTYPE_PLANET);
+	hptype = tpe_resources_resourcedescription_get_by_name(tpe, 
+				"Home Planet");
+
+	if (hptype == (uint32_t)-1) return;
+
+	for (i = 0 ; i < o->planet->nresources ; i ++){
+		if (o->planet->resources[i].rid == hptype)
+			break;
+	}
+	if (i == o->planet->nresources)
+		/* Not it */
+		return;
+
+	/* Found the home planet */
+	tpe->obj->home = o;
+}
+
+struct object *
+tpe_obj_home_get(struct tpe *tpe){
+	assert(tpe);
+	assert(tpe->obj);
+	return tpe->obj->home;
+}
+
+
+
 
 

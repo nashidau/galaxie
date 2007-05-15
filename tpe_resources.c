@@ -2,7 +2,7 @@
  * @file tpe_resources.h
  *
  * TPE Resources provides a base class for dealing with resources.  It
- * currently implements resource descriptions (through teh struct
+ * currently implements resource descriptions (through the struct
  * resourcedescription).  
  *
  * A resource description shows the basic information about a resource
@@ -11,8 +11,10 @@
  * FIXME: Should be an event for a new type of resource
  *
  */
+#include <assert.h>
 #include <inttypes.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <Ecore_Data.h>
 
@@ -154,7 +156,27 @@ tpe_resources_resourcedescription_msg(void *data,int etype,void *event){
 		&rd->description,
 		&rd->weight, &rd->size,
 		&rd->updated);
-		
+	
+	{ int printf(const char *,...);
+	printf("New resource: %s\n",rd->name);
+	}
 
 	return 1;
+}
+
+/** FIXME: Document */
+uint32_t 
+tpe_resources_resourcedescription_get_by_name(struct tpe *tpe, 
+		const char *name){
+	struct resourcedescription *r;
+	assert(tpe);
+	assert(tpe->resources);
+	assert(name);
+
+        ecore_list_goto_first(tpe->resources->resources);
+        while ((r = ecore_list_next(tpe->resources->resources)))
+                if (strcmp(r->name, name) == 0)
+                        return r->id;
+
+	return (uint32_t)-1;
 }
