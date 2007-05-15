@@ -118,7 +118,7 @@ jones_order_insert_cb(void *userdata, const char *msgtype,
 		exit(1);
 	}
 
-	obj = tpe_obj_obj_get_by_id(jones->tpe->obj, oid);
+	obj = tpe_obj_obj_get_by_id(jones->tpe, oid);
 
 	tpe_orders_object_build(jones->tpe, obj, -1, 
 			"Kill Fleet #9",
