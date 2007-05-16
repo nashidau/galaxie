@@ -23,6 +23,7 @@
 #include "tpe_ship.h"
 #include "tpe_util.h" /* For struct reference */
 #include "tpe_reference.h"
+#include "tpe_resources.h"
 
 #include "tpe_gui.h"
 #include "tpe_gui_private.h"
@@ -57,6 +58,9 @@ static int gui_board_update(void *data, int eventid, void *event);
 static void board_mouse_in(void *data, Evas *e, Evas_Object *obj, void *event);
 static void board_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event);
 static void board_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event);
+
+/* Resource handlers */
+static int gui_resource_new(void *data, int eventid, void *event);
 
 /* Object window event handlers */
 /* FIXME: objectwindow or object or objectbox - pick one */
@@ -171,6 +175,9 @@ gui_init(struct tpe *tpe, const char *theme, unsigned int fullscreen){
 
 	tpe_event_handler_add(gui->tpe->event, "NewTurn",
 			gui_new_turn, gui);
+
+	tpe_event_handler_add(gui->tpe->event, "ResrouceNew",
+			gui_resource_new, gui);
 
 	gui->visible = ecore_list_new();
 	gui->boards = ecore_list_new();
@@ -833,8 +840,10 @@ map_key_down(void *data, Evas *e, Evas_Object *obj, void *event){
 		
 		/* FIXME: Find homeworld, and center map */
 		home = tpe_obj_home_get(gui->tpe);
-	
-		printf("Home is %s\n",home->name);
+		if (home)	
+			printf("Home is %s\n",home->name);
+		else 
+			printf("no home\n");
 	
 	} else if (strcmp(key->keyname, "F11") == 0){
 		ecore_evas_fullscreen_set(gui->ee,
@@ -1399,6 +1408,32 @@ gui_object_data_get(struct gui *gui, struct object *obj){
 }
 
 
+/**
+ * Callback handler for a new resoruce being added to the system.
+ *
+ * Currently only cares about the Home Planet resource
+ */
+static int 
+gui_resource_new(void *data, int eventid, void *event){
+	//struct tpe_gui *gui = data;
+	struct resourcedescription *rd = event;
+
+	assert(data); assert(event);
+	assert(rd->name);
+
+	if (rd->name == NULL) return 1;
+
+	if (strcmp(rd->name,"Home Planet") != 0){
+		/* Don't care */
+		return 1;
+	}
+
+	/* FIXME: Search planet list, and find any with correct resource */
+
+	return 1;
+}
+
+
 /** -------------------------------- 
  * Screen shot code
  */
@@ -1440,3 +1475,6 @@ gui_screengrab(struct gui *gui){
 
 	return 0;
 }
+
+
+
