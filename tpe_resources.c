@@ -28,18 +28,6 @@ struct tpe_resources {
         Ecore_List *resources;
 };
 
-struct resourcedescription {
-        uint32_t id;
-	char *name;
-	char *name_plural;
-	char *unit;
-	char *unit_plural;
-	char *description;
-	uint32_t weight;
-	uint32_t size;
-        uint64_t updated;
-};
-
 
 static int tpe_resources_resourcedescription_msg(void *,int,void*);
 
@@ -48,8 +36,6 @@ static int tpe_resources_resourcedescription_msg(void *,int,void*);
  *
  * This function should be called at start up time.  It registers the resource 
  * description handlers.
- *
- * FIXME: Should be a new resource message.
  *
  * @param tpe TPE structure
  * @return tpe_resources structure or NULL on error
@@ -60,6 +46,8 @@ tpe_resources_init(struct tpe *tpe){
 
 	resources = calloc(1,sizeof(struct tpe_resources));
 	resources->resources = ecore_list_new();
+
+	tpe_event_type_add(tpe->event, "ResourceNew");
 
 	tpe_sequence_register(tpe, "MsgGetResourceDescriptionIDs",
                         "MsgListOfResourceDescriptionsIDs",
@@ -147,6 +135,8 @@ tpe_resources_resourcedescription_msg(void *data,int etype,void *event){
 		rd = calloc(1,sizeof(struct resourcedescription));
 		rd->id = id;
 		ecore_list_append(tpe->resources->resources,rd);
+		/* Can queue now... not sent until we return... */
+		tpe_event_send(tpe->event, "ResourceNew", rd, NULL, NULL);
 	}
 
 	/* FIXME: Check we got it all */
@@ -180,3 +170,4 @@ tpe_resources_resourcedescription_get_by_name(struct tpe *tpe,
 
 	return (uint32_t)-1;
 }
+

@@ -17,6 +17,10 @@ From tpe_comm:
  * Connected(struct connect *): Have been connected to a server
 
 From tpe_board:
- * BoardUpdate(struct board_update): A messae board has supdated in some way
+ * BoardUpdate(struct board_update): A messae board has been updated in some way
  		- Message has been read
 		- New message has been received
+
+From tpe_resource:
+ * ResourceNew(struct resourcedescription); A new resource type has been
+ 	added to the system,
