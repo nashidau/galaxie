@@ -240,10 +240,10 @@ tpe_comm_create_account(struct tpe *tpe){
 	tpe_msg_send_format(tpe->msg, "MsgCreateAccount", 
 			tpe_comm_create_account_cb, tpe,
 			"ssss", 
-				comm->user,
-				comm->pass,
-				""
-				"Another satisfied GalaxiE user.");
+			comm->user,
+			comm->pass,
+			"",
+			"Another satisfied GalaxiE user.");
 	comm->triedcreate = 1;
 
 }
@@ -261,6 +261,7 @@ tpe_comm_create_account_cb(void *tpev, const char *msgtype, int len, void*data){
 
 	if (strcmp(msgtype, "MsgFail") == 0){
 		printf("Could not create account\n");
+		return 0;
 	}
 
 	if (comm->game){
