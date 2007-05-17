@@ -176,7 +176,7 @@ gui_init(struct tpe *tpe, const char *theme, unsigned int fullscreen){
 	tpe_event_handler_add(gui->tpe->event, "NewTurn",
 			gui_new_turn, gui);
 
-	tpe_event_handler_add(gui->tpe->event, "ResrouceNew",
+	tpe_event_handler_add(gui->tpe->event, "ResourceNew",
 			gui_resource_new, gui);
 
 	gui->visible = ecore_list_new();
