@@ -226,9 +226,12 @@ parse_args(int argc, char **argv){
 	opt->port = 6923;
 
 	for (i = 1 ; i < argc ; i ++){
-		for (j = 0 ; j < sizeof(args)/sizeof(args[0]) ; j ++)	
-			if (!strncmp(args[j].arg, argv[i],strlen(args[j].arg)))
+		for (j = 0 ; j < sizeof(args)/sizeof(args[0]) ; j ++){
+			if (!strncmp(args[j].arg, argv[i],strlen(args[j].arg))){
 				i = args[j].fn(opt, i,argv);
+				break;
+			}
+		}
 	}
 
 	return opt;
