@@ -113,6 +113,7 @@ tpe_comm_connect(struct tpe_comm *comm,
 	comm->port = port;
 	comm->user = strdup(user);
 	comm->pass = strdup(pass);
+	comm->game = strdup(game);
 
 	connect = calloc(1,sizeof(struct connect));
 	connect->server = comm->server;
