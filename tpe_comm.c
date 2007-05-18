@@ -113,12 +113,15 @@ tpe_comm_connect(struct tpe_comm *comm,
 	comm->port = port;
 	comm->user = strdup(user);
 	comm->pass = strdup(pass);
-	comm->game = strdup(game);
+	if (game)
+		comm->game = strdup(game);
+	else 
+		comm->game = NULL;
 
 	connect = calloc(1,sizeof(struct connect));
 	connect->server = comm->server;
 	connect->user = comm->user;
-	connect->game = game;
+	connect->game = comm->game;
 	connect->status = CONSTATUS_CONNECTING;
 
 	comm->connect = connect;
