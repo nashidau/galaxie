@@ -82,7 +82,7 @@ tpe_ship_design_updated_get(struct tpe *tpe, uint32_t design){
 	d = tpe_ship_design_get(tpe,design);
 	if (d)
 		return d->updated;
-	return UINT32_MAX;
+	return UINT64_MAX;
 }
 
 static int 
