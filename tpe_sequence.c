@@ -154,8 +154,9 @@ tpe_sequence_handle_oids(void *udata, int type, void *event){
 	toget = malloc((noids + 1) * sizeof(int));
 	for (i = 0 , n = 0; i < noids ; i ++){
 		updated = seq->lastupdatefn(seq->tpe, oids[i].oid);
-		if (updated < oids[i].updated || updated == UINT32_MAX)
+		if (updated < oids[i].updated || updated == UINT64_MAX){
 			toget[++n] = htonl(oids[i].oid);
+		}
 	}
 
 	if (n > 0){

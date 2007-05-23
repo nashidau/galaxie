@@ -144,7 +144,7 @@ tpe_orders_order_desc_updated(struct tpe *tpe, uint32_t id){
 	if (desc)
 		return desc->updated;
 	else
-		return UINT32_MAX;
+		return UINT64_MAX;
 }
 
 struct order_desc *
