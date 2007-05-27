@@ -24,6 +24,7 @@ enum {
 	ARG_TIME = 1,
 	ARG_OBJECT = 2,
 	ARG_PLAYER = 3,
+	ARG_LIST = 6,
 	ARG_STRING = 7,
 };
 
@@ -54,6 +55,22 @@ struct order_arg_player {
 	uint32_t flags;
 };
 
+/* Type 6: ARG_LIST */
+struct order_arg_list_option {
+	int id;
+	int max;
+	char *option;
+};
+struct order_arg_list_selection {
+	uint32_t selection;
+	uint32_t count;
+};
+struct order_arg_list {
+	uint32_t noptions; /* # of Options */
+	struct order_arg_list_option *options;
+	uint32_t nselections;
+	struct order_arg_list_selection *selections;
+};
 
 /* Type 7: ARG_STRING */ 
 struct order_arg_string {
@@ -66,6 +83,7 @@ union order_arg_data {
 	struct order_arg_time time;
 	struct order_arg_object object;
 	struct order_arg_player player;
+	struct order_arg_list list;
 	struct order_arg_string string;
 };
 
@@ -308,7 +326,7 @@ tpe_orders_msg_order(void *data, int type, void *event){
 static void
 tpe_order_parse_args(struct tpe *tpe, struct order *order, 
 		struct order_desc *desc, int *p){
-	int i;
+	int i,j;
 	union order_arg_data *data;
 
 	/* FIXME: Leak?? */
@@ -328,6 +346,7 @@ tpe_order_parse_args(struct tpe *tpe, struct order *order,
 					&p);
 			break;
 		case ARG_TIME:
+			printf("Don't handle time\n");
 			break;
 		case ARG_OBJECT:
 			tpe_util_parse_packet(p, "ip",
@@ -335,6 +354,39 @@ tpe_order_parse_args(struct tpe *tpe, struct order *order,
 					&p);
 			break;
 		case ARG_PLAYER:
+			printf("Don't handle player\n");
+			
+			break;
+		case ARG_LIST:
+			tpe_util_parse_packet(p,"ip", &data->list.noptions,&p);
+			/* Temp sanity check */
+			printf("List Arg (6) has %d options\n",data->list.noptions);
+			assert(data->list.noptions < 1000);
+			/* Allocate a buffer of the right size */
+			data->list.options = calloc(data->list.noptions,	
+					sizeof(struct order_arg_list_option));
+			for (j = 0 ; j < data->list.noptions ; j ++){
+				struct order_arg_list_option *op;
+				op = data->list.options + j;
+				tpe_util_parse_packet(p,"isip",
+						&op->id,&op->option,&op->max,
+						&p);
+				printf("\tOption %d: %s (%d)\n",
+						op->id, op->option,op->max);
+			}
+			/* FIXME: Check selected option is a valid one */
+			tpe_util_parse_packet(p,"ip",&data->list.nselections,&p);
+			data->list.selections = calloc(data->list.nselections,
+				       sizeof(struct order_arg_list_selection));
+			for (j = 0 ; j < data->list.nselections ; j ++){
+				struct order_arg_list_selection *sel;
+				sel = data->list.selections + j;
+				tpe_util_parse_packet(p,"ii",
+						&sel->selection,&sel->count);
+				printf("Selected: %d %d\n",sel->selection,
+						sel->count);
+			}
+
 			break;
 		case ARG_STRING:
 			tpe_util_parse_packet(p, "isp", 
@@ -423,6 +475,7 @@ static int
 tpe_order_arg_format(struct tpe *tpe, char *buf, int pos, int maxlen,
 		struct order *order, struct order_desc *desc, int argnum){
 	struct object *obj;
+	int i,j;
 
 	switch (desc->args[argnum].arg_type){
 	case ARG_COORD:
@@ -448,11 +501,31 @@ tpe_order_arg_format(struct tpe *tpe, char *buf, int pos, int maxlen,
 					order->args[argnum]->object.oid);
 		break;
 	case ARG_PLAYER:
-
+		pos += snprintf(buf+pos,maxlen-pos,
+				"<arg>Player - unimplemented</arg>");
+		break;
 	case ARG_STRING:
 		pos += snprintf(buf + pos, maxlen - pos, 
-				"<arg>%s</arg>", "arg");
+				"<arg>%s</arg>", 
+				order->args[argnum]->string.str);
 		break;
+	case ARG_LIST:{
+		struct order_arg_list *list;
+		list = &order->args[argnum]->list;
+		/* FIXME: These args are broken */
+		for (i = 0 ; i < list->nselections ; i ++){
+			for (j = 0 ; j < list->noptions ; j ++){
+				if (list->selections[i].selection!=list->options[j].id)
+					continue;
+				pos += snprintf(buf + pos, maxlen - pos,
+					"<arg>%s x %d</arg>",
+					list->options[j].option,
+					list->selections[i].count);
+				break;
+			}
+		}
+		break;
+	}
 	default: 
 		printf("Don't handle arg type %d yet\n", desc->args[argnum].arg_type);
 
