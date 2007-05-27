@@ -20,12 +20,17 @@
 #include "tpe_sequence.h"
 
 enum {
-	ARG_COORD = 0,
-	ARG_TIME = 1,
-	ARG_OBJECT = 2,
-	ARG_PLAYER = 3,
-	ARG_LIST = 6,
-	ARG_STRING = 7,
+	/* As defined by tp03 protocol */
+	ARG_COORD 	= 0,
+	ARG_TIME 	= 1,
+	ARG_OBJECT 	= 2,
+	ARG_PLAYER 	= 3,
+	ARG_RELCOORD 	= 4,
+	ARG_RANGE	= 5,
+	ARG_LIST 	= 6,
+	ARG_STRING 	= 7,
+	ARG_REFERENCE   = 8,
+	ARG_REFERENCE_LIST = 9,
 };
 
 struct tpe_orders {
@@ -54,6 +59,18 @@ struct order_arg_player {
 	uint32_t pid;
 	uint32_t flags;
 };
+/* Type 4: ARG_RELCOORD */
+struct order_arg_relcoord {
+	uint32_t obj;
+	int64_t x,y,z;
+};
+
+/* Type 5: ARG_RANGE */
+struct order_arg_range {
+	int32_t value;
+	int32_t min,max;
+	int32_t inc;
+};
 
 /* Type 6: ARG_LIST */
 struct order_arg_list_option {
@@ -72,17 +89,23 @@ struct order_arg_list {
 	struct order_arg_list_selection *selections;
 };
 
+
 /* Type 7: ARG_STRING */ 
 struct order_arg_string {
 	uint32_t maxlen;
 	char *str;
 };
 
+/* Type 8: ARG_REFERNCE */
+/* FIXME: Not implemented */
+
 union order_arg_data {
 	struct order_arg_coord coord;
 	struct order_arg_time time;
 	struct order_arg_object object;
 	struct order_arg_player player;
+	struct order_arg_relcoord relcoord;
+	struct order_arg_range range;
 	struct order_arg_list list;
 	struct order_arg_string string;
 };
@@ -346,7 +369,8 @@ tpe_order_parse_args(struct tpe *tpe, struct order *order,
 					&p);
 			break;
 		case ARG_TIME:
-			printf("Don't handle time\n");
+			tpe_util_parse_packet(p,"iip",&data->time.turns,
+					&data->time.max,&p);
 			break;
 		case ARG_OBJECT:
 			tpe_util_parse_packet(p, "ip",
@@ -354,8 +378,24 @@ tpe_order_parse_args(struct tpe *tpe, struct order *order,
 					&p);
 			break;
 		case ARG_PLAYER:
-			printf("Don't handle player\n");
-			
+			tpe_util_parse_packet(p, "iip",
+					&data->player.pid,
+					&data->player.flags);
+			break;
+		case ARG_RELCOORD:
+			tpe_util_parse_packet(p, "illlp",
+					&data->relcoord.obj,
+					&data->relcoord.x,
+					&data->relcoord.y,
+					&data->relcoord.z,&p);
+			break;
+		case ARG_RANGE:
+			tpe_util_parse_packet(p, "iiii",
+					&data->range.value,
+					&data->range.min,
+					&data->range.max,
+					&data->range.inc,
+					&p);
 			break;
 		case ARG_LIST:
 			tpe_util_parse_packet(p,"ip", &data->list.noptions,&p);
@@ -381,12 +421,11 @@ tpe_order_parse_args(struct tpe *tpe, struct order *order,
 			for (j = 0 ; j < data->list.nselections ; j ++){
 				struct order_arg_list_selection *sel;
 				sel = data->list.selections + j;
-				tpe_util_parse_packet(p,"ii",
-						&sel->selection,&sel->count);
+				tpe_util_parse_packet(p,"iip",
+						&sel->selection,&sel->count,&p);
 				printf("Selected: %d %d\n",sel->selection,
 						sel->count);
 			}
-
 			break;
 		case ARG_STRING:
 			tpe_util_parse_packet(p, "isp", 
