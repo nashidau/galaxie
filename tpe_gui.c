@@ -482,7 +482,8 @@ star_update(struct tpe *tpe, struct object *object){
 
 	if (object->type != OBJTYPE_SYSTEM)
 		return;
-	
+	if (object->gui == NULL) reutrn;
+
 	assert(object->gui);
 
 	nchildren = nother = nowned = nfriendly = 0;
