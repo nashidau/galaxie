@@ -356,9 +356,8 @@ gui_object_update(void *data, int eventid, void *event){
 					y + gui->map.top);
 			edje_object_part_text_set(go->obj, "Name", obj->name);
 		}
-	}
-
-	star_update(gui->tpe, obj);
+	} else 
+		star_update(gui->tpe, obj);
 
 	return 1;
 }
@@ -463,18 +462,22 @@ star_summary(struct tpe *tpe, struct object *object){
  */
 static void
 star_update(struct tpe *tpe, struct object *object){
-	struct object *child;
-	int childid;
+	struct object *child,*parent;
+	int childid,parentid;
 	int nchildren;
 	int nowned, nother, nfriendly;
 	const char *state = NULL;
 	int i;
 
+	/* If it is a planet - move to the parent */
 	if (object->type == OBJTYPE_PLANET){
-		childid = object->parent;
-		child = tpe_obj_obj_get_by_id(tpe, childid);
-		if (child == NULL) return;
-		object = child;
+		parentid = object->parent;
+		parent = tpe_obj_obj_get_by_id(tpe, parentid);
+		/* Check for a weird universe */
+		if (parent) assert(parent->type == OBJTYPE_SYSTEM);
+		/* Update later */
+		if (parent == NULL || parent->gui == NULL) return;
+		object = parent;
 	}
 
 	if (object->type != OBJTYPE_SYSTEM)
