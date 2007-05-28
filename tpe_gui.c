@@ -482,7 +482,7 @@ star_update(struct tpe *tpe, struct object *object){
 
 	if (object->type != OBJTYPE_SYSTEM)
 		return;
-	if (object->gui == NULL) reutrn;
+	if (object->gui == NULL) return;
 
 	assert(object->gui);
 
@@ -1291,7 +1291,7 @@ gui_object_icon_get(struct gui *gui, uint32_t oid, int active){
 		break;
 	case OBJTYPE_PLANET:
 		evas_object_image_file_set(icon, 
-			"edje/images/kathleen/planet.png", NULL);
+			"edje/images/planet.png", NULL);
 		break;
 	case OBJTYPE_FLEET:
 		evas_object_image_file_set(icon,
