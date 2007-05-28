@@ -47,8 +47,8 @@ struct order_arg_coord {
 };
 /* Type 1: ARG_TIME */
 struct order_arg_time {
-	int64_t turns;
-	int64_t max;
+	uint32_t turns;
+	uint32_t max;
 };
 /* Type 2: ARG_OBJECT */
 struct order_arg_object {
@@ -96,7 +96,7 @@ struct order_arg_string {
 	char *str;
 };
 
-/* Type 8: ARG_REFERNCE */
+/* Type 8: ARG_REFERENCE */
 /* FIXME: Not implemented */
 
 union order_arg_data {
@@ -525,9 +525,14 @@ tpe_order_arg_format(struct tpe *tpe, char *buf, int pos, int maxlen,
 				order->args[argnum]->coord.z);
 		break;
 
-	case ARG_TIME:
+	case ARG_TIME:{
+		struct order_arg_time *time;
+		time = &order->args[argnum]->time;
+		pos += snprintf(buf + pos, maxlen - pos,
+				"<arg>%d turns (of %d</arg>",
+				time->turns, time->max);
 
-		break;
+		} break;
 	case ARG_OBJECT:
 		obj = tpe_obj_obj_get_by_id(tpe,
 				order->args[argnum]->object.oid);
@@ -543,15 +548,34 @@ tpe_order_arg_format(struct tpe *tpe, char *buf, int pos, int maxlen,
 		pos += snprintf(buf+pos,maxlen-pos,
 				"<arg>Player - unimplemented</arg>");
 		break;
-	case ARG_STRING:
-		pos += snprintf(buf + pos, maxlen - pos, 
-				"<arg>%s</arg>", 
-				order->args[argnum]->string.str);
+	case ARG_RELCOORD:{
+		struct order_arg_relcoord *rc;
+		struct object *obj;
+		const char *name;
+		rc = &order->args[argnum]->relcoord;
+		obj = tpe_obj_obj_get_by_id(tpe,rc->obj);
+		if (obj == NULL) name = "Unknown";
+		else name = obj->name;
+
+		pos += snprintf(buf+pos,maxlen-pos,
+				"<arg>%s</arg>"
+				"<arg>+(%llx,%llx,%llx)</arg>",
+				name,
+				rc->x,rc->y,rc->z);
+		}
 		break;
+	case ARG_RANGE:{
+		struct order_arg_range *range;
+
+		range = &order->args[argnum]->range;
+		pos += snprintf(buf+pos,maxlen-pos,
+				"<arg>%d (Max: %d Inc %d)</arg>",
+				range->value,range->max,range->inc);
+		break;
+	}
 	case ARG_LIST:{
 		struct order_arg_list *list;
 		list = &order->args[argnum]->list;
-		/* FIXME: These args are broken */
 		for (i = 0 ; i < list->nselections ; i ++){
 			for (j = 0 ; j < list->noptions ; j ++){
 				if (list->selections[i].selection!=list->options[j].id)
@@ -565,6 +589,12 @@ tpe_order_arg_format(struct tpe *tpe, char *buf, int pos, int maxlen,
 		}
 		break;
 	}
+	case ARG_STRING:
+		pos += snprintf(buf + pos, maxlen - pos, 
+				"<arg>%s</arg>", 
+				order->args[argnum]->string.str);
+		break;
+
 	default: 
 		printf("Don't handle arg type %d yet\n", desc->args[argnum].arg_type);
 
