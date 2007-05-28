@@ -243,8 +243,10 @@ static int
 parse_username(struct startopt *opt, int i, char **args){
 	const char *tmp;
 	tmp = parse_option(args, &i);
-	if (tmp)
+	if (tmp){
+		if (opt->username) free(opt->username);
 		opt->username = strdup(tmp);
+	}
 	return i;
 }
 
