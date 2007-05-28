@@ -419,6 +419,7 @@ parse_url(struct startopt *opt, int i, char **args){
 
 	/* 3: Username */
 	if (MATCH(matches,REGEX_USERNAME)){
+		if (opt->username) free(opt->username);
 		opt->username = EXTRACT(str,matches,REGEX_USERNAME);
 	}
 	/* 4: Password */

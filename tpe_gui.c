@@ -480,6 +480,8 @@ star_update(struct tpe *tpe, struct object *object){
 	if (object->type != OBJTYPE_SYSTEM)
 		return;
 	
+	assert(object->gui);
+
 	nchildren = nother = nowned = nfriendly = 0;
 
 	for (i = 0 ; i < object->nchildren ; i ++){
