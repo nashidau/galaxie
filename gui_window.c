@@ -40,7 +40,7 @@ gui_window_add(struct gui *gui, Evas_Object *window){
 
 	evas_object_show(window);
 
-	evas_object_geometry_get(window,0,0,&w,&h);
+	evas_object_geometry_get(window,NULL,NULL,&w,&h);
 	evas_object_move(window, rand() % (gui->screenw - w),
 				rand() % (gui->screenh - h));
 
