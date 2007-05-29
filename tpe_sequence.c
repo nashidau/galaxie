@@ -137,7 +137,7 @@ tpe_sequence_handle_oids(void *udata, int type, void *event){
 
 	seq = udata;
 
-	tpe_util_parse_packet(event, "iiiiiiO", NULL, NULL, NULL, &len,
+	tpe_util_parse_packet(event, NULL, "iiiiiiO", NULL, NULL, NULL, &len,
 			&seqkey, &more, &noids,&oids);
 	seq->position += noids;
 	expectedlen = sizeof(int32_t) * 3 + 

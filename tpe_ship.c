@@ -95,7 +95,7 @@ tpe_ship_msg_design(void *data, int eventid, void *event){
 	/* FIXME */
 	event = ((char *)event + 16);
 
-	tpe_util_parse_packet(event, "ilass", &design->did, 
+	tpe_util_parse_packet(event, NULL, "ilass", &design->did, 
 			&design->updated, &ncats,&cats, 
 			&design->name,
 			&design->description);

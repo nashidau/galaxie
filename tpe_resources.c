@@ -128,7 +128,7 @@ tpe_resources_resourcedescription_msg(void *data,int etype,void *event){
 
 	msg += 4;
 	
-	tpe_util_parse_packet(msg, "i", &id);
+	tpe_util_parse_packet(msg,NULL, "i", &id);
 
 	rd = tpe_resources_resourcedescription_get(tpe, id);
 	if (rd == NULL){
@@ -140,7 +140,7 @@ tpe_resources_resourcedescription_msg(void *data,int etype,void *event){
 	}
 
 	/* FIXME: Check we got it all */
-	tpe_util_parse_packet(msg, "-sssssiil",
+	tpe_util_parse_packet(msg, NULL, "-sssssiil",
 		&rd->name, &rd->name_plural,
 		&rd->unit, &rd->unit_plural,
 		&rd->description,

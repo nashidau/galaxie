@@ -14,6 +14,9 @@ Major Tasks:
 Important:
  * Lists -> Hashes in Object list
  	- Probably maintain both (B+tree)?
+ * 'H' (header) format parser for protocol.
+ 	- see tpe_util
+ * Make callers of tpe_util_parse packet pass an end pointer.
 
 Minor Tasks 
  * New art for:

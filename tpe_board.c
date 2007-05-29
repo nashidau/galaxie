@@ -117,7 +117,7 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
 	body = event;
 	body += 16;
 
-	tpe_util_parse_packet(body, "i", &id);
+	tpe_util_parse_packet(body, NULL, "i", &id);
 
 	board = tpe_board_board_get_by_id(tpe, id);
 	if (board == NULL)
@@ -126,7 +126,7 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
 	if (board->name) free(board->name);
 	if (board->description) free(board->description);
 
-	tpe_util_parse_packet(body, "issil", &id, &board->name, 
+	tpe_util_parse_packet(body, NULL, "issil", &id, &board->name, 
 			&board->description, &board->nmessages,
 			&board->updated);
 
@@ -182,7 +182,7 @@ tpe_board_msg_message_receive(void *data, int type, void *event){
 	message = calloc(1,sizeof(struct message));
 	message->unread = 1;
 
-	tpe_util_parse_packet(body, "iiassir", &message->board,
+	tpe_util_parse_packet(body, NULL, "iiassir", &message->board,
 			&message->slot, NULL, NULL,
 			&message->title,
 			&message->body,

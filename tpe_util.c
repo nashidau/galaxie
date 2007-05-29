@@ -61,6 +61,11 @@ tpe_util_dump_packet(void *pdata){
  *
  * Format string:
  *  -: Nothing - skip an int
+ *  H: TP03/TP04 header
+ *  	Protocol magic  
+ *  	SeqID   (int)
+ *  	Message Type (int)
+ *  	Length	(pointer)
  *  s: A string - will be malloced into pointer
  *  i: int - 32 bit int
  *  l: long long int - 64 bit int
@@ -75,7 +80,7 @@ tpe_util_dump_packet(void *pdata){
  *  p: Save a pointer to the current offset
  */
 int
-tpe_util_parse_packet(void *pdata, char *format, ...){
+tpe_util_parse_packet(void *pdata, void *end, char *format, ...){
 	int len;
 	int parsed;
 	va_list ap;

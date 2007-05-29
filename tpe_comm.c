@@ -300,7 +300,7 @@ tpe_comm_msg_player_id(void *userdata, const char *msgtype,
 		exit(1);
 	}
 
-	tpe_util_parse_packet(edata, "iss", &tpe->player,
+	tpe_util_parse_packet(edata, NULL, "iss", &tpe->player,
 			&tpe->racename, &tpe->playername);
 
 	return 1;
@@ -350,7 +350,8 @@ tpe_comm_msg_fail(void *udata, int etype, void *event){
 	int rv;
 	char *str = NULL;
 
-	rv = tpe_util_parse_packet(event, "iiiiis", &magic, &seq, &type, &len,
+	rv = tpe_util_parse_packet(event, NULL,
+			"iiiiis", &magic, &seq, &type, &len,
 			&errcode, &str);
 
 	printf("** Error: Seq %d: Err %d: %s\n",seq,errcode,str);
@@ -373,7 +374,8 @@ tpe_comm_time_remaining(void *udata, int type, void *event){
 	tpe = udata;
 	msg = tpe->msg;
 
-	tpe_util_parse_packet(event, "iiiii",&magic, &seq, &etype, &unused, 
+	tpe_util_parse_packet(event, NULL, 
+			"iiiii",&magic, &seq, &etype, &unused, 
 			&remain);
 
 	if (seq == 0 && remain == 0){

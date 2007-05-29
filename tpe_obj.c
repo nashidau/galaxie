@@ -99,7 +99,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 	obj = tpe->obj;
 
 	edata = ((char *)edata + 16);
-	tpe_util_parse_packet(edata, "i", &id);
+	tpe_util_parse_packet(edata, NULL, "i", &id);
 
 	isnew = 0;
 
@@ -128,7 +128,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		free(o->orders);
 	}
 
-	n = tpe_util_parse_packet(edata, "iislllllllaailiip",
+	n = tpe_util_parse_packet(edata, NULL, "iislllllllaailiip",
 			&o->oid, &o->type, &o->name,
 			&o->size, 
 			&o->pos.x,&o->pos.y,&o->pos.z,
@@ -156,7 +156,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 	switch (o->type){
 	case OBJTYPE_UNIVERSE:{
 		uint32_t turn;
-		tpe_util_parse_packet(end, "i", &turn);
+		tpe_util_parse_packet(end, NULL, "i", &turn);
 
 		obj->tpe->turn = turn;
 		printf("Updated universe: Turn %d\n",turn);	
@@ -174,7 +174,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		} 
 		oldowner = o->owner;
 
-		tpe_util_parse_packet(end, "iR",
+		tpe_util_parse_packet(end, NULL, "iR",
 				&o->owner, 
 				&o->planet->nresources, &o->planet->resources);
 
@@ -190,7 +190,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		if (o->fleet == NULL)
 			o->fleet = calloc(1,sizeof(struct object_fleet));
 
-		tpe_util_parse_packet(end, "iSi",
+		tpe_util_parse_packet(end, NULL, "iSi",
 				&o->owner, 
 				&o->fleet->nships, &o->fleet->ships,
 				&o->fleet->damage);

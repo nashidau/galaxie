@@ -95,6 +95,16 @@ smith_order_planet(void *data, int type, void *event){
 	struct ai *smith = data;
 
 	printf("$ Smith: Order for %s\n",o->name);
+	printf("$ OID: %d  notypes %d norders %d\n", o->oid, o->nordertypes,
+			o->norders);
+	{ int i;
+		for (i = 0 ; i < o->nordertypes ; i ++){
+			printf("$\t%d: %s\n",o->ordertypes[i],
+					tpe_order_get_name_by_type(smith->tpe, 
+							o->ordertypes[i]));
+		}
+
+	}
 
 	if (build_id == -1){
 		build_id = tpe_order_get_type_by_name(smith->tpe, build_order);
@@ -125,7 +135,7 @@ smith_order_insert_cb(void *userdata, const char *msgtype,
 
 	/* FIXME: Check result */
 
-	tpe_util_parse_packet(data, "iiiiB6i", 
+	tpe_util_parse_packet(data, NULL, "iiiiB6i", 
 			&oid, &slot,&type,&turns,
 			&nbr,&br,
 			&noptions,&options,
