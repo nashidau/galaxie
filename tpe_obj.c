@@ -156,10 +156,10 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 	switch (o->type){
 	case OBJTYPE_UNIVERSE:{
 		uint32_t turn;
-	
 		tpe_util_parse_packet(end, "i", &turn);
 
 		obj->tpe->turn = turn;
+		printf("Updated universe: Turn %d\n",turn);	
 		
 		break;
 	}
@@ -409,7 +409,7 @@ tpe_obj_cleanup(struct tpe *tpe, struct object *o){
 	}
 
 	if (tpe->obj->home == o)
-		tpe->obj->home = 0;
+		tpe->obj->home = NULL;
 	free(o);
 }
 
