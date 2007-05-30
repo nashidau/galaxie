@@ -159,7 +159,10 @@ tpe_util_parse_packet(void *pdata, void *end, char *format, ...){
 
 				sval = tpe_util_string_extract(pdata, 
 					NULL, (void *)&pdata);
-				if (dest) *dest = sval;
+				if (dest)
+					*dest = sval;
+				else
+					free(sval);
 
 				format ++;
 				parsed ++;
