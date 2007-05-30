@@ -15,7 +15,7 @@
 #include "tpe_orders.h" /* Only for types */
 
 /* Parser functions */
-static int parse_header(void **data, void **end, va_list ap);
+static int parse_header(void **data, void **end, va_list *ap);
 
 /**
  * tpe_util_string_extract
@@ -68,7 +68,7 @@ tpe_util_dump_packet(void *pdata){
  *  	Protocol magic  (int)
  *  	SeqID   (int)
  *  	Message Type (int)
- *  	Length	(pointer)
+ *  	end	(pointer)
  *  s: A string - will be malloced into pointer
  *  i: int - 32 bit int
  *  l: long long int - 64 bit int
@@ -110,7 +110,8 @@ tpe_util_parse_packet(void *pdata, void *end, char *format, ...){
 			}
 			case 'H':{
 				format ++;
-				rv = parse_header(&pdata, &end, ap);
+				parsed ++;
+				rv = parse_header(&pdata, &end, &ap);
 				break;
 			}
 			case 'i':{ /* Single 32 bit int */
@@ -231,10 +232,10 @@ tpe_util_parse_packet(void *pdata, void *end, char *format, ...){
 				int **adest;
 				format ++;
 				adest = va_arg(ap, int **);
-				if (adest == NULL){
-					break;
-				} 
-				*adest = pdata;
+				if (adest != NULL)
+					*adest = pdata;
+				else	
+					printf("Why request a p and not use it\n");
 				break;
 			}
 
@@ -464,7 +465,7 @@ tpe_util_parse_packet(void *pdata, void *end, char *format, ...){
  * Intenral function to parse a 'H' argument
  */
 static int
-parse_header(void **data, void **end, va_list ap){
+parse_header(void **data, void **end, va_list *ap){
 	int *idata;
 	int *protodest,*seqdest,*typedest;
 	void **enddest;
@@ -489,11 +490,10 @@ parse_header(void **data, void **end, va_list ap){
 	idata ++;
 	
 	/* Now store it back if necessary */
-	protodest = va_arg(ap, int *);
-	seqdest = va_arg(ap, int *);
-	typedest = va_arg(ap, int *);
-	enddest = va_arg(ap, void **);
-
+	protodest = va_arg(*ap, int *);
+	seqdest = va_arg(*ap, int *);
+	typedest = va_arg(*ap, int *);
+	enddest = va_arg(*ap, void **);
 	if (protodest){
 		/* FIXME: Handle tp03 and 4 correctly */
 		*protodest = 3;
@@ -502,8 +502,8 @@ parse_header(void **data, void **end, va_list ap){
 	/* FIXME: Should convert to msgtype */
 	if (typedest) *typedest = type;
 	/* Ends of things */
-	if (*enddest) *enddest = ((char *)data) + len;
-	if (end && *end == NULL) *end = ((char *)data) + len;
+	if (*enddest) *enddest = ((char *)*data) + len + 16;
+	if (end && *end == NULL) *end = ((char *)*data) + len + 16;
 
 	*data = idata;
 
