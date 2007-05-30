@@ -14,6 +14,9 @@
 #include "tpe_obj.h" /* Only for types */
 #include "tpe_orders.h" /* Only for types */
 
+/* Parser functions */
+static int parse_header(void **data, void **end, va_list ap);
+
 /**
  * tpe_util_string_extract
  *
@@ -50,7 +53,7 @@ tpe_util_dump_packet(void *pdata){
 			ntohl(*(int *)(p + 8)),
 			ntohl(*(int *)(p + 12)));
 
-	return 0;
+	return NULL;
 }
 
 
@@ -62,7 +65,7 @@ tpe_util_dump_packet(void *pdata){
  * Format string:
  *  -: Nothing - skip an int
  *  H: TP03/TP04 header
- *  	Protocol magic  
+ *  	Protocol magic  (int)
  *  	SeqID   (int)
  *  	Message Type (int)
  *  	Length	(pointer)
@@ -81,16 +84,20 @@ tpe_util_dump_packet(void *pdata){
  */
 int
 tpe_util_parse_packet(void *pdata, void *end, char *format, ...){
-	int len;
 	int parsed;
 	va_list ap;
+	int rv = 0;
 	
-	len = ntohl(*((int *)pdata + 3));
 	parsed = 0;
 
 	va_start(ap,format);
 	
 	while (*format){
+		if (end && pdata > end){
+			printf("Overflow of the end of the message buffer\n");
+			return -1;
+		}
+
 		switch (*format){
 			case '-':{
 				int *idata;
@@ -99,6 +106,11 @@ tpe_util_parse_packet(void *pdata, void *end, char *format, ...){
 				idata = pdata;
 				idata ++;
 				pdata = idata;
+				break;
+			}
+			case 'H':{
+				format ++;
+				rv = parse_header(&pdata, &end, ap);
 				break;
 			}
 			case 'i':{ /* Single 32 bit int */
@@ -435,10 +447,67 @@ tpe_util_parse_packet(void *pdata, void *end, char *format, ...){
 				printf("Unhandled code %c\n",*format);
 				return parsed;
 		}
+		if (rv != 0){
+			--format;
+			printf("Error handling request for '%c' (%s)\n",
+				*format,format);
+			return -1;
+		}
+
 	}
 
 
 	return parsed;
+}
+
+/**
+ * Intenral function to parse a 'H' argument
+ */
+static int
+parse_header(void **data, void **end, va_list ap){
+	int *idata;
+	int *protodest,*seqdest,*typedest;
+	void **enddest;
+	int proto,seq,type,len;
+
+	idata = *data;
+
+	/* Not enough data for message */
+	if (*end && (idata + 4) >= (int *)end){
+		printf("Error: Buffer too short for header\n");
+		return -1;
+	}
+
+	/* First pull everything out of the packet */
+	proto = ntohl(*idata);
+	idata ++;
+	seq = ntohl(*idata); 
+	idata ++;
+	type = ntohl(*idata);
+	idata ++;
+	len = ntohl(*idata);
+	idata ++;
+	
+	/* Now store it back if necessary */
+	protodest = va_arg(ap, int *);
+	seqdest = va_arg(ap, int *);
+	typedest = va_arg(ap, int *);
+	enddest = va_arg(ap, void **);
+
+	if (protodest){
+		/* FIXME: Handle tp03 and 4 correctly */
+		*protodest = 3;
+	}
+	if (seqdest) *seqdest = seq;
+	/* FIXME: Should convert to msgtype */
+	if (typedest) *typedest = type;
+	/* Ends of things */
+	if (*enddest) *enddest = ((char *)data) + len;
+	if (end && *end == NULL) *end = ((char *)data) + len;
+
+	*data = idata;
+
+	return 0;
 }
 
 /*
