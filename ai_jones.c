@@ -87,6 +87,7 @@ static int
 jones_order_insert_cb(void *userdata, const char *msgtype,
 		int len, void *edata){
 	struct ai *jones = userdata;
+	void *end;
 	int frigate, battleship;
 	int oid,slot,type,turns,nbr,noptions,i,maxstr;
 	struct build_resources *br = NULL;
@@ -98,7 +99,8 @@ jones_order_insert_cb(void *userdata, const char *msgtype,
 		exit(1);
 	}
 
-	tpe_util_parse_packet(edata, NULL, "iiiiB6i", 
+	end = (char *)edata + len;
+	tpe_util_parse_packet(edata, end, "iiiiB6i", 
 			&oid, &slot,&type,&turns,
 			&nbr,&br,
 			&noptions,&options,
