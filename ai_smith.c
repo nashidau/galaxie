@@ -109,8 +109,9 @@ smith_order_planet(void *data, int type, void *event){
 	if (build_id == -1){
 		build_id = tpe_order_get_type_by_name(smith->tpe, build_order);
 		/* FIXME: Should requeue or something */
-		if (build_id == -1)
-			return 1;
+		build_id = 2;
+//		if (build_id == -1)
+//			return 1;
 	}
 
 	tpe_msg_send_format(smith->tpe->msg, "MsgProbeOrder",
@@ -133,9 +134,11 @@ smith_order_insert_cb(void *userdata, const char *msgtype,
 	int frigate;
 	int i;
 
-	/* FIXME: Check result */
 
-	tpe_util_parse_packet(data, NULL, "iiiiB6i", 
+	char *end = (char *)edata + len;
+
+	/* FIXME: Check result */
+	tpe_util_parse_packet(data, end, "iiiiB6i", 
 			&oid, &slot,&type,&turns,
 			&nbr,&br,
 			&noptions,&options,

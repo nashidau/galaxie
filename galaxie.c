@@ -205,6 +205,7 @@ parse_args(int argc, char **argv){
 	char *p;
 	struct startopt *opt;
 	int i,j;
+	int rv;
 
 	opt = calloc(1,sizeof(struct startopt));
 	if (opt == NULL) return NULL;
@@ -228,7 +229,13 @@ parse_args(int argc, char **argv){
 	for (i = 1 ; i < argc ; i ++){
 		for (j = 0 ; j < sizeof(args)/sizeof(args[0]) ; j ++){
 			if (!strncmp(args[j].arg, argv[i],strlen(args[j].arg))){
-				i = args[j].fn(opt, i,argv);
+				rv = args[j].fn(opt, i,argv);
+				if (rv == -1){
+					/* Failed */
+					return opt;
+				} else {
+					rv += i;
+				}
 				break;
 			}
 		}
@@ -361,7 +368,7 @@ dump_options(struct startopt *opt){
 			opt->password, 
 			opt->server,
 			opt->port,
-			opt->game ? "" : opt->game);
+			opt->game ? opt->game : "");
 	
 	if (opt->ai) printf("Ai is %s\n",opt->ai->name);
 	printf("Gui is %s\n",opt->usegui ? "On" : "Off");
@@ -442,13 +449,22 @@ parse_url(struct startopt *opt, int i, char **args){
 	}
 
 
-	/* 4: Game name */
+	/* 10: Game name */
+	if (MATCH(matches,9)){
+		printf("pregame: %s\n",EXTRACT(str,matches,9) );
+	}
+	if (MATCH(matches,11)){
+		printf("postgame %s\n ", EXTRACT(str,matches,11));
+	}
+	printf("game: %s\n", EXTRACT(str,matches,10));
+
 	if (MATCH(matches,REGEX_GAME)){
+		printf("game\n");
 		if (opt->game) free(opt->game);
 		opt->game = EXTRACT(str,matches,REGEX_GAME);
 	}
 
-
+	printf("game pattern: %s\n", urlpattern);
 
 	return i;
 }

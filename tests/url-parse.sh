@@ -1,4 +1,5 @@
 echo;../galaxie --options tp://localhost/
+echo;../galaxie --options tp://localhost/game
 echo;../galaxie --options tp://nash@localhost/
 echo;../galaxie --options tp://nash:password@localhost/
 echo;../galaxie --options tp://nash:password@localhost:999/

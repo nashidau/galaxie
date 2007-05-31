@@ -298,7 +298,7 @@ tpe_orders_msg_order(void *data, int type, void *event){
 	struct tpe *tpe = data;
 	struct object *object;
 	struct order_desc *desc;
-	struct order *order;
+	struct order *order = NULL;
 	void *end;
 
 	order = calloc(1,sizeof(struct order));
@@ -336,6 +336,10 @@ tpe_orders_msg_order(void *data, int type, void *event){
 		if (object->orders[order->slot])
 			tpe_orders_order_free(object->orders[order->slot]);
 		object->orders[order->slot] = order;
+
+
+		printf("Received order on Object: %d\n%s\n",order->oid, 
+				tpe_orders_str_get(tpe,object));
 	}
 
 
@@ -421,8 +425,6 @@ tpe_order_parse_args(struct tpe *tpe, struct order *order,
 				sel = data->list.selections + j;
 				tpe_util_parse_packet(p,NULL,"iip",
 						&sel->selection,&sel->count,&p);
-				printf("Selected: %d %d\n",sel->selection,
-						sel->count);
 			}
 			break;
 		case ARG_STRING:
@@ -485,6 +487,8 @@ tpe_orders_str_get(struct tpe *tpe, struct object *obj){
 
 	buf[0] = 0;
 
+	if (obj == NULL) return NULL;
+
 	for (pos = 0 , i = 0 ; i < obj->norders ; i ++){
 		order = obj->orders[i];
 		if (order == NULL){
@@ -497,7 +501,6 @@ tpe_orders_str_get(struct tpe *tpe, struct object *obj){
 		pos += snprintf(buf + pos, BUFSIZ - pos, 
 				"<order>%s</order>", 
 				tpe_order_get_name_by_type(tpe, order->type));
-
 		for (j = 0 ; j < desc->nargs ; j ++){
 			pos = tpe_order_arg_format(tpe, buf, pos, BUFSIZ, 
 					order, desc, j);	
