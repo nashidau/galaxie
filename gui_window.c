@@ -3,11 +3,12 @@
 #include <inttypes.h>
 #include <stdlib.h>
 
-#include <Evas.h>
 #include <Ecore_Data.h>
 #include <Ecore_Evas.h>
 #include <Ecore_Job.h>
 #include <Edje.h>
+#include <Evas.h>
+#include <Ewl.h>
 
 #include "tpe_obj.h"
 
@@ -51,6 +52,25 @@ gui_window_add(struct gui *gui, Evas_Object *window){
 			gui_window_delete, gui);
 
 	return 0;
+}
+
+
+Ewl_Widget *
+gui_window_ewl_add(struct gui *gui){
+	Ewl_Widget *emb;
+	Evas_Object *eo;
+	
+	emb = ewl_embed_new();
+	ewl_object_fill_policy_set(EWL_OBJECT(emb), EWL_FLAG_FILL_ALL);
+	eo = ewl_embed_canvas_set(EWL_EMBED(emb), gui->e, 
+			(void *) ecore_evas_software_x11_window_get(gui->ee));
+	ewl_embed_focus_set(EWL_EMBED(emb), TRUE);
+	ewl_widget_show(emb);
+
+evas_object_resize(eo,300,200);
+	gui_window_add(gui, eo);
+
+	return emb;
 }
 
 int

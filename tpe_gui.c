@@ -29,6 +29,7 @@
 #include "tpe_gui_private.h"
 #include "tpe_gui_orders.h"
 #include "gui_window.h"
+#include "gui_list.h"
 
 enum {
 	WIDTH = 640,
@@ -854,6 +855,9 @@ map_key_down(void *data, Evas *e, Evas_Object *obj, void *event){
 	} else if (strcmp(key->keyname, "F11") == 0){
 		ecore_evas_fullscreen_set(gui->ee,
 				!ecore_evas_fullscreen_get(gui->ee));
+	} else if (strcmp(key->keyname, "F2") == 0){
+		printf("Planet list called\n");
+		gui_list_planet_add(gui);
 	} else if (strcmp(key->keyname, "Print") == 0){
 		if (evas_key_modifier_is_set(
 				evas_key_modifier_get(e), "Shift")){

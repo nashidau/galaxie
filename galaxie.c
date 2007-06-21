@@ -160,6 +160,7 @@ main(int argc, char **argv){
 
 	evas_init();
 	ecore_init();
+	ewl_init(&argc, argv);
 
 	tpe = calloc(1,sizeof(struct tpe));
 	if (tpe == NULL) exit(1);

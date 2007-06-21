@@ -275,6 +275,43 @@ tpe_obj_obj_list(struct tpe_obj *obj){
 	return ecore_hash_keys(obj->objhash);
 }
 
+
+/**
+ * Returns a list of all objects of a specified type
+ *
+ * FIXME: this list is invalidated as soon as an object is deleted.
+ */
+struct bytype {
+	Ecore_List *list;
+	enum objtype type;
+};
+
+static void
+_append_by_type(void *nodev, void *typedata){
+	struct bytype *type = typedata;
+	Ecore_Hash_Node *node = nodev;
+	struct object *o;
+
+	o = node->value;
+	/* Should insert in order */
+	if (o->type == type->type)
+		ecore_list_append(type->list,o);
+}
+
+
+Ecore_List *
+tpe_obj_obj_list_by_type(struct tpe *tpe, enum objtype type){
+	struct bytype bytype;
+
+	bytype.list = ecore_list_new();
+	bytype.type = type;
+
+	ecore_hash_for_each_node(tpe->obj->objhash, _append_by_type, 
+			&bytype);
+	
+	return bytype.list;
+}
+
 uint64_t 
 tpe_obj_object_updated(struct tpe *tpe, uint32_t oid){
 	struct object *obj;
