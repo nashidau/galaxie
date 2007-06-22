@@ -20,7 +20,9 @@ deb-src http://edevelop.org/pkg-e/ubuntu edgy e17
 
 Replace edgy with one of dapper or feisty if you prefer.
 
-apt-get install libedje0 libevas0 libecore0
+apt-get install libevas1-loaders-all libewl1-engines-all		\
+	libevas1-all libewl1-dev libecore1-con-dev libecore1-job-dev	\
+	libecore1-evas-dev edje0-bin
 
 Should get you the libraries you need.
 
