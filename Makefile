@@ -45,7 +45,8 @@ BASICTHEME=			\
 	edje/basic-orders.edc	\
 	edje/basic-refs.edc	\
 	edje/basic-ships.edc	\
-	edje/basic-stars.edc
+	edje/basic-stars.edc	\
+	edje/basic-window.edc
 
 IMAGES=				\
 	$Iarrowright.png	\
@@ -55,7 +56,8 @@ IMAGES=				\
 	$Imailbox.png		\
 	$Iclose.png		\
 	$Imessagewindow.png	\
-	$Iobjectwindow.png	
+	$Iobjectwindow.png	\
+	$Iwindow.png
 
 
 EDJE=edje/basic.edj 
@@ -140,6 +142,9 @@ $Ibutton.png : $IObjectViewer.svg
 
 $Iclose.png : $IObjectViewer.svg
 	inkscape -j --export-id=${@F} -w 200 -h 50 --export-png $@ $<
+
+$Iwindow.png : $Iwindow.svg
+	inkscape -j --export-area-drawing -w 300 -h 400 --export-png $@ $<
 
 clean: 
 	rm -f *.o ailist.h ${EDJE}

@@ -1,0 +1,73 @@
+/*
+ * Window:
+ *	Background
+ * 	Title bar
+ *	Consists of icon
+ *	Title
+ *	Close button
+ *	Contents (swallow region)
+ */
+images {
+    image: "window.png" COMP;
+    image: "button.png" COMP;
+    image: "close.png" COMP;
+}
+
+group {
+    name: "Window";
+    min: 300 200;
+    parts {
+	part {
+	    name: "background";
+	    mouse_events: 1;
+	    type: IMAGE;
+	    dragable {
+		x: 1 1 0;
+		y: 1 1 0;
+	    }
+	    description {
+		state: "default" 0.0;
+		rel1 {
+		    relative: 0.0 0.0;
+		    offset: 0 0 ;
+		}
+		rel2 {
+		    relative: 1.0 1.0;
+		    offset: -1 -1;
+		}
+		image {
+		    normal: "window.png";
+		    border: 50 50 50 50;
+		}
+	    }
+	}
+	part {
+	    name: "swallow";
+	    type: SWALLOW;
+	     description {
+		state: "default" 0.0;
+		rel1 {
+		    relative: 0.0 0.0;
+		    offset: 5 20;
+		    to: "background";
+		}
+		rel2 {
+		    relative: 1.0 1.0;
+		    offset: -5 -5;
+		    to: "background";
+		}
+	    }
+	}
+    }
+}
+
+
+
+
+
+
+
+
+
+
+/* vim:set sw=4 sts=4 : */

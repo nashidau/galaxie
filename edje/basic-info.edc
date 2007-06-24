@@ -21,7 +21,6 @@ group {
     min: 50 50;
     parts {
 	part {
-	    /* FIXME: This should be a nice image */
 	    name: "background";
 	    mouse_events: 1;
 	    type:   IMAGE;
