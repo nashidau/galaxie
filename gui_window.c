@@ -24,6 +24,7 @@ enum {
 
 static void gui_window_delete(void *guiv, Evas *e, Evas_Object *window, void *dummy);
 
+/** FIXME: This should create the basic window object */
 int
 gui_window_add(struct gui *gui, Evas_Object *window){
 	int w,h;
@@ -59,7 +60,13 @@ Ewl_Widget *
 gui_window_ewl_add(struct gui *gui){
 	Ewl_Widget *emb;
 	Evas_Object *eo;
+	Evas_Object *window;
 	
+	window = edje_object_add(gui->e);
+	edje_object_file_set(window,"edje/basic.edj", "Window");
+	evas_object_show(window);
+	evas_object_resize(window,300,200);
+
 	emb = ewl_embed_new();
 	ewl_object_fill_policy_set(EWL_OBJECT(emb), EWL_FLAG_FILL_ALL);
 	eo = ewl_embed_canvas_set(EWL_EMBED(emb), gui->e, 
@@ -67,8 +74,9 @@ gui_window_ewl_add(struct gui *gui){
 	ewl_embed_focus_set(EWL_EMBED(emb), TRUE);
 	ewl_widget_show(emb);
 
-evas_object_resize(eo,300,200);
-	gui_window_add(gui, eo);
+	edje_object_part_swallow(window, "swallow", eo);
+
+	gui_window_add(gui, window);
 
 	return emb;
 }
