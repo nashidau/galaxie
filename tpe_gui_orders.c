@@ -103,6 +103,7 @@ gui_orders_add(struct gui *gui){
 
 	/* Add vbox for stuff to go into */
 	box = ewl_hbox_new();
+	ewl_container_child_append(EWL_CONTAINER(emb), box);
 	info->box = box;
 	ewl_widget_show(box);
 
@@ -114,7 +115,6 @@ gui_orders_add(struct gui *gui){
 
 
 
-	evas_object_show(eo);
 	{ int x,y,w,h;
 	evas_object_geometry_get(eo,&x,&y,&w,&h);
 	printf("%d %d %d %d\n",x,y,w,h);

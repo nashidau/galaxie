@@ -87,8 +87,13 @@ printf("pdf\n");
 			return "stuff";
 		}
 	} else {
+		Ewl_Widget *w;
 		printf("returning %s\n",(char *)source->data[row]);
-		return source->data[row];
+		w = ewl_label_new();
+		ewl_label_text_set(EWL_LABEL(w), source->data[row]);
+
+		ewl_widget_show(w);
+		return w;
 	}
 	return "planet";
 }
@@ -147,7 +152,7 @@ printf("orders add\n");
 	list->data[1] = "Order 2";
 
 	scroll = ewl_scrollpane_new();
-	ewl_widget_show(scroll);
+	//ewl_widget_show(scroll);
 
 	model = ewl_model_new();
         ewl_model_data_fetch_set(model, planet_data_fetch);
@@ -159,14 +164,16 @@ printf("orders add\n");
 	ewl_view_header_fetch_set(view, planet_header_widget_fetch);
 
         tree = ewl_tree2_new();
+printf("tree is %p\n",tree);
         ewl_container_child_append(EWL_CONTAINER(scroll), tree);
         ewl_object_fill_policy_set(EWL_OBJECT(tree), EWL_FLAG_FILL_ALL);
 	ewl_mvc_model_set(EWL_MVC(tree), model);
 	ewl_mvc_view_set(EWL_MVC(tree), view);
-	ewl_tree2_column_count_set(EWL_TREE2(tree), 2); /* FIXME */
+	ewl_tree2_column_count_set(EWL_TREE2(tree), 1); /* FIXME */
 	ewl_mvc_data_set(EWL_MVC(tree), list); /* FIXME */
 	ewl_widget_show(tree);
-printf("returning %p\n");
+	ewl_widget_show(scroll);
+printf("returning %p\n",scroll);
 	return scroll;
 }
 
