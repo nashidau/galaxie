@@ -10,6 +10,7 @@
 #include <Ecore_Evas.h>
 #include <Ecore_Con.h>
 #include <Edje.h>
+#include <Ewl.h>
 
 #include "tpe.h"
 #include "tpe_board.h"

@@ -17,6 +17,8 @@ Important:
  * 'H' (header) format parser for protocol.
  	- see tpe_util
  * Make callers of tpe_util_parse packet pass an end pointer.
+ * gui_window_add needs to be deprecated in favour of gui_window_add2
+ * Resources view in the planet view
 
 Minor Tasks 
  * New art for:

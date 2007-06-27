@@ -1,6 +1,7 @@
 
 #include <assert.h>
 #include <inttypes.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include <Ecore_Data.h>
@@ -23,6 +24,36 @@ enum {
 
 
 static void gui_window_delete(void *guiv, Evas *e, Evas_Object *window, void *dummy);
+
+Evas_Object *
+gui_window_add2(struct gui *gui, const char *title, const char *icon){
+	Evas_Object *window;
+
+	assert(gui);
+	
+	window = edje_object_add(gui->e);
+	edje_object_file_set(window,"edje/basic.edj", "Window");
+	evas_object_show(window);
+	evas_object_resize(window,300,200);
+	
+	if (title)
+		edje_object_part_text_set(window,"Title", title);
+	
+	if (icon){
+		printf(__FILE__ ":FIXME: "
+			"setting icon not implemented\n");
+	}
+
+	ecore_list_prepend(gui->windows, window);
+
+	edje_object_signal_callback_add(window,
+			"mouse,clicked,*", "Close", 
+			(void*)evas_object_del, window);
+	evas_object_event_callback_add(window, EVAS_CALLBACK_FREE,
+			gui_window_delete, gui);
+
+	return window;
+}
 
 /** FIXME: This should create the basic window object */
 int
