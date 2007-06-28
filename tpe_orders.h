@@ -24,6 +24,7 @@ int tpe_orders_order_free(struct order *order);
 int tpe_orders_order_print(struct tpe *tpe, struct order *order);
 const char *tpe_orders_str_get(struct tpe *tpe, struct object *obj);
 const char *tpe_order_get_name_by_type(struct tpe *tpe, uint32_t type);
+const char *tpe_order_get_name(struct tpe *tpe, struct order *order);
 
 
 int tpe_orders_object_clear(struct tpe *tpe, struct object *obj);

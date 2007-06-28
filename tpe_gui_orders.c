@@ -56,8 +56,9 @@ gui_orders_edit(struct gui *gui, struct object *obj){
 	if (go->orders == NULL){
 		go->orders = gui_orders_add(gui);
 		if (go->orders == NULL) return -1;
-		gui_orders_object_set(gui, go->orders, obj);	
 	}
+
+	gui_orders_object_set(gui, go->orders, obj);	
 
 	gui_window_focus(gui, go->orders);
 
@@ -111,14 +112,9 @@ gui_orders_add(struct gui *gui){
 	list = gui_list_orders_add(gui);
 	ewl_container_child_append(EWL_CONTAINER(box), list);
 	ewl_object_fill_policy_set(EWL_OBJECT(list), EWL_FLAG_FILL_ALL);
+
+	evas_object_data_set(w, "EwlList", list);
 	ewl_widget_show(list);
-
-
-
-	{ int x,y,w,h;
-	evas_object_geometry_get(eo,&x,&y,&w,&h);
-	printf("%d %d %d %d\n",x,y,w,h);
-	}
 
 	return w;
 }
@@ -130,6 +126,7 @@ gui_orders_add(struct gui *gui){
 static int
 gui_orders_object_set(struct gui *gui, Evas_Object *ow, struct object *obj){
 	const char *orderstr;
+	Ewl_Widget *list;
 
 	assert(gui); assert(obj); assert(ow);
 
@@ -138,6 +135,10 @@ gui_orders_object_set(struct gui *gui, Evas_Object *ow, struct object *obj){
 	edje_object_part_text_set(ow, "Orders", orderstr);
 
 	evas_object_data_set(ow, "Object", obj);
+
+	list = evas_object_data_get(ow, "EwlList");
+	assert(list);
+	gui_list_orders_set(gui, list, obj);
 
 	return 0;
 }
@@ -149,6 +150,7 @@ gui_orders_cleanup(void *guiv, Evas *e, Evas_Object *ow, void *dummy){
 	struct gui_obj *go;
 	struct gui *gui = guiv;
 	struct object *obj;
+	Evas_Object *swallow;
 
 	assert(gui); assert(ow); assert(e);
 	if (gui == NULL || ow == NULL) return;
@@ -163,7 +165,12 @@ gui_orders_cleanup(void *guiv, Evas *e, Evas_Object *ow, void *dummy){
 
 	go->orders = NULL;
 	
+	swallow = edje_object_part_swallow_get(ow, "swallow");
+	if (swallow)
+		evas_object_del(swallow);
+
 	/* Nothing else to free now */
+
 
 	return;
 }

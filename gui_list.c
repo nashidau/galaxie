@@ -11,6 +11,7 @@
 #include "tpe_gui_private.h"
 #include "gui_window.h"
 #include "tpe_obj.h"
+#include "tpe_orders.h"
 
 enum listtype {
 	LIST_IMAGE,
@@ -37,6 +38,7 @@ static const struct guilist orderlist[] = {
 
 
 struct listsource {
+	Ewl_Widget *tree;
 	struct gui *gui;
 	const struct guilist *format;
 	/* FIXME: Need to make this an array for direct seeks and sorting */
@@ -145,14 +147,10 @@ printf("orders add\n");
 	list->format = orderlist;
 	list->list = NULL;
 
-	/* BIG FIXME */
-	list->ndata = 2;
-	list->data = malloc(2 * sizeof(char *));
-	list->data[0] = "Order 1";
-	list->data[1] = "Order 2";
+	list->ndata = 0;
 
 	scroll = ewl_scrollpane_new();
-	//ewl_widget_show(scroll);
+	ewl_widget_data_set(scroll, "List", list);
 
 	model = ewl_model_new();
         ewl_model_data_fetch_set(model, planet_data_fetch);
@@ -164,7 +162,7 @@ printf("orders add\n");
 	ewl_view_header_fetch_set(view, planet_header_widget_fetch);
 
         tree = ewl_tree2_new();
-printf("tree is %p\n",tree);
+	list->tree = tree;
         ewl_container_child_append(EWL_CONTAINER(scroll), tree);
         ewl_object_fill_policy_set(EWL_OBJECT(tree), EWL_FLAG_FILL_ALL);
 	ewl_mvc_model_set(EWL_MVC(tree), model);
@@ -173,13 +171,32 @@ printf("tree is %p\n",tree);
 	ewl_mvc_data_set(EWL_MVC(tree), list); /* FIXME */
 	ewl_widget_show(tree);
 	ewl_widget_show(scroll);
-printf("returning %p\n",scroll);
+	
 	return scroll;
 }
 
 void
 gui_list_orders_set(struct gui *gui, Ewl_Widget *widget, struct object *obj){
-	printf("gui_list_orders_set called\n");
+	struct listsource *list;
+	int i;
+
+	/* FIXME: need a better key */
+	list = ewl_widget_data_get(widget, "List");
+	assert(list);
+	if (list == NULL) return;
+
+	if (list->data)
+		/* FIXME */
+		free(list->data);
+
+	list->ndata = obj->norders;
+	list->data = malloc(sizeof(void *) * list->ndata);
+	for (i = 0 ; i < list->ndata ; i ++){
+		list->data[i] = tpe_order_get_name(list->gui->tpe,
+				obj->orders[i]);
+	}
+	
+	ewl_mvc_dirty_set(EWL_MVC(list->tree), 1);
 }
 
 static 
