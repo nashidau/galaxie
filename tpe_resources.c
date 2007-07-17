@@ -13,6 +13,7 @@
  */
 #include <assert.h>
 #include <inttypes.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -121,7 +122,8 @@ tpe_resources_resourcedescription_msg(void *data,int etype,void *event){
 	struct resourcedescription *rd;
 	struct tpe *tpe;
 	int *msg;
-	int id;
+	uint32_t id;
+	int rv;
 
 	tpe = data;
 	msg = event;
@@ -140,13 +142,20 @@ tpe_resources_resourcedescription_msg(void *data,int etype,void *event){
 	}
 
 	/* FIXME: Check we got it all */
-	tpe_util_parse_packet(msg, NULL, "-sssssiil",
+	rv = tpe_util_parse_packet(msg, NULL, "-sssssiil",
 		&rd->name, &rd->name_plural,
 		&rd->unit, &rd->unit_plural,
 		&rd->description,
 		&rd->weight, &rd->size,
 		&rd->updated);
-	
+
+	if (rv != 8){
+		printf("Did not get all parameters for resource description\n");
+		printf("Got %d, expected %d\n",rv,8);
+		printf("Resource is %s (%s)\n",rd->name,rd->name_plural);
+		return 1;
+	}
+
 	{ int printf(const char *,...);
 	printf("New resource: %s\n",rd->name);
 	}
@@ -163,10 +172,17 @@ tpe_resources_resourcedescription_get_by_name(struct tpe *tpe,
 	assert(tpe->resources);
 	assert(name);
 
+	if (tpe == NULL || tpe->resources == NULL || name == name)
+		return (uint32_t)-1;
+
         ecore_list_goto_first(tpe->resources->resources);
-        while ((r = ecore_list_next(tpe->resources->resources)))
+        while ((r = ecore_list_next(tpe->resources->resources))){
+		if (r->name == NULL){
+			printf("Warning NULL name for resource\n");
+		}
                 if (strcmp(r->name, name) == 0)
                         return r->id;
+	}
 
 	return (uint32_t)-1;
 }
