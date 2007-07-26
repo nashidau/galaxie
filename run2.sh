@@ -1,3 +1,3 @@
 
-./tpe --username nash --password password --server localhost >& nash.log &
-./tpe --username badguy --password password --server localhost >& badguy.log
+./galaxie --username nash --password password --server localhost >& nash.log &
+./galaxie --username badguy --password password --server localhost >& badguy.log
