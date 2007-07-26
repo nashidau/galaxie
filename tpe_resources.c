@@ -25,7 +25,12 @@
 #include "tpe_sequence.h"
 #include "tpe_util.h"
 
+enum {
+	RESOURCE_MAGIC = 0x4428f32b,
+};
+
 struct tpe_resources {
+	uint32_t magic;
         Ecore_List *resources;
 };
 
@@ -46,6 +51,7 @@ tpe_resources_init(struct tpe *tpe){
 	struct tpe_resources *resources;
 
 	resources = calloc(1,sizeof(struct tpe_resources));
+	resources->magic = RESOURCE_MAGIC;
 	resources->resources = ecore_list_new();
 
 	tpe_event_type_add(tpe->event, "ResourceNew");
@@ -74,6 +80,7 @@ tpe_resources_init(struct tpe *tpe){
 struct resourcedescription *
 tpe_resources_resourcedescription_get(struct tpe *tpe, uint32_t resourceid){
         struct resourcedescription *r;
+	assert(tpe->resources->magic == RESOURCE_MAGIC);
         ecore_list_goto_first(tpe->resources->resources);
         while ((r = ecore_list_next(tpe->resources->resources)))
                 if (r->id == resourceid)
@@ -94,6 +101,7 @@ uint64_t
 tpe_resources_resourcedescription_updated(struct tpe *tpe, uint32_t resourceid){
         struct resourcedescription *r;
 
+	assert(tpe->resources->magic == RESOURCE_MAGIC);
         r = tpe_resources_resourcedescription_get(tpe,resourceid);
         if (r)
                 return r->updated;
@@ -128,6 +136,7 @@ tpe_resources_resourcedescription_msg(void *data,int etype,void *event){
 	tpe = data;
 	msg = event;
 
+	assert(tpe->resources->magic == RESOURCE_MAGIC);
 	msg += 4;
 	
 	tpe_util_parse_packet(msg,NULL, "i", &id);
@@ -138,7 +147,8 @@ tpe_resources_resourcedescription_msg(void *data,int etype,void *event){
 		rd->id = id;
 		ecore_list_append(tpe->resources->resources,rd);
 		/* Can queue now... not sent until we return... */
-		tpe_event_send(tpe->event, "ResourceNew", rd, NULL, NULL);
+		tpe_event_send(tpe->event, "ResourceNew", rd, 
+				tpe_event_nofree, NULL);
 	}
 
 	/* FIXME: Check we got it all */
@@ -174,6 +184,7 @@ tpe_resources_resourcedescription_get_by_name(struct tpe *tpe,
 
 	if (tpe == NULL || tpe->resources == NULL || name == name)
 		return (uint32_t)-1;
+	assert(tpe->resources->magic == RESOURCE_MAGIC);
 
         ecore_list_goto_first(tpe->resources->resources);
         while ((r = ecore_list_next(tpe->resources->resources))){
