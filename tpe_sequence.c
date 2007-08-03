@@ -94,7 +94,7 @@ tpe_sequence_new_turn(void *data, int eventid, void *event){
 
 	seqs = tpe->sequence->seqs;
 	
-	seq = ecore_list_goto_first(seqs);
+	seq = ecore_list_first_goto(seqs);
 	while ((seq = ecore_list_next(seqs))){
 		if (seq->list_begin)
 			seq->list_begin(tpe);

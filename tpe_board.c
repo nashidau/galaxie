@@ -33,7 +33,7 @@ struct board {
 /* Event handlers for messages */
 static int tpe_board_msg_board_receive(void *data, int type, void *event);
 static int tpe_board_msg_message_receive(void *data, int type, void *event);
-
+static void update_free(void *d1, void *d2);
 
 static int tpe_board_board_changed_notify(struct tpe *tpe, struct board *board);
 
@@ -70,7 +70,7 @@ struct board *
 tpe_board_board_get_by_id(struct tpe *tpe, uint32_t oid){
         struct board *board;
 
-        ecore_list_goto_first(tpe->board->boards);
+        ecore_list_first_goto(tpe->board->boards);
         while ((board = ecore_list_next(tpe->board->boards))){
                 if (board->oid == oid)
                         return board;
@@ -438,8 +438,21 @@ tpe_board_board_changed_notify(struct tpe *tpe, struct board *board){
 	update->messages = board->received;
 	update->unread = board->unread;
 
-	tpe_event_send(tpe->event, "BoardUpdate", update, NULL, NULL);
+	tpe_event_send(tpe->event, "BoardUpdate", update, update_free, NULL);
 
 	return 0;
+}
+
+
+static void
+update_free(void *d1, void *d2){
+	struct board_update *update;
+
+	if (d1)
+		update = d1;
+	else 
+		update = d2;
+
+	free(update);
 }
 

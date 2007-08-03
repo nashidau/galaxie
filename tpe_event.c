@@ -136,10 +136,19 @@ tpe_event_send(struct tpe_event *tpeev, const char *event, void *edata,
 		return -1;
 	}
 
+	if (freefn == NULL && edata != NULL){
+		printf("Warning: tpe_event_send with NULL freefn.\n");
+		printf("\tThis doesn't do what you think it does.\n");
+		printf("\tEvent is `%s'\n",event);
+	}
+
+
 	if (einfo->handlers)
 		ecore_event_add(einfo->ecore_event, edata, freefn, freedata);
 	else if (freefn)
 		freefn(freedata, edata);
+	else 
+		free(edata);
 
 	return 0;
 }

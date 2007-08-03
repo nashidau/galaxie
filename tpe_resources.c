@@ -81,7 +81,7 @@ struct resourcedescription *
 tpe_resources_resourcedescription_get(struct tpe *tpe, uint32_t resourceid){
         struct resourcedescription *r;
 	assert(tpe->resources->magic == RESOURCE_MAGIC);
-        ecore_list_goto_first(tpe->resources->resources);
+        ecore_list_first_goto(tpe->resources->resources);
         while ((r = ecore_list_next(tpe->resources->resources)))
                 if (r->id == resourceid)
                         return r;
@@ -159,9 +159,9 @@ tpe_resources_resourcedescription_msg(void *data,int etype,void *event){
 		&rd->weight, &rd->size,
 		&rd->updated);
 
-	if (rv != 8){
+	if (rv != 9){
 		printf("Did not get all parameters for resource description\n");
-		printf("Got %d, expected %d\n",rv,8);
+		printf("Got %d, expected %d\n",rv,9);
 		printf("Resource is %s (%s)\n",rd->name,rd->name_plural);
 		return 1;
 	}
@@ -186,7 +186,7 @@ tpe_resources_resourcedescription_get_by_name(struct tpe *tpe,
 		return (uint32_t)-1;
 	assert(tpe->resources->magic == RESOURCE_MAGIC);
 
-        ecore_list_goto_first(tpe->resources->resources);
+        ecore_list_first_goto(tpe->resources->resources);
         while ((r = ecore_list_next(tpe->resources->resources))){
 		if (r->name == NULL){
 			printf("Warning NULL name for resource\n");

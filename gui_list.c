@@ -63,7 +63,7 @@ printf("count get\n");
 	if (source->ndata)
 		return source->ndata;
 	else
-		return ecore_list_nodes(source->list);
+		return ecore_list_count(source->list);
 }
 
 
@@ -75,7 +75,7 @@ planet_data_fetch(void *data, unsigned int row, unsigned int column){
 printf("pdf\n");	
 	if (source->list){
 		/* FIXME: Ditch this data type !! */
-		o = ecore_list_goto_index(source->list,row);
+		o = ecore_list_index_goto(source->list,row);
 		/* FIXME: Check all args */
 		if (column == 0)
 			return o->name;

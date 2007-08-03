@@ -380,7 +380,7 @@ tpe_comm_time_remaining(void *udata, int type, void *event){
 
 	if (seq == 0 && remain == 0){
 		tpe->turn ++;
-		tpe_event_send(tpe->event, "NewTurn", strdup("pants"), NULL, NULL);
+		tpe_event_send(tpe->event, "NewTurn", NULL, NULL, NULL);
 	}
 
 	return 1;

@@ -15,7 +15,7 @@ ai_util_planet_closest_uncolonised(struct tpe *tpe, struct object *obj){
 
 	all = tpe_obj_obj_list(tpe->obj);
 	
-	ecore_list_goto_first(all);
+	ecore_list_first_goto(all);
 	dest = NULL;
 	destdist = UINT64_MAX;
 	while ((cur = ecore_list_next(all))){

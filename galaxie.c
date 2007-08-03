@@ -450,23 +450,13 @@ parse_url(struct startopt *opt, int i, char **args){
 		opt->port = strtol(str + matches[REGEX_PORT].rm_so,0,10);
 	}
 
-
 	/* 10: Game name */
-	if (MATCH(matches,9)){
-		printf("pregame: %s\n",EXTRACT(str,matches,9) );
-	}
-	if (MATCH(matches,11)){
-		printf("postgame %s\n ", EXTRACT(str,matches,11));
-	}
-	printf("game: %s\n", EXTRACT(str,matches,10));
-
 	if (MATCH(matches,REGEX_GAME)){
-		printf("game\n");
 		if (opt->game) free(opt->game);
 		opt->game = EXTRACT(str,matches,REGEX_GAME);
 	}
 
-	printf("game pattern: %s\n", urlpattern);
+	free(matches);
 
 	return i;
 }

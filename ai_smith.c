@@ -236,8 +236,8 @@ smith_order_fleet(void *data, int type, void *event){
 	
 	printf("$ Seaching for somewhere for %s to colonise\n", o->name);
 	all = tpe_obj_obj_list(smith->tpe->obj);
-	ecore_list_goto_first(all);
-	total = ecore_list_nodes(all);
+	ecore_list_first_goto(all);
+	total = ecore_list_count(all);
 	dest = NULL;
 	destdist = UINT64_MAX;
 	while ((total > ecore_list_index(all))){

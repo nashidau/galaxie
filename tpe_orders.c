@@ -191,7 +191,7 @@ tpe_orders_order_desc_updated(struct tpe *tpe, uint32_t id){
 struct order_desc *
 tpe_order_orders_get_desc_by_id(struct tpe *tpe, uint32_t type){
 	struct order_desc *od;
-	ecore_list_goto_first(tpe->orders->ordertypes);
+	ecore_list_first_goto(tpe->orders->ordertypes);
 	while ((od = ecore_list_next(tpe->orders->ordertypes))){
 		if (type == od->otype)
 			return od;
@@ -203,7 +203,7 @@ tpe_order_orders_get_desc_by_id(struct tpe *tpe, uint32_t type){
 int
 tpe_order_get_type_by_name(struct tpe *tpe, const char *name){
 	struct order_desc *od;
-	ecore_list_goto_first(tpe->orders->ordertypes);
+	ecore_list_first_goto(tpe->orders->ordertypes);
 	while ((od = ecore_list_next(tpe->orders->ordertypes))){
 		if (strcmp(name, od->name) == 0)
 			return od->otype;
@@ -215,7 +215,7 @@ tpe_order_get_type_by_name(struct tpe *tpe, const char *name){
 const char * 
 tpe_order_get_name_by_type(struct tpe *tpe, uint32_t type){
 	struct order_desc *od;
-	ecore_list_goto_first(tpe->orders->ordertypes);
+	ecore_list_first_goto(tpe->orders->ordertypes);
 	while ((od = ecore_list_next(tpe->orders->ordertypes))){
 		if (type == od->otype)
 			return od->name;
@@ -227,7 +227,7 @@ const char *
 tpe_order_get_name(struct tpe *tpe, struct order *order){
 	struct order_desc *od;
 	assert(order);
-	ecore_list_goto_first(tpe->orders->ordertypes);
+	ecore_list_first_goto(tpe->orders->ordertypes);
 	while ((od = ecore_list_next(tpe->orders->ordertypes))){
 		if (order->type == od->otype)
 			return od->name;

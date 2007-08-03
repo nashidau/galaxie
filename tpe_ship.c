@@ -55,7 +55,7 @@ tpe_ship_init(struct tpe *tpe){
 struct design *
 tpe_ship_design_get(struct tpe *tpe, uint32_t design){
 	struct design *d;
-	ecore_list_goto_first(tpe->ship->designs);
+	ecore_list_first_goto(tpe->ship->designs);
 	while ((d = ecore_list_next(tpe->ship->designs)))
 		if (d->did == design)
 			return d;
@@ -67,7 +67,7 @@ tpe_ship_design_get(struct tpe *tpe, uint32_t design){
 const char *
 tpe_ship_design_name_get(struct tpe *tpe, uint32_t design){
 	struct design *d;
-	ecore_list_goto_first(tpe->ship->designs);
+	ecore_list_first_goto(tpe->ship->designs);
 	while ((d = ecore_list_next(tpe->ship->designs)))
 		if (d->did == design)
 			return d->name;

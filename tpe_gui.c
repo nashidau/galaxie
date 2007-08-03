@@ -905,7 +905,7 @@ gui_redraw(struct gui *gui){
 	struct object *obj;
 	int x,y;
 
-	ecore_list_goto_first(gui->visible);
+	ecore_list_first_goto(gui->visible);
 	while ((obj = ecore_list_next(gui->visible))){
 		x = obj->pos.x / gui->map.zoom;
 		y = -obj->pos.y / gui->map.zoom;
@@ -928,7 +928,7 @@ gui_board_update(void *data, int eventid, void *event){
 	Evas_Object *o;
 	char buf[20];
 
-	board = ecore_list_goto_first(gui->boards);
+	board = ecore_list_first_goto(gui->boards);
 	while ((board = ecore_list_next(gui->boards))){
 		if (board->boardid == update->id)
 			break;
