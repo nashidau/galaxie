@@ -90,6 +90,10 @@ tpe_util_parse_packet(void *pdata, void *end, char *format, ...){
 	
 	parsed = 0;
 
+	if (end == NULL)
+		printf("tpe_util_parse_packet called without end: %s\n",format);
+		
+
 	va_start(ap,format);
 	
 	while (*format){
