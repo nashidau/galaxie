@@ -102,6 +102,7 @@ static void reference_object_show(void *idv, Evas *e, Evas_Object *eo, void *eve
 static void gui_icon_del_cb(Evas_Object *icon);
 
 static int gui_screengrab(struct gui *gui);
+static int gui_toggle_names(struct gui *gui);
 
 
 static const char *star_summary(struct tpe *tpe, struct object *object);
@@ -115,6 +116,7 @@ gui_init(struct tpe *tpe, const char *theme, unsigned int fullscreen){
 	gui->map.zoom = DEFAULT_ZOOM;
 	gui->map.left = WIDTH / 2;
 	gui->map.top = HEIGHT / 2;
+	gui->textvisible = 1;
 	
 	gui->ee = ecore_evas_software_x11_new(NULL, 0,  0, 0, WIDTH, HEIGHT);
 	if (gui->ee == NULL) {
@@ -851,7 +853,8 @@ map_key_down(void *data, Evas *e, Evas_Object *obj, void *event){
 			printf("Home is %s\n",home->name);
 		else 
 			printf("no home\n");
-	
+	} else if (strcmp(key->keyname, "F10") == 0){
+		gui_toggle_names(gui);
 	} else if (strcmp(key->keyname, "F11") == 0){
 		ecore_evas_fullscreen_set(gui->ee,
 				!ecore_evas_fullscreen_get(gui->ee));
@@ -1487,4 +1490,26 @@ gui_screengrab(struct gui *gui){
 }
 
 
+static int
+gui_toggle_names(struct gui *gui){
+	const char *signal;
+	struct object *obj;
 
+	assert(gui != NULL);
+	if (gui->textvisible){
+		signal = "HideText";
+	} else {
+		signal = "ShowText";
+	}
+
+	ecore_list_first_goto(gui->visible);
+	while ((obj = ecore_list_next(gui->visible))){
+		assert(obj != NULL);
+		assert(obj->gui != NULL);
+		printf("%s %p\n",signal,obj->gui->obj);
+		edje_object_signal_emit(obj->gui->obj, signal, "app");
+	}
+	gui->textvisible = !gui->textvisible;
+	
+	return 0;
+}

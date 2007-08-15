@@ -43,6 +43,9 @@ struct gui {
 	/* If set will take a screen shot every turn */
 	int record;
 
+	/* Can we see label */
+	unsigned int textvisible : 1;
+	
 	Ecore_List *windows;
 };
 
