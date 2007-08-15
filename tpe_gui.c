@@ -1392,15 +1392,15 @@ reference_object_show(void *idv, Evas *e, Evas_Object *eo, void *event){
 }
 
 /**
- * Gets the object data for an object 
+ * Gets the gui object structure for a an object.  
  *
- * FIXME: This should go into a support file... or more of this file should go
- * into other files.
+ * The gui object contains information about the GUI side of the structure.
+ * Note that if the reference to the gui object is to be held, the object
+ * delete event must be registered.
  *
- * FIXME: This doc bites
- *
- * @param obj object
- * @reutrn go data for object 
+ * @param gui Gui system. 
+ * @param obj Object to get gui data for.
+ * @reutrn Gui data for object, or NULL if not displayed.
  */
 struct gui_obj *
 gui_object_data_get(struct gui *gui, struct object *obj){
