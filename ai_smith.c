@@ -137,6 +137,12 @@ smith_order_insert_cb(void *userdata, const char *msgtype,
 
 	char *end = (char *)edata + len;
 
+	if (strcmp(msgtype,"MsgFail") == 0){
+		/* FIXME: Start cleaning up? */
+		printf("Message failure for insert order\n");
+		return 1;
+	}
+
 	/* FIXME: Check result */
 	tpe_util_parse_packet(data, end, "iiiiB6i", 
 			&oid, &slot,&type,&turns,
