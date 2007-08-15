@@ -12,7 +12,6 @@ Major Tasks:
  * Scheme integration
 
 Important:
- * Talk to RFTS game
  * Lists -> Hashes in Object list
  	- Probably maintain both (B+tree)?
  * Popup fixups 
