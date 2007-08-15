@@ -12,10 +12,11 @@ Major Tasks:
  * Scheme integration
 
 Important:
+ * Talk to RFTS game
  * Lists -> Hashes in Object list
  	- Probably maintain both (B+tree)?
- * 'H' (header) format parser for protocol.
- 	- see tpe_util
+ * Popup fixups 
+ * Direction indicator for ships
  * Make callers of tpe_util_parse packet pass an end pointer.
  * gui_window_add needs to be deprecated in favour of gui_window_add2
  * Resources view in the planet view
