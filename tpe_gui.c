@@ -131,7 +131,7 @@ gui_init(struct tpe *tpe, const char *theme, unsigned int fullscreen){
 		ecore_evas_fullscreen_set(gui->ee, 1);
 	gui->e = ecore_evas_get(gui->ee);
 
-	evas_font_path_append(gui->e, "data/");
+	evas_font_path_append(gui->e, "/usr/share/fonts/truetype/ttf-bitstream-vera");
 
 	edje_init();
 
