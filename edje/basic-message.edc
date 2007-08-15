@@ -18,7 +18,7 @@ Can emit:
 styles {
     style {
 	name: "message_style";
-	base: "font=Edje-Vera font_size=10 align=left color=#fff text_class=tb_plain wrap=word";
+	base: "font=Vera font_size=10 align=left color=#fff text_class=tb_plain wrap=word";
 	tag:  "br" "\n";
     }
 }

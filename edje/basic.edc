@@ -9,11 +9,11 @@ styles
 {
     style {
 	name: "popup_style";
-	base: "font=Edje-Vera font_size=10 align=left color=#fff style=shadow shadow_color=#ffffff80 wrap=none";
+	base: "font=Vera font_size=10 align=left color=#fff style=shadow shadow_color=#ffffff80 wrap=none";
 
 	tag:  "br" "\n";
-	tag:  "hilight" "+ font=Edje-Vera-Bold style=glow color=#fff glow2_color=#fe87 glow_color=#fa14";
-	tag:  "title" "+ font_size=12 font=Edje-Vera-Bold style=soft_shadow color=#fff shadow_color=#00000020";
+	tag:  "hilight" "+ font=VeraBd style=glow color=#fff glow2_color=#fe87 glow_color=#fa14";
+	tag:  "title" "+ font_size=12 font=VeraBd style=soft_shadow color=#fff shadow_color=#00000020";
 	tag:  "/title" "- \n";
 	tag:  "planet" "+ color=#88f";
 	tag:  "/planet" "- \n";

@@ -7,7 +7,7 @@ images {
 styles {
     style {
 	name: "order_style";
-	base: "font=Edje-Vera font_size=10 align=left color=#fff wrap=none";
+	base: "font=Vera font_size=10 align=left color=#fff wrap=none";
 	tag: "order" "+";
 	tag: "/order" "- \n";
 	tag: "arg" "+ \t";
