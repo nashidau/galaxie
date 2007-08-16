@@ -248,12 +248,17 @@ gui_time_remaining(void *guip, int type, void *eventd){
 	struct gui *gui;
 	int *event;
 	char buf[100];
+	int rem;
 
 	gui = guip;
 	
 	event = eventd;
-	snprintf(buf,100,"%ds Remaining",ntohl(event[4]));
-
+	if (tpe_util_parse_packet(event,NULL,"Hi",
+			NULL,NULL,NULL,NULL,&rem) == 2){
+		snprintf(buf,100,"%ds Remaining",rem);
+	} else {
+		snprintf(buf,100,"? Remaining");
+	}
 	edje_object_part_text_set(gui->main, "counter", buf);
 
 	return 1;
