@@ -290,8 +290,34 @@ collections {
 		    }
 		    color: 200 200 255 255;
 		}
+		description {
+		    state: "NoText" 0.0;
+		    inherit: "default" 0.0; 
+		    rel1 { 
+			relative: 0.5 0;
+			offset: 0 10;
+			to: "image";
+		    }
+		    color: 100 100 128 128;
+		    visible: 0;
+		}
 	    }
 	}
+    program {
+	name, "hide_text";
+	signal, "HideText";
+	source, "app";
+	action, STATE_SET "NoText" 0.0;
+	transition, LINEAR 0.5;
+	target, "Name";
+    }
+    program {
+	name, "show_text";
+	signal, "ShowText";
+	source, "app";
+	action, STATE_SET "default" 0.0;
+	transition, LINEAR 0.5;
+	target, "Name";
     }
 }
 
