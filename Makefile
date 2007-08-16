@@ -149,6 +149,9 @@ $Iwindow.png : $Iwindow.svg
 clean: 
 	rm -f *.o ailist.h ${EDJE}
 
+reallyclean: 
+	rm -f *.o ailist.h ${EDJE} ${IMAGES}
+
 veryclean: clean
 	rm -f  ${IMAGES}
 
