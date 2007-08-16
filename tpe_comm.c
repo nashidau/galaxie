@@ -369,15 +369,19 @@ tpe_comm_time_remaining(void *udata, int type, void *event){
 	struct tpe *tpe;
 	struct tpe_msg *msg;
 	int magic,etype,seq;
-	int unused, remain;
+	int remain,rv;
+	void *end;
 
 	tpe = udata;
 	msg = tpe->msg;
 
-	tpe_util_parse_packet(event, NULL, 
-			"iiiii",&magic, &seq, &etype, &unused, 
-			&remain);
-
+	rv = tpe_util_parse_packet(event, NULL,
+			"Hi", &magic, &seq, &etype, &end, &remain);
+	if (rv != 2) {
+		printf("Failed to parse time remaining packet\n");
+		return 0;
+	}
+	
 	if (seq == 0 && remain == 0){
 		tpe->turn ++;
 		tpe_event_send(tpe->event, "NewTurn", NULL, NULL, NULL);
