@@ -21,6 +21,7 @@ Important:
  * Resources view in the planet view
  * New objects inherit appropriate text visible flags
  * Mouse over shows name of object
+ 	- For fleets show other details.
 
 Minor Tasks 
  * New art for:
