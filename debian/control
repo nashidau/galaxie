@@ -1,0 +1,18 @@
+Source: galaxie
+Section: unknown
+Priority: extra
+Maintainer: Paul Schulz <paul@mawsonlakes.org>
+Build-Depends: debhelper (>= 5)
+Standards-Version: 3.7.2
+
+Package: galaxie
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Thousand Parsec Enlightenment Client
+ This is an Enlightenment client for Thousand Parsec.  The home page
+ for that project is at http://www.thousandparsec.com/.  Please, if
+ you find the 's', let us know.
+ .
+ This client uses the E foundation libraries, in particular Edje,
+ Evas and Ecore. Additional it supports an AI infrastructure, and
+ a simple AI for the game minisec 'Smith'.

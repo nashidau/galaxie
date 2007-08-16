@@ -27,3 +27,19 @@ apt-get install libevas1-loaders-all libewl1-engines-all		\
 Should get you the libraries you need.
 
 Then just 'make' in this directory.
+
+--
+To build, other libraries and packages may also be required:
+  libimlib2-dev
+  liblua5.1-dev
+  inkscape
+
+To run, see: ./galaxie -h
+
+To see what games are running, browse to:
+  http://metaserver.thousandparsec.net/
+
+To connect to a server, use:
+  ./galaxie Protocol://[user[:password]@]server[:port]/
+eg.
+   ./galaxie tp://demo1.thousandparsec.net/
