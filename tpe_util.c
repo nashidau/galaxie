@@ -89,8 +89,12 @@ tpe_util_parse_packet(void *pdata, void *end, char *format, ...){
 	int rv = 0;
 	
 	parsed = 0;
+	if (format == NULL){
+		printf("You must pass a format string to %s\n",__FUNCTION__);
+		return -1;
+	}
 
-	if (end == NULL)
+	if (end == NULL && *format != 'H')
 		printf("tpe_util_parse_packet called without end: %s\n",format);
 		
 
