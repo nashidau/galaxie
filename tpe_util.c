@@ -87,6 +87,7 @@ tpe_util_parse_packet(void *pdata, void *end, char *format, ...){
 	int parsed;
 	va_list ap;
 	int rv = 0;
+	void *endtmp = NULL;
 	
 	parsed = 0;
 	if (format == NULL){
@@ -96,7 +97,9 @@ tpe_util_parse_packet(void *pdata, void *end, char *format, ...){
 
 	if (end == NULL && *format != 'H')
 		printf("tpe_util_parse_packet called without end: %s\n",format);
-		
+	
+	if (end == NULL)
+		end = &endtmp;
 
 	va_start(ap,format);
 	
@@ -513,7 +516,7 @@ parse_header(void **data, void **end, va_list *ap){
 	/* FIXME: Should convert to msgtype */
 	if (typedest) *typedest = type;
 	/* Ends of things */
-	if (*enddest) *enddest = ((char *)*data) + len + 16;
+	if (enddest) *enddest = ((char *)*data) + len + 16;
 	if (end && *end == NULL) *end = ((char *)*data) + len + 16;
 
 	*data = idata;
