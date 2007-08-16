@@ -1506,7 +1506,6 @@ gui_toggle_names(struct gui *gui){
 	while ((obj = ecore_list_next(gui->visible))){
 		assert(obj != NULL);
 		assert(obj->gui != NULL);
-		printf("%s %p\n",signal,obj->gui->obj);
 		edje_object_signal_emit(obj->gui->obj, signal, "app");
 	}
 	gui->textvisible = !gui->textvisible;
