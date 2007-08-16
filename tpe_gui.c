@@ -117,7 +117,8 @@ gui_init(struct tpe *tpe, const char *theme, unsigned int fullscreen){
 	gui->map.left = WIDTH / 2;
 	gui->map.top = HEIGHT / 2;
 	gui->textvisible = 1;
-	
+
+	/* FIXME: need to be a bit more dynamic here */
 	gui->ee = ecore_evas_software_x11_new(NULL, 0,  0, 0, WIDTH, HEIGHT);
 	if (gui->ee == NULL) {
 		printf("Could not create ecore_evas_xll.\n");
@@ -133,7 +134,8 @@ gui_init(struct tpe *tpe, const char *theme, unsigned int fullscreen){
 		ecore_evas_fullscreen_set(gui->ee, 1);
 	gui->e = ecore_evas_get(gui->ee);
 
-	evas_font_path_append(gui->e, "/usr/share/fonts/truetype/ttf-bitstream-vera");
+	evas_font_path_append(gui->e, 
+			"/usr/share/fonts/truetype/ttf-bitstream-vera");
 
 	edje_init();
 
@@ -309,6 +311,8 @@ gui_object_update(void *data, int eventid, void *event){
 		evas_object_resize(go->obj,8,8);
 		evas_object_show(go->obj);
 		evas_object_move(go->obj,x + gui->map.left,y + gui->map.top);
+		if (!gui->textvisible) 
+			edje_object_signal_emit(go->obj, "HideText", "app");
 
 		edje_object_part_text_set(go->obj,"label", obj->name);
 
@@ -358,6 +362,9 @@ gui_object_update(void *data, int eventid, void *event){
 			evas_object_move(go->obj,x + gui->map.left,
 					y + gui->map.top);
 			edje_object_part_text_set(go->obj, "Name", obj->name);
+			if (!gui->textvisible) 
+				edje_object_signal_emit(go->obj, "HideText", 
+						"app");
 		}
 	} else 
 		star_update(gui->tpe, obj);

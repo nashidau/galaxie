@@ -17,6 +17,8 @@ Important:
  * Popup fixups 
  * Direction indicator for ships
  * Make callers of tpe_util_parse packet pass an end pointer.
+ 	- Fix all the warnings that pop out
+ * Fix tpe_util_parse_packet to check for overflow with every access.
  * gui_window_add needs to be deprecated in favour of gui_window_add2
  * Resources view in the planet view
  * New objects inherit appropriate text visible flags
@@ -51,7 +53,7 @@ Minor Tasks
 		and it all just works
  * Connect handle failures
  * [UI] Display systems with fleets
- * Nail some fixmes (52 at last count)
+ * Nail some fixmes (69 at last count)
  * Support games: So can log into a non-default game
  * Protocol support for
  	- SSL
