@@ -191,7 +191,9 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 	case OBJTYPE_FLEET:
 		if (o->fleet == NULL)
 			o->fleet = calloc(1,sizeof(struct object_fleet));
-
+		/* FIXME: XXX: TODO: this is mithro's bug about bad messages */
+		/* This is one of the places triggering overflow in 
+		 * tpe_util */
 		tpe_util_parse_packet(end, msgend, "iSi",
 				&o->owner, 
 				&o->fleet->nships, &o->fleet->ships,
@@ -403,6 +405,7 @@ tpe_obj_list_cleanup_cb(void *nodev, void *checkdata){
 
 	o = node->value;
 	cbdata = checkdata;
+
 	if (cbdata->check != o->ref)
 		tpe_event_send(cbdata->tpe->event, "ObjectDelete", o,
 				(void(*)(void*,void*))tpe_obj_cleanup, 
@@ -416,7 +419,7 @@ tpe_obj_list_end(struct tpe *tpe){
 
 	data.check = tpe->obj->check;
 	data.tpe = tpe;
-
+ 
 	ecore_hash_for_each_node(tpe->obj->objhash, tpe_obj_list_cleanup_cb, 
 			&data);
 }
