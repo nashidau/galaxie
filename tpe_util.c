@@ -88,7 +88,9 @@ tpe_util_parse_packet(void *pdata, void *end, char *format, ...){
 	va_list ap;
 	int rv = 0;
 	void *endtmp = NULL;
-	
+	char *tformat;
+
+	tformat = format;
 	parsed = 0;
 	if (format == NULL){
 		printf("You must pass a format string to %s\n",__FUNCTION__);
@@ -106,6 +108,7 @@ tpe_util_parse_packet(void *pdata, void *end, char *format, ...){
 	while (*format){
 		if (end && pdata > end){
 			printf("Overflow of the end of the message buffer\n");
+			printf("Format was %s\n",tformat);
 			return -1;
 		}
 
