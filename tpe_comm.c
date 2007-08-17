@@ -23,7 +23,7 @@ struct features {
 	void (*handler)(struct tpe *tpe, int id, struct features *);
 };
 
-static void feature_handler_autoaccount(struct tpe *tpe, int id, 
+static void feature_handler_accountregister(struct tpe *tpe, int id, 
 		struct features *);
 
 static struct features features[] =  {
@@ -33,7 +33,7 @@ static struct features features[] =  {
 	{ 4,	"http connect on another port",		NULL },
 	{ 5,	"keep alive",				NULL },
 	{ 6,	"Serverside properties",		NULL },
-	{ 1000,	"Automatic account registration", feature_handler_autoaccount },
+	{ 1000,	"Account registration", feature_handler_accountregister },
 };
 #define N_FEATURES (sizeof(features)/sizeof(features[0]))
 
@@ -49,8 +49,10 @@ struct tpe_comm {
 	const char *game;
 
 	struct connect *connect;
-
-	unsigned int hasautoaccount	: 1;
+	
+	/* Have downloaded 'features' */
+	unsigned int features		: 1;
+	unsigned int accountregister	: 1;
 	unsigned int triedcreate	: 1;
 };
 
@@ -92,7 +94,7 @@ tpe_comm_init(struct tpe *tpe){
 	tpe_event_type_add(tpe->event, "ConnectStart");
 	tpe_event_type_add(tpe->event, "ConnectUpdate");
 	tpe_event_type_add(tpe->event, "Connected");
-
+	tpe_event_type_add(tpe->event, "HaveServerFeatures");
 
 	return comm;
 }
@@ -168,9 +170,9 @@ tpe_comm_may_login(void *data, const char *msgtype, int len, void *mdata){
 		snprintf(buf, 100, "%s", comm->user);
 	}
 
+	tpe_msg_send(msg, "MsgGetFeatures", NULL,NULL,NULL,0);
 	tpe_msg_send_strings(msg, "MsgLogin",  tpe_comm_logged_in, comm,
 			buf, comm->pass, 0);
-	tpe_msg_send(msg, "MsgGetFeatures", NULL,NULL,NULL,0);
 
 	return 0;
 }
@@ -199,12 +201,13 @@ tpe_comm_logged_in(void *data, const char *msgtype, int len, void *mdata){
 
 	/* FIXME: Need to check the access worked */
 	if (!msgtype || strcmp(msgtype,"MsgFail") == 0){
-		printf("Could not log in using the user name listed\n");
-		/* FIXME: Need general error handling */
-		if (comm->triedcreate == 0 && !comm->hasautoaccount)
+		if (comm->triedcreate == 0 && comm->accountregister){
 			tpe_comm_create_account(tpe);
-		else
+			return 0;
+		} else {
+			printf("FIXME: Failed to connect \n");
 			exit(1);
+		}
 	}
 	
 
@@ -271,11 +274,11 @@ tpe_comm_create_account_cb(void *tpev, const char *msgtype, int len, void*data){
 	if (comm->game){
 		snprintf(buf,100,"%s@%s", comm->user, comm->game);
 	} else {
-		strncpy(buf,comm->user,100);
+		snprintf(buf, 100, "%s", comm->user);
 	}
 
 	tpe_msg_send_strings(tpe->msg, "MsgLogin",  tpe_comm_logged_in, comm,
-			buf, comm->pass, 0);
+			buf, comm->pass, NULL);
 
 	return 0;
 
@@ -351,7 +354,7 @@ tpe_comm_msg_fail(void *udata, int etype, void *event){
 	char *str = NULL;
 
 	rv = tpe_util_parse_packet(event, NULL,
-			"iiiiis", &magic, &seq, &type, &len,
+			"His", &magic, &seq, &type, &len,
 			&errcode, &str);
 
 	printf("** Error: Seq %d: Err %d: %s\n",seq,errcode,str);
@@ -392,7 +395,7 @@ tpe_comm_time_remaining(void *udata, int type, void *event){
 
 
 static void 
-feature_handler_autoaccount(struct tpe *tpe, int id, struct features *feat){
+feature_handler_accountregister(struct tpe *tpe, int id, struct features *feat){
 	struct tpe_comm *comm;
 
 	assert(tpe); assert(id); assert(feat); assert(tpe->comm);
@@ -402,5 +405,5 @@ feature_handler_autoaccount(struct tpe *tpe, int id, struct features *feat){
 
 	comm = tpe->comm;
 
-	comm->hasautoaccount = 1;
+	comm->accountregister = 1;
 }
