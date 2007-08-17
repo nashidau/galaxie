@@ -551,7 +551,7 @@ gui_object_delete(void *data, int eventid, void *event){
 	struct gui_obj *go;
 
 	obj = event;
-	
+
 	/* Nothing to do */
 	if (obj->gui == NULL) return 1;
 
@@ -582,7 +582,6 @@ star_mouse_out(void *data, Evas *e, Evas_Object *obj, void *event){
 	struct gui_obj *go;
 
 	go = data;
-	printf("Mouse out\n");
 
 	if (go->gui->popup){
 		evas_object_hide(go->gui->popup);
