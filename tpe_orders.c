@@ -316,8 +316,8 @@ tpe_orders_msg_order(void *data, int type, void *event){
 
 	order = calloc(1,sizeof(struct order));
 
-	event = (char *)event + 16;
-	tpe_util_parse_packet(event, NULL, "iiiiBp",
+	tpe_util_parse_packet(event, NULL, "HiiiiBp",
+			NULL, NULL, NULL, NULL,
 			&order->oid, &order->slot,
 			&order->type, &order->turns,
 			&order->nresources, &order->resources,
