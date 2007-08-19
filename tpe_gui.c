@@ -872,6 +872,17 @@ map_key_down(void *data, Evas *e, Evas_Object *obj, void *event){
 	} else if (strcmp(key->keyname, "F2") == 0){
 		printf("Planet list called\n");
 		gui_list_planet_add(gui);
+	} else if (strcmp(key->keyname,"F5") == 0){
+		struct object *obj;
+		printf("List of visible objects\n");
+		ecore_list_first_goto(gui->visible);
+		while ((obj = ecore_list_next(gui->visible))){
+			printf("\t%s [%d] %llx %llx %llx,(Parent [%d])\n",
+				obj->name,obj->oid,
+				obj->pos.x,obj->pos.y, obj->pos.z,
+				obj->parent);
+		}
+		
 	} else if (strcmp(key->keyname, "Print") == 0){
 		if (evas_key_modifier_is_set(
 				evas_key_modifier_get(e), "Shift")){
