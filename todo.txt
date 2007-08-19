@@ -1,3 +1,8 @@
+Finish:
+ * Object 2 pass changes:
+ 	- Make sure new objects are marked as new.
+	- Make sure changed parents change object too.
+
 Major Tasks:
  * Order input
  	- Design GUI
