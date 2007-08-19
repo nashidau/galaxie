@@ -7,3 +7,6 @@ cscope.out
 ailist.h
 badguy.log
 nash.log
+*.o
+tags
+.*.swp
