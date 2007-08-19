@@ -456,7 +456,6 @@ tpe_util_parse_packet(void *pdata, void *end, char *format, ...){
 				for (i = 0 ; i < len ; i ++){
 					(*adest)[i].design = ntohl(*idata ++);
 					(*adest)[i].count = ntohl(*idata ++);
-					idata += 2;
 				}
 
 				pdata = (char *)idata;
