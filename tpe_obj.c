@@ -89,7 +89,8 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 	struct tpe *tpe;
 	struct tpe_obj *obj;
 	struct object *o,*child;
-	int id,n,i;
+	int *oldchildren,noldchildren;
+	int id,n,i,j;
 	int isnew;
 	int unused;
 	int oldowner;
@@ -111,12 +112,10 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		o = tpe_obj_obj_add(obj,id);
 	}
 
-	/* Unlink children */
-	for (i = 0 ; i < o->nchildren ; i ++){
-		child = tpe_obj_obj_get_by_id(tpe,o->children[i]);
-		if (child)
-			child->parent = 0;
-	}
+	/* Save children */
+	oldchildren = o->children;
+	o->children = NULL;
+	noldchildren = o->nchildren;
 
 	if (o->name){
 		free(o->name);
@@ -140,12 +139,29 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 			&o->norders,
 			&o->updated,&unused,&unused, &end);
 
-	/* Link children */
+	/* Update children */
+	for (i = 0 ; i < noldchildren ; i ++){
+		for (j = 0 ; j < o->nchildren ; j ++){
+			if (oldchildren[i] == o->children[j])
+				break;
+		}
+		if (j == o->nchildren){
+			/* No longer a child */
+			child = tpe_obj_obj_get_by_id(tpe,oldchildren[j]);
+			if (child){
+				if (child->parent == o->oid)
+					child->parent = 0;
+				child->updated = 1;
+			}
+		}
+	}
+	free(oldchildren);
 	for (i = 0 ; i < o->nchildren ; i ++){
 		child = tpe_obj_obj_get_by_id(tpe,o->children[i]);
-		if (!child)
+		if (!child && child->parent != o->oid){
 			child = tpe_obj_obj_add(obj,o->children[i]);
-		child->parent = id;
+			child->updated = 1;
+		}
 	}
 
 	/* Add slots for the orders */
@@ -410,7 +426,13 @@ tpe_obj_list_cleanup_cb(void *nodev, void *checkdata){
 		tpe_event_send(cbdata->tpe->event, "ObjectDelete", o,
 				(void(*)(void*,void*))tpe_obj_cleanup, 
 				cbdata->tpe);
-
+	else if (o->changed){
+		tpe_event_send(cbdata->tpe->event, 
+				o->isnew ? "ObjectNew" : "ObjectChanged",
+				o, tpe_event_nofree, NULL);
+		o->changed = 0;
+		o->isnew = 0;
+	}
 }
 
 static void

@@ -73,6 +73,9 @@ struct object {
 	struct ai_obj *ai;
 
 	int ref;
+
+	unsigned int isnew : 1;
+	unsigned int changed : 1;
 };
 
 /* Cost to build something : From orders */
