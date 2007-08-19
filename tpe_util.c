@@ -107,8 +107,11 @@ tpe_util_parse_packet(void *pdata, void *end, char *format, ...){
 	
 	while (*format){
 		if (end && pdata > end){
+			printf("**** Serious Error occurred ****\n");
 			printf("Overflow of the end of the message buffer\n");
 			printf("Format was %s\n",tformat);
+			printf("Current arg is %s\n",format);
+			exit(1);
 			return -1;
 		}
 
