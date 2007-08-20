@@ -3,6 +3,10 @@ struct tpe_obj;
 struct tpe_gui_obj;
 struct object;
 
+enum {
+	TPE_OBJ_NIL = -1,
+};
+
 enum objtype {
 	OBJTYPE_UNIVERSE,
 	OBJTYPE_GALAXY,

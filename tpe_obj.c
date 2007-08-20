@@ -156,7 +156,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 				/* Don't mess up any which have already been
 				 * updated */
 				if (child->parent == o->oid){
-					child->parent = 0;
+					child->parent = TPE_OBJ_NIL;
 					child->updated = 1;
 				}
 			}
@@ -246,7 +246,6 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 			printf("A %d can take orders???\n", o->type);
 	}
 
-
 	return 1;
 }
 
@@ -254,6 +253,7 @@ struct object *
 tpe_obj_obj_get_by_id(struct tpe *tpe, uint32_t oid){
 	if (tpe == NULL) return NULL;
 	if (tpe->obj == NULL) return NULL;
+	if (oid == TPE_OBJ_NIL) return NULL;
 
 	return ecore_hash_get(tpe->obj->objhash, (void*)oid);
 }
@@ -261,6 +261,9 @@ tpe_obj_obj_get_by_id(struct tpe *tpe, uint32_t oid){
 struct object *
 tpe_obj_obj_add(struct tpe_obj *obj, int oid){
 	struct object *o;
+
+	assert(oid != TPE_OBJ_NIL);
+	if (oid == TPE_OBJ_NIL) return NULL;
 
 	o = calloc(1,sizeof(struct object));
 	o->magic = object_magic;

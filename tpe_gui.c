@@ -487,9 +487,16 @@ star_update(struct tpe *tpe, struct object *object){
 	/* If it is a planet - move to the parent */
 	if (object->type == OBJTYPE_PLANET){
 		parentid = object->parent;
+		if (parentid == TPE_OBJ_NIL) return;
 		parent = tpe_obj_obj_get_by_id(tpe, parentid);
 		/* Check for a weird universe */
-		if (parent) assert(parent->type == OBJTYPE_SYSTEM);
+		if (parent) {
+			if (parent->type != OBJTYPE_SYSTEM){
+				printf("Warning: Planet with unusual parent\n");
+				tpe_obj_obj_dump(parent);
+				return;
+			}
+		}
 		/* Update later */
 		if (parent == NULL || parent->gui == NULL) return;
 		object = parent;
@@ -502,7 +509,8 @@ star_update(struct tpe *tpe, struct object *object){
 	assert(object->gui);
 
 	nchildren = nother = nowned = nfriendly = 0;
-
+	
+	/* FIXME: Need to check for alliances */
 	for (i = 0 ; i < object->nchildren ; i ++){
 		childid = object->children[i];
 		child = tpe_obj_obj_get_by_id(tpe, childid);
