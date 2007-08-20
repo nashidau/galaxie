@@ -169,7 +169,9 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 			child = tpe_obj_obj_add(obj,o->children[i]);
 			child->updated = 1;
 			child->isnew = 1;
+			child->parent = o->oid;
 		} else if (child->parent != o->oid){
+			child->parent = o->oid;
 			child->updated = 1;
 		}
 	}
