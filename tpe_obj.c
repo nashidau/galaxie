@@ -158,7 +158,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 	free(oldchildren);
 	for (i = 0 ; i < o->nchildren ; i ++){
 		child = tpe_obj_obj_get_by_id(tpe,o->children[i]);
-		if (!child && child->parent != o->oid){
+		if (child && child->parent != o->oid){
 			child = tpe_obj_obj_add(obj,o->children[i]);
 			child->updated = 1;
 		}
