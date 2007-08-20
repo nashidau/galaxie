@@ -148,18 +148,28 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		if (j == o->nchildren){
 			/* No longer a child */
 			child = tpe_obj_obj_get_by_id(tpe,oldchildren[j]);
-			if (child){
-				if (child->parent == o->oid)
+			if (!child){
+				/* This should never happen */
+				child = tpe_obj_obj_add(obj, oldchildren[j]);
+				child->isnew = 1;
+			} else {
+				/* Don't mess up any which have already been
+				 * updated */
+				if (child->parent == o->oid){
 					child->parent = 0;
-				child->updated = 1;
+					child->updated = 1;
+				}
 			}
 		}
 	}
 	free(oldchildren);
 	for (i = 0 ; i < o->nchildren ; i ++){
 		child = tpe_obj_obj_get_by_id(tpe,o->children[i]);
-		if (child && child->parent != o->oid){
+		if (!child){
 			child = tpe_obj_obj_add(obj,o->children[i]);
+			child->updated = 1;
+			child->isnew = 1;
+		} else if (child->parent != o->oid){
 			child->updated = 1;
 		}
 	}
