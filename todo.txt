@@ -1,8 +1,3 @@
-Finish:
- * Object 2 pass changes:
- 	- Make sure new objects are marked as new.
-	- Make sure changed parents change object too.
-
 Major Tasks:
  * Order input
  	- Design GUI
@@ -17,6 +12,8 @@ Major Tasks:
  * Scheme integration
 
 Important:
+ * Popups for everything
+ * MEDIA
  * Lists -> Hashes in Object list
  	- Probably maintain both (B+tree)?
  * Popup fixups 
@@ -29,6 +26,8 @@ Important:
  * New objects inherit appropriate text visible flags
  * Mouse over shows name of object
  	- For fleets show other details.
+ * Map centering for new objects.
+ * battles
 
 Minor Tasks 
  * New art for:
