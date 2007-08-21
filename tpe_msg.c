@@ -167,6 +167,9 @@ static void tpe_msg_handle_packet(struct tpe_msg *msg, int seq, int type,
 
 static int format_msg(int32_t *buf, const char *format, va_list ap);
 
+//static const uint32_t headerv4 = htonl(('T' << 24) | ('P' << 16) | (4 << 8) | 0);  
+//static const uint32_t headerv3 = htonl(('T' << 24) | ('P' << 16) | ('0' << 8) | ('3'));  
+
 struct tpe_msg *
 tpe_msg_init(struct tpe *tpe){
 	struct tpe_msg *msg;
@@ -177,9 +180,11 @@ tpe_msg_init(struct tpe *tpe){
 	tpe->msg = msg;
 	if (msg == NULL) return NULL;
 
+	/* FIXME */
+	msg->header = htonl(('T' << 24) | ('P' << 16) | (4 << 8) | 0);  
+	//msg->header = htonl(('T' << 24) | ('P' << 16) | ('0' << 8) | '3');  
 	
 	msg->seq = 1;
-	msg->header = ('T' << 0) | ('P' << 8) | ('0' << 16) | ('3' << 24);
 	
 	/* Register events */
 	tpe_msg_event_register(tpe);
@@ -277,7 +282,7 @@ tpe_msg_receive(void *udata, int ecore_event_type, void *edata){
 	while (remaining > 16){
 		header = (uint32_t *)start;
 		magic = header[0];
-		if (strncmp("TP03", (char *)&magic, 4) != 0){
+		if (msg->header != magic){
 			printf("Invalid magic ;%.4s;\n",(char *)&magic);
 			exit(1);
 		}
@@ -323,7 +328,7 @@ tpe_msg_handle_packet(struct tpe_msg *msg, int seq, int type,
 	}
 
 
-printf("Handling Seq %d [%s]\n",seq,event);
+	//printf("Handling Seq %d [%s]\n",seq,event);
 	if (seq){
 		for (cb = msg->cbs ; cb ; cb = next){
 			next = cb->next;
@@ -398,8 +403,8 @@ tpe_msg_send(struct tpe_msg *msg, const char *msgtype,
 	buf[3] = htonl(len);
 	memcpy(buf + 4, data, len);
 
-	printf("Sending Seq %d Type %d [%s] Len: %d [%p]\n",
-			msg->seq,type,msgtype, len,cb);
+	//printf("Sending Seq %d Type %d [%s] Len: %d [%p]\n",
+	//		msg->seq,type,msgtype, len,cb);
 	ecore_con_server_send(msg->svr, buf, len + HEADER_SIZE);
 
 	free(buf);
