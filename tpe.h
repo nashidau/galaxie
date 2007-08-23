@@ -8,6 +8,7 @@ struct tpe {
 	int turn;
 
 	struct tpe_event *event;
+	struct servers *servers;
 	struct tpe_msg *msg;
 	struct tpe_comm *comm;
 	struct tpe_orders *orders;
@@ -16,6 +17,7 @@ struct tpe {
 	struct tpe_resources *resources;
 	struct tpe_ship *ship;
 	struct tpe_sequence *sequence;
+
 
 	struct gui *gui;
 

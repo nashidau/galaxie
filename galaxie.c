@@ -13,6 +13,7 @@
 #include <Ewl.h>
 
 #include "tpe.h"
+#include "browser.h"
 #include "tpe_board.h"
 #include "tpe_comm.h"
 #include "tpe_event.h"
@@ -42,6 +43,8 @@ struct ai_info {
 
 
 struct startopt {
+	unsigned int browse :1;
+
 	/* Server details */
 	unsigned int http: 1;
 	unsigned int ssl:  1;
@@ -65,6 +68,7 @@ struct startopt {
 };
 
 static struct startopt *parse_args(int argc, char **argv);
+static int parse_usebrowser(struct startopt *opt, int i, char **args);
 static int parse_username(struct startopt *opt, int i, char **args);
 static int parse_password(struct startopt *opt, int i, char **args);
 static int parse_server(struct startopt *opt, int i, char **args);
@@ -90,6 +94,7 @@ static struct args {
 	const char *arg;
 	int (*fn)(struct startopt *opt, int i, char **args);
 } args[] = {
+	{ "-b",		parse_usebrowser},
 	{ "--user",	parse_username	},
 	{ "-u",		parse_username	},
 	{ "--password", parse_password	},
@@ -175,7 +180,8 @@ main(int argc, char **argv){
 		dump_options(opt);
 
 	tpe->event 	= tpe_event_init(tpe);
-	tpe->msg   	= tpe_msg_init(tpe);
+	tpe->servers 	= tpe_servers_init(tpe);
+	//tpe->msg   	= tpe_msg_init(tpe);
 	tpe->comm  	= tpe_comm_init(tpe);
 	
 	tpe->sequence 	= tpe_sequence_init(tpe);
@@ -191,7 +197,9 @@ main(int argc, char **argv){
 	if (opt->ai && opt->ai->init)	
 		tpe->ai = opt->ai->init(tpe);
 
-	if (opt->server && opt->username && opt->password)
+	if (opt->browse)
+		browser_add(tpe,opt->server);
+	else if (opt->server && opt->username && opt->password)
 		tpe_comm_connect(tpe->comm, opt->server, opt->port, 
 				opt->game, 
 				opt->username, opt->password);
@@ -246,7 +254,12 @@ parse_args(int argc, char **argv){
 	return opt;
 }
 
-
+static int
+parse_usebrowser(struct startopt *opt, int i, char **args){
+	opt->browse = 1;
+	i ++;
+	return i;
+}
 
 static int 
 parse_username(struct startopt *opt, int i, char **args){

@@ -74,7 +74,7 @@ tpe_event_handler_add(struct tpe_event *tpeev, const char *event,
 
 	einfo = ecore_hash_get(tpeev->hash, event);
 	if (einfo == NULL){
-		printf("Unable to find event %s\n",event);
+		printf("Unable to find event '%s'\n",event);
 		return -1;
 	}
 

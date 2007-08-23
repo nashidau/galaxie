@@ -105,6 +105,10 @@ static const struct msgname {
 };
 #define N_MESSAGETYPES (sizeof(msgnames)/sizeof(msgnames[0]))
 
+struct servers {
+	struct tpe *tpe;
+	struct server *server;
+};
 
 
 /**
@@ -169,36 +173,36 @@ static int format_msg(int32_t *buf, const char *format, va_list ap);
 
 //static const uint32_t headerv4 = htonl(('T' << 24) | ('P' << 16) | (4 << 8) | 0);  
 //static const uint32_t headerv3 = htonl(('T' << 24) | ('P' << 16) | ('0' << 8) | ('3'));  
+struct servers *
+tpe_servers_init(struct tpe *tpe){
+	struct servers *servers;
 
-struct tpe_msg *
-tpe_msg_init(struct tpe *tpe){
-	struct tpe_msg *msg;
+	if (tpe->servers) return tpe->servers;
 
 	ecore_con_init();
 
-	msg = calloc(1,sizeof(struct tpe_msg));
-	tpe->msg = msg;
-	if (msg == NULL) return NULL;
+	servers = calloc(1,sizeof(struct tpe_msg));
+	if (servers == NULL) return NULL;
+	tpe->servers = servers;
+	servers->tpe = tpe;
 
 	/* FIXME */
-	msg->header = htonl(('T' << 24) | ('P' << 16) | (4 << 8) | 0);  
+	//msg->header = htonl(('T' << 24) | ('P' << 16) | (4 << 8) | 0);  
 	//msg->header = htonl(('T' << 24) | ('P' << 16) | ('0' << 8) | '3');  
 	
-	msg->seq = 1;
+	//msg->seq = 1;
 	
 	/* Register events */
 	tpe_msg_event_register(tpe);
-	msg->tpe = tpe;
 
 	ecore_event_handler_add(ECORE_CON_EVENT_SERVER_ADD, 	
-			tpe_msg_con_event_server_add, msg);
+			tpe_msg_con_event_server_add, tpe);
 	ecore_event_handler_add(ECORE_CON_EVENT_CLIENT_DATA,
-			tpe_msg_receive, msg);
+			tpe_msg_receive, tpe);
 	ecore_event_handler_add(ECORE_CON_EVENT_SERVER_DATA,
-			tpe_msg_receive, msg);
-	
+			tpe_msg_receive, tpe);
 
-	return msg;
+	return servers;
 }
 
 static void
@@ -215,21 +219,33 @@ tpe_msg_event_register(struct tpe *tpe){
 /**
  * Initialise a connection to a server
  */
-int tpe_msg_connect(struct tpe_msg *msg, 
+struct tpe_msg *
+tpe_msg_connect(struct tpe *tpe, 
 		const char *server, int port, int usessl,
 		conncb cb, void *userdata){
 	Ecore_Con_Server *svr;
+	struct tpe_msg *msg;
 
+	msg = calloc(1,sizeof(struct tpe_msg));
+	
 	/* FIXME: ssl */
 	svr = ecore_con_server_connect(ECORE_CON_REMOTE_SYSTEM,
 				server,port,msg);
+
+	msg->header = htonl(('T' << 24) | ('P' << 16) | (4 << 8) | 0);  
+	
+	msg->seq = 1;
+	
+	/* Register events */
+//	tpe_msg_event_register(tpe);
+	msg->tpe = tpe;
 
 	msg->svr = svr;
 
 	msg->conncb = cb;
 	msg->conndata = userdata;
 
-	return 0;
+	return msg;
 }
 
 /***************************************/
@@ -241,8 +257,8 @@ int tpe_msg_connect(struct tpe_msg *msg,
  */
 static int tpe_msg_con_event_server_add(void *data, int type, void *edata){
 	struct tpe_msg *msg;
-
 	msg = data;
+printf("Server add %p %p\n",msg,msg->conncb);
 
 	if (msg->conncb)
 		msg->conncb(msg->conndata, NULL);

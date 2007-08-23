@@ -27,12 +27,23 @@ static void feature_handler_accountregister(struct tpe *tpe, int id,
 		struct features *);
 
 static struct features features[] =  {
-	{ 1,	"SSL connection on this port",		NULL },
-	{ 2,	"SSL connection on another port",	NULL },
-	{ 3,	"http connect on this port",		NULL },
-	{ 4,	"http connect on another port",		NULL },
-	{ 5,	"keep alive",				NULL },
-	{ 6,	"Serverside properties",		NULL },
+	{ 1,	  "SSL connection on this port",		NULL },
+	{ 2,	  "SSL connection on another port",	NULL },
+	{ 3,	  "http connect on this port",		NULL },
+	{ 4,	  "http connect on another port",		NULL },
+	{ 5,	  "keep alive",				NULL },
+	{ 6,	  "Serverside properties",		NULL },
+	{ 0x3e8,  "Account Creation Allowed",		NULL },
+	{ 0x1000, "SSL filer can enbabled",		NULL },
+	{ 0x1D00, "Padding may be enabled",		NULL },
+	{ 0x10000,"Object ID in descending modified time", NULL },
+	{ 0x10001,"Order ID in descending modified time", NULL },
+	{ 0x10002,"Board ID in descending modified time", NULL },
+	{ 0x10003,"Resource ID in descending modified time", NULL },
+	{ 0x10004,"Category ID in descending modified time", NULL },
+	{ 0x10005,"Design ID in descending modified time", NULL },
+	{ 0x10006,"Component ID in descending modified time", NULL },
+	{ 0x10007,"Property ID in descending modified time", NULL },
 	{ 1000,	"Account registration", feature_handler_accountregister },
 };
 #define N_FEATURES (sizeof(features)/sizeof(features[0]))
@@ -128,7 +139,7 @@ tpe_comm_connect(struct tpe_comm *comm,
 
 	comm->connect = connect;
 
-	tpe_msg_connect(tpe->msg, server, port, 0,
+	tpe_msg_connect(tpe, server, port, 0,
 			tpe_comm_socket_connect, comm);
 
 	tpe_event_send(tpe->event, "ConnectStart", connect, 

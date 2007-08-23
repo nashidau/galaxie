@@ -13,6 +13,7 @@ I=edje/images/
 
 OBJECTS=		\
 	galaxie.o	\
+	browser.o	\
 	tpe_board.o	\
 	tpe_comm.o	\
 	tpe_event.o	\
