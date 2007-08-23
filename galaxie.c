@@ -18,7 +18,7 @@
 #include "tpe_comm.h"
 #include "tpe_event.h"
 #include "tpe_gui.h"
-#include "tpe_msg.h"
+#include "server.h"
 #include "tpe_obj.h"
 #include "tpe_orders.h"
 #include "tpe_resources.h"
@@ -180,7 +180,7 @@ main(int argc, char **argv){
 		dump_options(opt);
 
 	tpe->event 	= tpe_event_init(tpe);
-	tpe->servers 	= tpe_servers_init(tpe);
+	tpe->servers 	= server_init(tpe);
 	//tpe->msg   	= tpe_msg_init(tpe);
 	tpe->comm  	= tpe_comm_init(tpe);
 	

@@ -12,7 +12,7 @@
 /* TPE Comm can only call tpe, tpe_msg, tpe_event */
 #include "tpe.h"
 #include "tpe_comm.h"
-#include "tpe_msg.h"
+#include "server.h"
 #include "tpe_event.h"
 #include "tpe_util.h"
 
@@ -53,7 +53,9 @@ static struct features features[] =  {
 struct tpe_comm {
 	struct tpe *tpe;
 
-	const char *server;
+	struct server *server;
+
+	const char *servername;
 	int port;
 	const char *user;
 	const char *pass;
@@ -67,11 +69,11 @@ struct tpe_comm {
 	unsigned int triedcreate	: 1;
 };
 
-static int tpe_comm_socket_connect(void *data, struct tpe_msg_connection *);
+static int tpe_comm_socket_connect(void *data, struct server *);
 static void tpe_comm_create_account(struct tpe *tpe);
-static int tpe_comm_create_account_cb(void *tpev, const char *msgtype, int len, void*data);
-static int tpe_comm_may_login(void *data, const char *msgtype, int len, void *mdata);
-static int tpe_comm_logged_in(void *data, const char *msgtype, int len, void *mdata);
+static int tpe_comm_create_account_cb(void *tpev, struct msg *msg);
+static int tpe_comm_may_login(void *data, struct msg *msg);
+static int tpe_comm_logged_in(void *data, struct msg *msg);
 static int tpe_comm_msg_fail(void *udata, int type, void *event);
 static int tpe_comm_time_remaining(void *udata, int type, void *event);
 
@@ -122,7 +124,7 @@ tpe_comm_connect(struct tpe_comm *comm,
 	tpe = comm->tpe;
 	assert(tpe);
 
-	comm->server = strdup(server);
+	comm->servername = strdup(server);
 	comm->port = port;
 	comm->user = strdup(user);
 	comm->pass = strdup(pass);
@@ -132,14 +134,14 @@ tpe_comm_connect(struct tpe_comm *comm,
 		comm->game = NULL;
 
 	connect = calloc(1,sizeof(struct connect));
-	connect->server = comm->server;
+	connect->server = comm->servername;
 	connect->user = comm->user;
 	connect->game = comm->game;
 	connect->status = CONSTATUS_CONNECTING;
 
 	comm->connect = connect;
 
-	tpe_msg_connect(tpe, server, port, 0,
+	comm->server = server_connect(tpe, server, port, 0,
 			tpe_comm_socket_connect, comm);
 
 	tpe_event_send(tpe->event, "ConnectStart", connect, 
@@ -150,7 +152,7 @@ tpe_comm_connect(struct tpe_comm *comm,
 
 
 static int
-tpe_comm_socket_connect(void *data, struct tpe_msg_connection *mcon){
+tpe_comm_socket_connect(void *data, struct server *mcon){
 	struct tpe_comm *comm;
 	struct tpe *tpe;
 	struct tpe_msg *msg;
@@ -159,21 +161,19 @@ tpe_comm_socket_connect(void *data, struct tpe_msg_connection *mcon){
 	tpe = comm->tpe;
 	msg = tpe->msg;
 
-	tpe_msg_send_strings(msg,"MsgConnect", tpe_comm_may_login, comm,
+	server_send_strings(comm->server,"MsgConnect", tpe_comm_may_login, comm,
 				"GalaxiE", NULL);
 	return 1;
 }
 
 static int
-tpe_comm_may_login(void *data, const char *msgtype, int len, void *mdata){
+tpe_comm_may_login(void *data, struct msg *msg){
 	struct tpe_comm *comm;
 	struct tpe *tpe;
-	struct tpe_msg *msg;
 	char buf[100];
 
 	comm = data;
 	tpe = comm->tpe;
-	msg = tpe->msg;
 
 	if (comm->game){
 		snprintf(buf, 100, "%s@%s", comm->user, comm->game);
@@ -181,8 +181,8 @@ tpe_comm_may_login(void *data, const char *msgtype, int len, void *mdata){
 		snprintf(buf, 100, "%s", comm->user);
 	}
 
-	tpe_msg_send(msg, "MsgGetFeatures", NULL,NULL,NULL,0);
-	tpe_msg_send_strings(msg, "MsgLogin",  tpe_comm_logged_in, comm,
+	server_send(msg->server, "MsgGetFeatures", NULL,NULL,NULL,0);
+	server_send_strings(msg->server, "MsgLogin",  tpe_comm_logged_in, comm,
 			buf, comm->pass, 0);
 
 	return 0;
@@ -196,22 +196,20 @@ tpe_comm_may_login(void *data, const char *msgtype, int len, void *mdata){
  *
  */
 static int
-tpe_comm_logged_in(void *data, const char *msgtype, int len, void *mdata){
+tpe_comm_logged_in(void *data, struct msg *msg){
 	struct tpe_comm *comm;
 	struct tpe *tpe;
-	struct tpe_msg *msg;
 	int buf[3];
 
-	assert(data); assert(msgtype); 
+	assert(data); assert(msg); 
 
 	comm = data;
 	assert(comm->tpe);
 	tpe = comm->tpe;
 	assert(tpe->msg);
-	msg = tpe->msg;
 
 	/* FIXME: Need to check the access worked */
-	if (!msgtype || strcmp(msgtype,"MsgFail") == 0){
+	if (strcmp(msg->type,"MsgFail") == 0){
 		if (comm->triedcreate == 0 && comm->accountregister){
 			tpe_comm_create_account(tpe);
 			return 0;
@@ -223,7 +221,7 @@ tpe_comm_logged_in(void *data, const char *msgtype, int len, void *mdata){
 	
 
 
-	tpe_msg_send(msg, "MsgGetTimeRemaining", NULL, NULL,NULL,0);
+	server_send(msg->server, "MsgGetTimeRemaining", NULL, NULL,NULL,0);
 
 	/* FIXME: Need a class to handle these */
 	buf[0] = htonl(1);	/* One player to get */

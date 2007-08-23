@@ -14,7 +14,7 @@
 #include <Ecore.h>
 #include <Ecore_Con.h>
 
-#include "tpe_msg.h"
+#include "server.h"
 #include "tpe.h"
 #include "tpe_event.h"
 
@@ -107,16 +107,17 @@ static const struct msgname {
 
 struct servers {
 	struct tpe *tpe;
-	struct server *server;
+	struct server *servers;
 };
 
 
 /**
- * Status structure for tpe_msg.  Keeps track of all the important info
+ * Status structure for msg.  Keeps track of all the important info
  * for the system.
  */
-struct tpe_msg {
-	struct tpe *tpe;
+struct server {
+	struct server *next;
+	struct servers *servers;
 
 	/* Actual server connection */
 	Ecore_Con_Server *svr;
@@ -127,7 +128,7 @@ struct tpe_msg {
 
 	/* Sequence */
 	unsigned int seq;
-	struct tpe_msg_cb *cbs;
+	struct server_cb *cbs;
 
 	/* Header */
 	unsigned int header;
@@ -137,14 +138,12 @@ struct tpe_msg {
 		int size;
 		char *data;
 	} buf;
-
-
 };
 
 
 
-struct tpe_msg_cb {
-	struct tpe_msg_cb *next,*prev;
+struct server_cb {
+	struct server_cb *next,*prev;
 
 	int seq;
 
@@ -156,57 +155,58 @@ struct tpe_msg_cb {
 };
 
 
-static void tpe_msg_event_register(struct tpe *tpe);
+static void server_event_register(struct tpe *tpe);
 
 
-static int tpe_msg_receive(void *data, int type, void *edata);
-static int tpe_msg_con_event_server_add(void *data, int type, void *edata);
-static int tpe_msg_cb_add(struct tpe_msg *msg, int seq, msgcb cb, void *userdata);
-//static void tpe_connect_logged_in(void *msg, const char *type, int len, void *mdata);
-//static int tpe_msg_register_events(struct tpe_msg *msg);
-//static void tpe_connect_accept(void *msg, const char * type, int len,
+static int server_receive(void *data, int type, void *edata);
+static int server_con_event_server_add(void *data, int type, void *edata);
+static int server_cb_add(struct server *server, int seq, msgcb cb, void *userdata);
+//static void connect_logged_in(void *server, const char *type, int len, void *mdata);
+//static int server_register_events(struct server *server);
+//static void connect_accept(void *server, const char * type, int len,
 //		void *mdata);
-static void tpe_msg_handle_packet(struct tpe_msg *msg, int seq, int type, 
+static void server_handle_packet(struct server *server, int seq, int type, 
 			int len, void *data);
 
-static int format_msg(int32_t *buf, const char *format, va_list ap);
+static int format_server(int32_t *buf, const char *format, va_list ap);
+static void msg_free(void *udata, void *msg);
 
 //static const uint32_t headerv4 = htonl(('T' << 24) | ('P' << 16) | (4 << 8) | 0);  
 //static const uint32_t headerv3 = htonl(('T' << 24) | ('P' << 16) | ('0' << 8) | ('3'));  
 struct servers *
-tpe_servers_init(struct tpe *tpe){
+server_init(struct tpe *tpe){
 	struct servers *servers;
 
 	if (tpe->servers) return tpe->servers;
 
 	ecore_con_init();
 
-	servers = calloc(1,sizeof(struct tpe_msg));
+	servers = calloc(1,sizeof(struct servers));
 	if (servers == NULL) return NULL;
 	tpe->servers = servers;
 	servers->tpe = tpe;
 
 	/* FIXME */
-	//msg->header = htonl(('T' << 24) | ('P' << 16) | (4 << 8) | 0);  
-	//msg->header = htonl(('T' << 24) | ('P' << 16) | ('0' << 8) | '3');  
+	//server->header = htonl(('T' << 24) | ('P' << 16) | (4 << 8) | 0);  
+	//server->header = htonl(('T' << 24) | ('P' << 16) | ('0' << 8) | '3');  
 	
-	//msg->seq = 1;
+	//server->seq = 1;
 	
 	/* Register events */
-	tpe_msg_event_register(tpe);
+	server_event_register(tpe);
 
 	ecore_event_handler_add(ECORE_CON_EVENT_SERVER_ADD, 	
-			tpe_msg_con_event_server_add, tpe);
+			server_con_event_server_add, tpe);
 	ecore_event_handler_add(ECORE_CON_EVENT_CLIENT_DATA,
-			tpe_msg_receive, tpe);
+			server_receive, tpe);
 	ecore_event_handler_add(ECORE_CON_EVENT_SERVER_DATA,
-			tpe_msg_receive, tpe);
+			server_receive, tpe);
 
 	return servers;
 }
 
 static void
-tpe_msg_event_register(struct tpe *tpe){
+server_event_register(struct tpe *tpe){
 	int i,n;
 
 	n = sizeof(msgnames)/sizeof(msgnames[0]);
@@ -219,33 +219,33 @@ tpe_msg_event_register(struct tpe *tpe){
 /**
  * Initialise a connection to a server
  */
-struct tpe_msg *
-tpe_msg_connect(struct tpe *tpe, 
-		const char *server, int port, int usessl,
+struct server *
+server_connect(struct tpe *tpe, 
+		const char *servername, int port, int usessl,
 		conncb cb, void *userdata){
 	Ecore_Con_Server *svr;
-	struct tpe_msg *msg;
+	struct server *server;
 
-	msg = calloc(1,sizeof(struct tpe_msg));
+	server = calloc(1,sizeof(struct server));
 	
 	/* FIXME: ssl */
 	svr = ecore_con_server_connect(ECORE_CON_REMOTE_SYSTEM,
-				server,port,msg);
-
-	msg->header = htonl(('T' << 24) | ('P' << 16) | (4 << 8) | 0);  
+				servername,port,server);
 	
-	msg->seq = 1;
+	/* Start by assuming TP 4 */
+	server->header = htonl(('T' << 24) | ('P' << 16) | (4 << 8) | 0);  
+	
+	server->seq = 1;
 	
 	/* Register events */
-//	tpe_msg_event_register(tpe);
-	msg->tpe = tpe;
+	server->servers = tpe->servers;
 
-	msg->svr = svr;
+	server->svr = svr;
 
-	msg->conncb = cb;
-	msg->conndata = userdata;
+	server->conncb = cb;
+	server->conndata = userdata;
 
-	return msg;
+	return server;
 }
 
 /***************************************/
@@ -255,50 +255,58 @@ tpe_msg_connect(struct tpe *tpe,
  *
  * Now we will attempt to connect
  */
-static int tpe_msg_con_event_server_add(void *data, int type, void *edata){
-	struct tpe_msg *msg;
-	msg = data;
-printf("Server add %p %p\n",msg,msg->conncb);
+static int server_con_event_server_add(void *data, int type, void *edata){
+	struct server *server;
+	server = data;
+printf("Server add %p %p\n",server,server->conncb);
 
-	if (msg->conncb)
-		msg->conncb(msg->conndata, NULL);
+	if (server->conncb)
+		server->conncb(server->conndata, NULL);
 	
-	msg->conncb = NULL;
-	msg->conndata = NULL;
+	server->conncb = NULL;
+	server->conndata = NULL;
 
-	//msg = data;
-	//tpe_msg_send_strings(msg, TPE_MSG_CONNECT, tpe_connect_accept,msg,ID, NULL);
+	//server = data;
+	//server_send_strings(server, TPE_MSG_CONNECT, connect_accept,server,ID, NULL);
 
 	return 0;
 }
 
 static int 
-tpe_msg_receive(void *udata, int ecore_event_type, void *edata){
-	struct tpe_msg *msg;
+server_receive(void *udata, int ecore_event_type, void *edata){
+	struct servers *servers;
+	struct server *server;
 	Ecore_Con_Event_Server_Data *data;
 	unsigned int *header;
 	char *start;
 	unsigned int len, type, seq, remaining;
 	int magic;
 
-	msg = udata;
+	servers = udata;
 	data = edata;
 
-	if (msg->buf.size){
-		start = realloc(msg->buf.data, msg->buf.size + data->size);
-		remaining = msg->buf.size + data->size;
-		memcpy(start + msg->buf.size, data->data, data->size);
-		msg->buf.data = start; /* Save it to free later */
+	for (server = servers->servers ; server ; server = server->next){
+		if (server->svr == data->server)
+			break;
+	}
+
+	assert(server != NULL);
+
+	if (server->buf.size){
+		start = realloc(server->buf.data, server->buf.size + data->size);
+		remaining = server->buf.size + data->size;
+		memcpy(start + server->buf.size, data->data, data->size);
+		server->buf.data = start; /* Save it to free later */
 	} else {
 		start = data->data;
 		remaining = data->size;
-		msg->buf.data = NULL; /* Just to check */
+		server->buf.data = NULL; /* Just to check */
 	}
 
 	while (remaining > 16){
 		header = (uint32_t *)start;
 		magic = header[0];
-		if (msg->header != magic){
+		if (server->header != magic){
 			printf("Invalid magic ;%.4s;\n",(char *)&magic);
 			exit(1);
 		}
@@ -307,7 +315,7 @@ tpe_msg_receive(void *udata, int ecore_event_type, void *edata){
 		len = ntohl(header[3]);
 		if (len + 16 > remaining)
 			break;
-		tpe_msg_handle_packet(msg, seq, type, len, start);
+		server_handle_packet(server, seq, type, len, start);
 		start += len + 16;
 		remaining -= len + 16;
 	}
@@ -317,22 +325,23 @@ tpe_msg_receive(void *udata, int ecore_event_type, void *edata){
 		char *tmp;
 		tmp = malloc(remaining);
 		memcpy(tmp, start, remaining);
-		free(msg->buf.data);
+		free(server->buf.data);
 
-		msg->buf.data = tmp;
-		msg->buf.size = remaining;
+		server->buf.data = tmp;
+		server->buf.size = remaining;
 	} else {
-		free(msg->buf.data);
-		msg->buf.data = NULL;
-		msg->buf.size = 0;
+		free(server->buf.data);
+		server->buf.data = NULL;
+		server->buf.size = 0;
 	}
 	return 1;
 }
 
 static void
-tpe_msg_handle_packet(struct tpe_msg *msg, int seq, int type, 
+server_handle_packet(struct server *server, int seq, int type, 
 			int len, void *data){
-	struct tpe_msg_cb *cb,*next;
+	struct msg *msg;
+	struct server_cb *cb,*next;
 	const char *event = "Unknown";
 	int i;
 
@@ -343,27 +352,34 @@ tpe_msg_handle_packet(struct tpe_msg *msg, int seq, int type,
 		}
 	}
 
+	assert(i != N_MESSAGETYPES);
+
+	msg = calloc(1,sizeof(struct msg));
+	msg->type = event;
+	msg->len = len;
+	msg->data = malloc(len);
+	memcpy(msg->data, data, len);
+	msg->protocol = 4; /* FIXME */
 
 	//printf("Handling Seq %d [%s]\n",seq,event);
 	if (seq){
-		for (cb = msg->cbs ; cb ; cb = next){
+		for (cb = server->cbs ; cb ; cb = next){
 			next = cb->next;
 			if (cb->seq == seq){
 				if (cb->cb)
-					cb->cb(cb->userdata, event, len, 
-							(char*)data + 16);
+					cb->cb(cb->userdata, msg);
 				cb->deleteme = 1;
 			} 
 		}
 
 		/* Now clean things up without callbacks */
-		for (cb = msg->cbs ; cb ; cb = next){
+		for (cb = server->cbs ; cb ; cb = next){
 			next = cb->next;
 			if (cb->deleteme){
 				if (cb->prev)
 					cb->prev->next = cb->next;
 				else
-					msg->cbs = cb->next;
+					server->cbs = cb->next;
 				if (cb->next)
 					cb->next->prev = cb->prev;
 				free(cb);
@@ -373,65 +389,64 @@ tpe_msg_handle_packet(struct tpe_msg *msg, int seq, int type,
 	}
 
 
-	{
-		/* FIXME: Neeed to process this a little */
-		int *edata;
-
-		edata = malloc(16 + len);
-		memcpy(edata,data,16+len);
-
-		/* Default cleanup will free buffer */
-		tpe_event_send(msg->tpe->event, event, edata, tpe_event_free, NULL);
-	}
-
+	tpe_event_send(server->servers->tpe->event, event, 
+			msg, msg_free, NULL);
 }	
 
+static void
+msg_free(void *udata, void *msg){
+	free(msg);
+}
+
+
 int
-tpe_msg_send(struct tpe_msg *msg, const char *msgtype, 
+server_send(struct server *server, const char *servertype, 
 		msgcb cb, void *userdata,
 		void *data, int len){
 	unsigned int *buf;	
 	int type = -1;
 	int i;
 
-	if (msg == NULL) exit(1);
+	if (server == NULL) exit(1);
 	if (len > 100000) exit(1);
 	if (data == NULL && len != 0) exit(1);
 
 	for (i = 0 ; i < N_MESSAGETYPES ; i ++){
-		if (strcmp(msgtype,msgnames[i].name) == 0)
+		if (strcmp(servertype,msgnames[i].name) == 0){
 			type = msgnames[i].tp03;
+			break;
+		}
 	}
 
 	if (type == -1){
-		printf("Message type %s not found\n",msgtype);
+		printf("Message type %s not found\n",servertype);
 		exit(1);
 	}
 
 	buf = malloc(len + HEADER_SIZE);
 	if (buf == NULL) exit(1);
 
-	msg->seq ++;
+	server->seq ++;
 
-	buf[0] = msg->header;
-	buf[1] = htonl(msg->seq);
+	buf[0] = server->header;
+	buf[1] = htonl(server->seq);
 	buf[2] = htonl(type);
 	buf[3] = htonl(len);
 	memcpy(buf + 4, data, len);
 
 	//printf("Sending Seq %d Type %d [%s] Len: %d [%p]\n",
-	//		msg->seq,type,msgtype, len,cb);
-	ecore_con_server_send(msg->svr, buf, len + HEADER_SIZE);
+	//		server->seq,type,servertype, len,cb);
+	ecore_con_server_send(server->svr, buf, len + HEADER_SIZE);
 
 	free(buf);
 
-	return tpe_msg_cb_add(msg, msg->seq, cb, userdata);
+	return server_cb_add(server, server->seq, cb, userdata);
 }
 
 
 
 int
-tpe_msg_send_strings(struct tpe_msg *msg, const char *msgtype,
+server_send_strings(struct server *server, const char *servertype,
 		msgcb cb, void *userdata,
 		...){
 	va_list ap;
@@ -447,7 +462,7 @@ tpe_msg_send_strings(struct tpe_msg *msg, const char *msgtype,
 	}
 	va_end(ap);
 
-	if (total == 0) return tpe_msg_send(msg, msgtype, cb, userdata, NULL, 0);
+	if (total == 0) return server_send(server, servertype, cb, userdata, NULL, 0);
 	
 	total += nstrs * 4;
 	buf = malloc(total);
@@ -466,7 +481,7 @@ tpe_msg_send_strings(struct tpe_msg *msg, const char *msgtype,
 	}
 	va_end(ap);
 
-	rv = tpe_msg_send(msg, msgtype, cb, userdata, buf, total);
+	rv = server_send(server, servertype, cb, userdata, buf, total);
 	free(buf);
 	return rv;
 }
@@ -482,7 +497,7 @@ tpe_msg_send_strings(struct tpe_msg *msg, const char *msgtype,
  *  r : Raw data (pre-formatted, two args, len (ints) data pointer 
  */
 int 
-tpe_msg_send_format(struct tpe_msg *msg, const char *type,
+server_send_format(struct server *server, const char *type,
 		msgcb cb, void *userdata,
 		const char *format, ...){
 	va_list ap;
@@ -491,17 +506,17 @@ tpe_msg_send_format(struct tpe_msg *msg, const char *type,
 
 	buf = NULL;
 	va_start(ap, format);
-	len = format_msg(buf, format, ap);
+	len = format_server(buf, format, ap);
 	va_end(ap);
 
 	if (len > 0){
 		buf = malloc(sizeof(int32_t) * len);
 		va_start(ap, format);
-		format_msg(buf, format, ap);
+		format_server(buf, format, ap);
 		va_end(ap);
 	}
 
-	rv = tpe_msg_send(msg, type, cb, userdata, buf, len*sizeof(int32_t));
+	rv = server_send(server, type, cb, userdata, buf, len*sizeof(int32_t));
 
 	if (buf) free(buf);
 
@@ -509,7 +524,7 @@ tpe_msg_send_format(struct tpe_msg *msg, const char *type,
 }
 
 static int
-format_msg(int32_t *buf, const char *format, va_list ap){
+format_server(int32_t *buf, const char *format, va_list ap){
 	int32_t val;
 	int len,padlen;
 	int64_t val64;
@@ -592,20 +607,20 @@ format_msg(int32_t *buf, const char *format, va_list ap){
 
 
 static int
-tpe_msg_cb_add(struct tpe_msg *msg, int seq, msgcb cb, void *userdata){
-	struct tpe_msg_cb *tmcb,*tmp;
+server_cb_add(struct server *server, int seq, msgcb cb, void *userdata){
+	struct server_cb *tmcb,*tmp;
 
-	tmcb = calloc(1,sizeof(struct tpe_msg_cb));
+	tmcb = calloc(1,sizeof(struct server_cb));
 	tmcb->seq = seq;
 	tmcb->cb = cb;
 	tmcb->userdata = userdata;
 	tmcb->next = NULL;
 	tmcb->prev = NULL;
 	
-	if (msg->cbs == NULL)
-		msg->cbs = tmcb;
+	if (server->cbs == NULL)
+		server->cbs = tmcb;
 	else {
-		for (tmp = msg->cbs ; tmp->next ; tmp = tmp->next)
+		for (tmp = server->cbs ; tmp->next ; tmp = tmp->next)
 			;
 		tmp->next = tmcb;
 		tmcb->prev = tmp;

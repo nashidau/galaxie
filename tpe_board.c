@@ -8,7 +8,7 @@
 #include "tpe.h"
 #include "tpe_board.h"
 #include "tpe_event.h"
-#include "tpe_msg.h"
+#include "server.h"
 #include "tpe_sequence.h"
 #include "tpe_util.h"
 
@@ -105,6 +105,7 @@ tpe_board_board_add(struct tpe *tpe, uint32_t oid){
 static int 
 tpe_board_msg_board_receive(void *data, int type, void *event){
 	struct tpe *tpe;
+	struct msg *msg = event;
 	char *body;
 	struct board *board;
 	struct message **nm;
@@ -112,7 +113,6 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
 	int32_t *toget;
 	int ntoget;
 	int i;
-
 	tpe = data;
 	body = event;
 	body += 16;
@@ -152,7 +152,7 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
 		toget[i - board->nalloced + 2] = htonl(i);
 	}
 
-	tpe_msg_send(tpe->msg, "MsgMessageGet", NULL, NULL, 
+	server_send(msg->server, "MsgMessageGet", NULL, NULL, 
 			toget, (ntoget + 2) * sizeof(uint32_t));
 
 	board->nalloced = board->nmessages;

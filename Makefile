@@ -14,10 +14,10 @@ I=edje/images/
 OBJECTS=		\
 	galaxie.o	\
 	browser.o	\
+	server.o	\
 	tpe_board.o	\
 	tpe_comm.o	\
 	tpe_event.o	\
-	tpe_msg.o	\
 	tpe_obj.o	\
 	tpe_orders.o	\
 	tpe_resources.o	\

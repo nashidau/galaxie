@@ -13,63 +13,62 @@
 #include <string.h>
 
 #include "browser.h"
-#include "tpe_msg.h"
+#include "server.h"
 
-struct server;
+struct bserver;
 
 struct browser {
-	struct server *servers;
+	struct bserver *servers;
 };
 
-struct server {
+struct bserver {
 	struct browser *browser;
-	struct server *next;
+	struct bserver *next;
 	struct tpe *tpe;
-	struct tpe_msg_connection *conn;
+	struct server *server;
 	char *name;
 	char *ruleset;
 	char *version;
 	struct tpe_msg *msg;
 };
 
-static int browser_socket_connect(void *serverv, struct tpe_msg_connection *conn);
-static int browser_connect_reply(void *serverv, const char *msgtype, int len, void *data);
+static int browser_socket_connect(void *serverv, struct server *conn);
+static int browser_connect_reply(void *serverv, struct msg *msg);
 
 
 int
 browser_add(struct tpe *tpe, const char *servername){
 	struct browser *browser;
-	struct server *server;
+	struct bserver *bserver;
 
 	browser = calloc(1,sizeof(struct browser));
-printf("Browser add\n");
-	server = calloc(1,sizeof(struct server));
-	server->name = strdup("localhost");
-	server->next = browser->servers;
-	server->browser = browser;
-	browser->servers = server;
+	bserver = calloc(1,sizeof(struct bserver));
+	bserver->name = strdup("localhost");
+	bserver->next = browser->servers;
+	bserver->browser = browser;
+	browser->servers = bserver;
 
-	server->msg = tpe_msg_connect(tpe, "localhost", 6923, 0, 
-			browser_socket_connect, server);
+	bserver->server = server_connect(tpe, "localhost", 6923, 0, 
+			browser_socket_connect, bserver);
 	return 0;
 }
 
 static int
-browser_socket_connect(void *serverv, struct tpe_msg_connection *conn){
-	struct server *server = serverv; 
+browser_socket_connect(void *bserverv, struct server *conn){
+	struct bserver *bserver = bserverv; 
 
-	server->conn = conn;
 printf("Connect\n");
-	tpe_msg_send_strings(server->msg, "MsgConnect", 
-			browser_connect_reply, serverv, 
+	server_send_strings(bserver->server, "MsgConnect", 
+			browser_connect_reply, bserverv, 
 			"GalaxiE", NULL);
 	
 	return 1;
 }
 
 static int 
-browser_connect_reply(void *serverv, const char *msgtype, int len, void *data){
-	assert(msgtype); assert(serverv); assert(len == 0 || data);
+browser_connect_reply(void *serverv, struct msg *msg){
+	assert(msg); assert(serverv);
+	assert(msg->len == 0 || msg->data != NULL);
 
 	printf("Got a connect reply\n");
 	return 0;
