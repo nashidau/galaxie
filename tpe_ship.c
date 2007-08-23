@@ -13,7 +13,6 @@
 
 #include "tpe.h"
 #include "tpe_event.h"
-#include "tpe_msg.h"
 #include "tpe_util.h"
 #include "tpe_sequence.h"
 #include "tpe_ship.h"

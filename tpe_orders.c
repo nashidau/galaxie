@@ -13,7 +13,7 @@
 
 #include "tpe.h"
 #include "tpe_event.h"
-#include "tpe_msg.h"
+#include "server.h"
 #include "tpe_util.h"
 #include "tpe_orders.h"
 #include "tpe_obj.h"
@@ -290,7 +290,7 @@ tpe_orders_object_update(void *tpev, int type, void *objv){
 		for (i = 0 ; i < items ; i ++)
 			toget[i + 2] = htonl(i + frag * 100);
 
-		tpe_msg_send(tpe->msg, "MsgGetOrder", NULL, NULL,
+		server_send(o->server, "MsgGetOrder", NULL, NULL,
 				toget, (items + 2) * sizeof(uint32_t));
 
 		free(toget);
@@ -636,7 +636,7 @@ tpe_orders_object_move(struct tpe *tpe, struct object *obj, int slot,
 	moveorder = tpe_order_get_type_by_name(tpe,"Move");
 	if (moveorder == -1)
 		return -1; /* FIXME: Temp unavail - should job it to retry */
-	return tpe_msg_send_format(tpe->msg, "MsgInsertOrder",
+	return server_send_format(obj->server, "MsgInsertOrder",
 			NULL, NULL,
 			"iii00lll",
 			obj->oid, slot, moveorder, 
@@ -664,7 +664,7 @@ tpe_orders_object_colonise(struct tpe *tpe, struct object *obj, int slot,
 	if (colorder == -1)
 		return -1; /* FIXME: Temp unavail - should job it to retry */
 
-	return tpe_msg_send_format(tpe->msg, "MsgInsertOrder",
+	return server_send_format(obj->server, "MsgInsertOrder",
 			NULL, NULL,
 			"iii00i",
 			obj->oid, slot, colorder, what->oid);
@@ -721,7 +721,7 @@ tpe_orders_object_build(struct tpe *tpe, struct object *obj, int slot,
 			buf[i * 2 + 2] = htonl(va_arg(ap, uint32_t));
 		}
 		va_end(ap);
-		return tpe_msg_send_format(tpe->msg, "MsgInsertOrder",
+		return server_send_format(obj->server, "MsgInsertOrder",
 					NULL, NULL,
 					"V" "iii000r0s",
 					obj->oid, slot,
@@ -751,7 +751,7 @@ tpe_orders_object_clear(struct tpe *tpe, struct object *obj){
 	}
 	
 	/* Catch the fail message */
-	rv = tpe_msg_send(tpe->msg, "MsgRemoveOrder",
+	rv = server_send(obj->server, "MsgRemoveOrder",
 			NULL, NULL,
 			toremove, (sizeof(int32_t) * (obj->norders + 2)));
 

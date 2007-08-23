@@ -356,9 +356,12 @@ server_handle_packet(struct server *server, int seq, int type,
 
 	msg = calloc(1,sizeof(struct msg));
 	msg->type = event;
+	msg->tpe = server->servers->tpe;
+	msg->seq= seq;
 	msg->len = len;
 	msg->data = malloc(len);
 	memcpy(msg->data, data, len);
+	msg->end = (char*)msg->data + len;
 	msg->protocol = 4; /* FIXME */
 
 	//printf("Handling Seq %d [%s]\n",seq,event);

@@ -1,6 +1,3 @@
-
-
-
 struct tpe {
 	int player; /* My player ID */
 	char *playername;
@@ -9,8 +6,6 @@ struct tpe {
 
 	struct tpe_event *event;
 	struct servers *servers;
-	struct tpe_msg *msg;
-	struct tpe_comm *comm;
 	struct tpe_orders *orders;
 	struct tpe_obj *obj;
 	struct tpe_board *board;

@@ -9,7 +9,7 @@
 #include "tpe.h"
 #include "tpe_event.h"
 #include "tpe_sequence.h"
-#include "tpe_msg.h"
+#include "server.h"
 #include "tpe_util.h"
 
 struct sequence {
@@ -89,8 +89,10 @@ tpe_sequence_new_turn(void *data, int eventid, void *event){
 	struct tpe *tpe;
 	struct sequence *seq;
 	Ecore_List *seqs;
+	struct server *server;
 
 	tpe = data;
+	server = event;
 
 	seqs = tpe->sequence->seqs;
 	
@@ -99,7 +101,7 @@ tpe_sequence_new_turn(void *data, int eventid, void *event){
 		if (seq->list_begin)
 			seq->list_begin(tpe);
 		seq->position = 0;
-		tpe_msg_send_format(tpe->msg, seq->updatemsg,
+		server_send_format(server, seq->updatemsg,
 				NULL, NULL,
 				"i0i", -1,-1);
 	}
@@ -124,20 +126,21 @@ tpe_sequence_new_turn(void *data, int eventid, void *event){
  * FIXME: Check lengths correctly...
  */
 static int
-tpe_sequence_handle_oids(void *udata, int type, void *event){
+tpe_sequence_handle_oids(void *udata, int type, void *msgv){
 	struct sequence *seq;
+	struct msg *msg;
 	uint32_t *toget;
 	int i,n;
 	int seqkey, more;
 	int noids;
 	struct ObjectSeqID *oids = NULL;
 	int64_t updated;
-	void *end;
 
 	seq = udata;
+	msg = msgv;
 
-	tpe_util_parse_packet(event, NULL, "HiiO", NULL, NULL, NULL, &end,
-			&seqkey,&more,&noids,&oids);
+	tpe_util_parse_packet(msg->data, msg->end, 
+			"iiO",&seqkey,&more,&noids,&oids);
 	seq->position += noids;
 	
 	toget = malloc((noids + 1) * sizeof(int));
@@ -150,7 +153,7 @@ tpe_sequence_handle_oids(void *udata, int type, void *event){
 
 	if (n > 0){
 		toget[0] = htonl(n);
-		tpe_msg_send(seq->tpe->msg, seq->getmsg, NULL, NULL,
+		server_send(msg->server, seq->getmsg, NULL, NULL,
 				toget, (n + 1) * sizeof(uint32_t));
 	}
 
@@ -158,7 +161,7 @@ tpe_sequence_handle_oids(void *udata, int type, void *event){
 	free(oids);
 
 	if (more > 0){
-		tpe_msg_send_format(seq->tpe->msg, seq->updatemsg, 
+		server_send_format(msg->server, seq->updatemsg, 
 			NULL, NULL,
 			"iii", seqkey, seq->position, -1);
 	} else {

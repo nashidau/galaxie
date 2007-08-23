@@ -7,6 +7,7 @@ struct gui {
 	const char *magic;
 
 	struct tpe *tpe;
+	struct server *server;
 
 	Ecore_Evas  *ee;
 	Evas        *e;

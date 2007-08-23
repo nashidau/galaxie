@@ -207,7 +207,8 @@ gui_edje_splash_connect(void *data, Evas_Object *o,
 	tpe = data;
 	gui = tpe->gui;
 
-	tpe_comm_connect(tpe->comm, "tranquillity.nash.id.au", 6923, "default", "nash", "password");
+	/* FIXME */
+	//tpe_comm_connect(tpe->comm, "tranquillity.nash.id.au", 6923, "default", "nash", "password");
 }
 
 
@@ -269,7 +270,11 @@ gui_time_remaining(void *guip, int type, void *eventd){
 static int 
 gui_new_turn(void *data, int eventid, void *event){
 	struct gui *gui = data;
+	struct server *server;
+	struct msg *msg = event;
 	char buf[200];
+
+	if (gui->server != event) return 1;
 
 	snprintf(buf,200,"GalaxiE :: %s :: Turn %d", 
 			gui->tpe->racename, gui->tpe->turn);

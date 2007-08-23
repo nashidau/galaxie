@@ -47,6 +47,7 @@ struct object {
 	const char *magic;
 
 	struct tpe *tpe;
+	struct server *server;
 
 	uint32_t oid;	/* Unique ID */
 	enum objtype type;

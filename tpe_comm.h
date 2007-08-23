@@ -12,15 +12,19 @@ enum connectstatus {
 };	
 
 struct connect {
-	const char *server;
+	struct server *server;
+	const char *servername;
 	const char *user;
 	const char *game;
 	enum connectstatus status;
+	const char *pass;
+	unsigned int triedcreate : 1;
+	unsigned int accountregister : 1;
 };
 
-struct tpe_comm *tpe_comm_init(struct tpe *);
+void tpe_comm_init(struct tpe *);
 
-int tpe_comm_connect(struct tpe_comm *, const char *, int port, 
+int tpe_comm_connect(struct tpe*, const char *server, int port, 
 		const char *game,
-		const char *, const char *);
+		const char *user, const char *pass);
 

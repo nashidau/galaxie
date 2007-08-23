@@ -16,7 +16,6 @@ OBJECTS=		\
 	browser.o	\
 	server.o	\
 	tpe_board.o	\
-	tpe_comm.o	\
 	tpe_event.o	\
 	tpe_obj.o	\
 	tpe_orders.o	\
@@ -24,6 +23,7 @@ OBJECTS=		\
 	tpe_sequence.o	\
 	tpe_ship.o	\
 	tpe_util.o	\
+	tpe_comm.o	\
 	ai_util.o
 
 GUI=			\
@@ -99,8 +99,7 @@ tags:
 
 
 galaxie.o: ailist.h
-tpe_msg.o : tpe_msg.h tpe.h
-ai_smith.o: tpe_obj.h tpe.h tpe_event.h tpe_msg.h tpe_orders.h tpe_ship.h \
+ai_smith.o: tpe_obj.h tpe.h tpe_event.h server.h tpe_orders.h tpe_ship.h \
 		tpe_util.h
 tpe_gui.o: tpe.h tpe_gui.h tpe_board.h tpe_comm.h tpe_event.h tpe_obj.h \
 		tpe_orders.h tpe_ship.h tpe_util.h tpe_reference.h \
@@ -113,12 +112,11 @@ gui_window.o : tpe.h tpe_gui.h tpe_gui_private.h
 gui_list.o : tpe.h tpe_gui.h gui_window.h
 tpe_board.o : tpe.h tpe_board.h
 tpe_comm.o : tpe.h tpe_comm.h
-tpe_msg.o : tpe_msg.h tpe.h
 tpe_obj.o : tpe_obj.h tpe.h
 tpe_orders.o : tpe_orders.h tpe.h
 tpe_resources.o : tpe_resources.h tpe.h
-tpe_sequence.o: tpe.h tpe_event.h tpe_sequence.h tpe_msg.h tpe_util.h
-tpe_ship.o : tpe.h tpe_event.h tpe_msg.h tpe_util.h tpe_sequence.h tpe_ship.h
+tpe_sequence.o: tpe.h tpe_event.h tpe_sequence.h server.h tpe_util.h
+tpe_ship.o : tpe.h tpe_event.h server.h tpe_util.h tpe_sequence.h tpe_ship.h
 
 $Iarrowright.png : $Imailviewer.svg
 	inkscape -j --export-id=path5138 --export-png $@ $<

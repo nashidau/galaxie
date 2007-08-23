@@ -4,10 +4,13 @@ struct server;
 
 struct msg {
 	struct server *server;
+	struct tpe *tpe;
 	const char *type;
+	unsigned int seq;
 	unsigned int len;
 	unsigned int protocol;
 	void *data;
+	void *end;
 };
 
 typedef int (*msgcb)(void *userdata, struct msg *);

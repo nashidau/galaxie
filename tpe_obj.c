@@ -18,7 +18,7 @@
 #include "tpe_obj.h"
 #include "tpe_orders.h"
 #include "tpe_event.h"
-#include "tpe_msg.h"
+#include "server.h"
 #include "tpe_resources.h"
 #include "tpe_sequence.h"
 #include "tpe_util.h"
