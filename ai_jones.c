@@ -23,7 +23,7 @@
 #include "tpe.h"
 #include "ai_util.h"
 #include "tpe_event.h"
-#include "tpe_msg.h"
+#include "server.h"
 #include "tpe_orders.h"
 #include "tpe_obj.h"
 #include "tpe_ship.h"
@@ -35,12 +35,13 @@
 struct ai {
 	/** Pointer back to TPE structure */
 	struct tpe *tpe;
+
+	struct server *server;
 };
 
 static int jones_order_fleet(void *data, int type, void *event);
 static int jones_order_planet(void *data, int type, void *event);
-static int jones_order_insert_cb(void *userdata, const char *msgtype,
-		int len, void *edata);
+static int jones_order_insert_cb(void *userdata, struct msg *msg);
 
 TPE_AI("jones", "Jones - Aggresive Minisec AI", ai_jones_init)
 
@@ -73,7 +74,7 @@ jones_order_planet(void *aiv, int type, void *planetv){
 	buildid = tpe_order_get_type_by_name(jones->tpe, "BuildFleet");
 	if (buildid == -1) return 1;
 	
-	tpe_msg_send_format(jones->tpe->msg, "MsgProbeOrder",
+	server_send_format(jones->server, "MsgProbeOrder",
 			jones_order_insert_cb, jones,
 			"iii000000", planet->oid, -1, buildid);
 
@@ -84,23 +85,20 @@ jones_order_planet(void *aiv, int type, void *planetv){
  * Handler for the probem order response 
  */
 static int 
-jones_order_insert_cb(void *userdata, const char *msgtype,
-		int len, void *edata){
+jones_order_insert_cb(void *userdata, struct msg *msg){
 	struct ai *jones = userdata;
-	void *end;
 	int frigate, battleship;
 	int oid,slot,type,turns,nbr,noptions,i,maxstr;
 	struct build_resources *br = NULL;
 	struct arg_type6 *options = NULL;
 	struct object *obj;
 
-	if (strcmp(msgtype, "MsgOrder") != 0){
-		printf("Got a %s back!\n", msgtype);
+	if (strcmp(msg->type, "MsgOrder") != 0){
+		printf("Got a %s back!\n", msg->type);
 		exit(1);
 	}
 
-	end = (char *)edata + len;
-	tpe_util_parse_packet(edata, end, "iiiiB6i", 
+	tpe_util_parse_packet(msg->data, msg->end, "iiiiB6i", 
 			&oid, &slot,&type,&turns,
 			&nbr,&br,
 			&noptions,&options,

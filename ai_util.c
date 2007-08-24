@@ -6,6 +6,7 @@
 #include "tpe.h"
 #include "tpe_obj.h"
 #include "tpe_util.h"
+#include "ai_util.h"
 
 struct object *
 ai_util_planet_closest_uncolonised(struct tpe *tpe, struct object *obj){

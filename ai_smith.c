@@ -11,8 +11,8 @@
 
 #include "tpe.h"
 #include "ai_util.h"
+#include "server.h"
 #include "tpe_event.h"
-#include "tpe_msg.h"
 #include "tpe_orders.h"
 #include "tpe_obj.h"
 #include "tpe_ship.h"
@@ -40,8 +40,7 @@ static int smith_order_planet(void *data, int type, void *event);
 static int smith_order_fleet(void *data, int type, void *event);
 static int smith_planet_colonised(void *data, int type, void *event);
 
-static int smith_order_insert_cb(void *userdata, const char *msgtype, 
-		int len, void *edata);
+static int smith_order_insert_cb(void *userdata, struct msg *msg);
 int order_move(struct tpe *tpe, struct object *o, struct object *dest);
 int order_colonise(struct tpe *tpe, struct object *o, struct object *dest);
 
@@ -60,6 +59,7 @@ static const char *shipnames[] = {
 };
 #define N_SHIPNAMES (sizeof(shipnames)/sizeof(shipnames[0]))
 
+struct ai *ai_smith_init(struct tpe *);
 
 /* Move:
  * 	pos : Absoluate space coords <int64,int64,int64>
@@ -114,7 +114,7 @@ smith_order_planet(void *data, int type, void *event){
 //			return 1;
 	}
 
-	tpe_msg_send_format(smith->tpe->msg, "MsgProbeOrder",
+	server_send_format(o->server,  "MsgProbeOrder",
 			smith_order_insert_cb, smith,
 			"iii000000", o->oid, -1, build_id);
 
@@ -122,10 +122,8 @@ smith_order_planet(void *data, int type, void *event){
 }
 
 static int 
-smith_order_insert_cb(void *userdata, const char *msgtype, 
-		int len, void *edata){
+smith_order_insert_cb(void *userdata, struct msg *msg){
 	struct ai *smith = userdata;
-	int *data = edata;
 	int oid, slot, type, turns, nbr, noptions = 0;
 	struct build_resources *br = NULL;
 	struct arg_type6 *options = NULL;
@@ -134,17 +132,14 @@ smith_order_insert_cb(void *userdata, const char *msgtype,
 	int frigate;
 	int i;
 
-
-	char *end = (char *)edata + len;
-
-	if (strcmp(msgtype,"MsgFail") == 0){
+	if (strcmp(msg->type,"MsgFail") == 0){
 		/* FIXME: Start cleaning up? */
 		printf("Message failure for insert order\n");
 		return 1;
 	}
 
 	/* FIXME: Check result */
-	tpe_util_parse_packet(data, end, "iiiiB6i", 
+	tpe_util_parse_packet(msg->data, msg->end, "iiiiB6i", 
 			&oid, &slot,&type,&turns,
 			&nbr,&br,
 			&noptions,&options,
@@ -166,7 +161,7 @@ smith_order_insert_cb(void *userdata, const char *msgtype,
 	snprintf(str, maxstr, "%s #%d", shipnames[rand() % N_SHIPNAMES],
 			smith->shipid ++);
 	
-	tpe_msg_send_format(smith->tpe->msg, "MsgInsertOrder",
+	server_send_format(msg->server, "MsgInsertOrder",
 		NULL, NULL,
 		"iii000iii0s",
 		oid, -1, build_id, 1, frigate, 1, str);

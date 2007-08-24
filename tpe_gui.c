@@ -24,6 +24,7 @@
 #include "tpe_util.h" /* For struct reference */
 #include "tpe_reference.h"
 #include "tpe_resources.h"
+#include "server.h"
 
 #include "tpe_gui.h"
 #include "tpe_gui_private.h"
@@ -270,11 +271,10 @@ gui_time_remaining(void *guip, int type, void *eventd){
 static int 
 gui_new_turn(void *data, int eventid, void *event){
 	struct gui *gui = data;
-	struct server *server;
 	struct msg *msg = event;
 	char buf[200];
 
-	if (gui->server != event) return 1;
+	if (gui->server != msg->server) return 1;
 
 	snprintf(buf,200,"GalaxiE :: %s :: Turn %d", 
 			gui->tpe->racename, gui->tpe->turn);

@@ -182,7 +182,7 @@ main(int argc, char **argv){
 	tpe->event 	= tpe_event_init(tpe);
 	tpe->servers 	= server_init(tpe);
 	//tpe->msg   	= tpe_msg_init(tpe);
-	tpe->comm  	= tpe_comm_init(tpe);
+	tpe_comm_init(tpe);
 	
 	tpe->sequence 	= tpe_sequence_init(tpe);
 
@@ -200,7 +200,7 @@ main(int argc, char **argv){
 	if (opt->browse)
 		browser_add(tpe,opt->server);
 	else if (opt->server && opt->username && opt->password)
-		tpe_comm_connect(tpe->comm, opt->server, opt->port, 
+		tpe_comm_connect(tpe, opt->server, opt->port, 
 				opt->game, 
 				opt->username, opt->password);
 
