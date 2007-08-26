@@ -34,6 +34,7 @@ struct bserver {
 
 static int browser_socket_connect(void *serverv, struct server *conn);
 static int browser_connect_reply(void *serverv, struct msg *msg);
+static int browser_games_receive(void *serverv, struct msg *msg);
 
 
 int
@@ -57,7 +58,6 @@ static int
 browser_socket_connect(void *bserverv, struct server *conn){
 	struct bserver *bserver = bserverv; 
 
-printf("Connect\n");
 	server_send_strings(bserver->server, "MsgConnect", 
 			browser_connect_reply, bserverv, 
 			"GalaxiE", NULL);
@@ -68,10 +68,22 @@ printf("Connect\n");
 static int 
 browser_connect_reply(void *serverv, struct msg *msg){
 	assert(msg); assert(serverv);
+	assert(msg->server);
 	assert(msg->len == 0 || msg->data != NULL);
 
 	printf("Got a connect reply\n");
+	/* Get games frame */
+	server_send(msg->server, "MsgGetGames",
+			browser_games_receive, serverv,
+			NULL, 0);
+	printf("sending!\n");
 	return 0;
+}
+
+static int
+browser_games_receive(void *serverv, struct msg *msg){
+	printf("Received game info\n");
+	return 1;
 }
 
 

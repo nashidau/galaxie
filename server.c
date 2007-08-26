@@ -102,6 +102,10 @@ static const struct msgname {
 	{ "MsgGET_PROPERTY_IDS", 		60 },
 	{ "MsgLIST_OF_PROPERTY_IDS", 		61 },
 	{ "MsgCreateAccount",			62 },
+
+	/* TP04 only */
+	{ "MsgGetGames",			65 },
+	{ "MsgGames",				66 },
 };
 #define N_MESSAGETYPES (sizeof(msgnames)/sizeof(msgnames[0]))
 
@@ -139,7 +143,6 @@ struct server {
 		char *data;
 	} buf;
 };
-
 
 
 struct server_cb {
@@ -196,11 +199,11 @@ server_init(struct tpe *tpe){
 	server_event_register(tpe);
 
 	ecore_event_handler_add(ECORE_CON_EVENT_SERVER_ADD, 	
-			server_con_event_server_add, tpe);
+			server_con_event_server_add, servers);
 	ecore_event_handler_add(ECORE_CON_EVENT_CLIENT_DATA,
-			server_receive, tpe);
+			server_receive, servers);
 	ecore_event_handler_add(ECORE_CON_EVENT_SERVER_DATA,
-			server_receive, tpe);
+			server_receive, servers);
 
 	return servers;
 }
@@ -223,27 +226,26 @@ struct server *
 server_connect(struct tpe *tpe, 
 		const char *servername, int port, int usessl,
 		conncb cb, void *userdata){
-	Ecore_Con_Server *svr;
 	struct server *server;
 
 	server = calloc(1,sizeof(struct server));
-	
-	/* FIXME: ssl */
-	svr = ecore_con_server_connect(ECORE_CON_REMOTE_SYSTEM,
-				servername,port,server);
 	
 	/* Start by assuming TP 4 */
 	server->header = htonl(('T' << 24) | ('P' << 16) | (4 << 8) | 0);  
 	
 	server->seq = 1;
 	
-	/* Register events */
+	/* Add to the list of servers */
+	server->next = tpe->servers->servers;
+	tpe->servers->servers = server;
 	server->servers = tpe->servers;
-
-	server->svr = svr;
 
 	server->conncb = cb;
 	server->conndata = userdata;
+
+	/* FIXME: ssl */
+	server->svr = ecore_con_server_connect(ECORE_CON_REMOTE_SYSTEM,
+				servername,port,server);
 
 	return server;
 }
@@ -255,10 +257,28 @@ server_connect(struct tpe *tpe,
  *
  * Now we will attempt to connect
  */
-static int server_con_event_server_add(void *data, int type, void *edata){
+static int 
+server_con_event_server_add(void *data, int type, void *edata){
+	struct servers *servers;
 	struct server *server;
-	server = data;
-printf("Server add %p %p\n",server,server->conncb);
+	Ecore_Con_Event_Server_Add *add;
+	Ecore_Con_Server *svr;
+
+	servers = data;
+	add = edata;
+	svr = add->server;
+
+	/* Find our server data */
+	for (server = servers->servers ; server ; server = server-> next){
+		if (server->svr == svr)
+			break;
+	}
+
+	if (server == NULL){
+		printf("ERROR: Failed to find server data\n");
+		exit(1);
+		return 1;
+	}
 
 	if (server->conncb)
 		server->conncb(server->conndata, NULL);
@@ -357,6 +377,7 @@ server_handle_packet(struct server *server, int seq, int type,
 	msg = calloc(1,sizeof(struct msg));
 	msg->type = event;
 	msg->tpe = server->servers->tpe;
+	msg->server = server;
 	msg->seq= seq;
 	msg->len = len;
 	msg->data = malloc(len);
@@ -403,26 +424,29 @@ msg_free(void *udata, void *msg){
 
 
 int
-server_send(struct server *server, const char *servertype, 
+server_send(struct server *server, const char *msgtype, 
 		msgcb cb, void *userdata,
 		void *data, int len){
 	unsigned int *buf;	
 	int type = -1;
 	int i;
 
+	assert(server); assert(len < 100000);
+	assert(data || len == 0);
+
 	if (server == NULL) exit(1);
 	if (len > 100000) exit(1);
 	if (data == NULL && len != 0) exit(1);
 
 	for (i = 0 ; i < N_MESSAGETYPES ; i ++){
-		if (strcmp(servertype,msgnames[i].name) == 0){
+		if (strcmp(msgtype,msgnames[i].name) == 0){
 			type = msgnames[i].tp03;
 			break;
 		}
 	}
 
 	if (type == -1){
-		printf("Message type %s not found\n",servertype);
+		printf("Message type %s not found\n",msgtype);
 		exit(1);
 	}
 
