@@ -381,7 +381,7 @@ server_handle_packet(struct server *server, int seq, int type,
 	msg->seq= seq;
 	msg->len = len;
 	msg->data = malloc(len);
-	memcpy(msg->data, data, len);
+	memcpy(msg->data, (char *)data + 16, len);
 	msg->end = (char*)msg->data + len;
 	msg->protocol = 4; /* FIXME */
 

@@ -8,12 +8,15 @@
  * 		- Metaserver [Not implemented]
  */
 #include <assert.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+
 #include "browser.h"
 #include "server.h"
+#include "tpe_util.h"
 
 struct bserver;
 
@@ -67,9 +70,9 @@ browser_socket_connect(void *bserverv, struct server *conn){
 
 static int 
 browser_connect_reply(void *serverv, struct msg *msg){
-	assert(msg); assert(serverv);
-	assert(msg->server);
-	assert(msg->len == 0 || msg->data != NULL);
+
+	SERVER_MSG_VALID(msg);
+	assert(serverv);
 
 	printf("Got a connect reply\n");
 	/* Get games frame */
@@ -82,7 +85,18 @@ browser_connect_reply(void *serverv, struct msg *msg){
 
 static int
 browser_games_receive(void *serverv, struct msg *msg){
+	const char *name = NULL, *key = NULL;
+
+	SERVER_MSG_VALID(msg);
+
 	printf("Received game info\n");
+
+	/* Note: This thing is a monster */
+	tpe_util_parse_packet(msg->data, msg->end, 
+			"ss", &name, &key);
+		
+	printf("Game: %s %s\n",name,key);
+
 	return 1;
 }
 
