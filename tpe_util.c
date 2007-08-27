@@ -1,4 +1,6 @@
+
 #include <arpa/inet.h>
+#include <assert.h>
 #include <float.h>
 #include <math.h>
 #include <stdarg.h>
@@ -28,6 +30,10 @@ tpe_util_string_extract(const char *src, int *lenp, const char **endp){
 	int len;
 	char *buf;
 	len = ntohl(*(int *)src);
+	if (len > 1000) {
+		printf("unusually long string: %d\n",len);
+		exit(1);
+	}
 	if (endp) *endp = src + len + 4;
 	if (lenp) *lenp = len;
 	buf = malloc(len + 1);
@@ -526,6 +532,149 @@ parse_header(void **data, void **end, va_list *ap){
 
 	*data = idata;
 
+	return 0;
+}
+
+/* Parses a generic array.
+ * Possible member types are:
+ * 	b	a byte
+ * 	i 	Int
+ * 	l 	Long long (64 bit)
+ * 	s	String (expexts two params:
+ * 			length (uint);
+ * 			pointer to store buffer
+ */
+void *
+tpe_util_parse_array(void *bufv, void *end, char *format, ...){
+	char *p;
+	char *buf;
+	int i,len,size;
+	va_list ap;
+	char *dest;
+	char *destbuf;
+	ptrdiff_t off;
+	assert(bufv); assert(end); assert(format); 
+
+	assert(*format == '[');
+
+	buf = bufv;
+	len = *(int *)buf; // NTHOL
+	buf += 4;
+	printf("Looking for %d elements\n",len);
+
+	for (p = format + 1, size = 0 ; *p != ']' ; p ++){
+		switch (*p) {
+		case 'b': size ++; break;
+		case 'i': size += sizeof(uint32_t); break;
+		case 'l': size += sizeof(uint64_t); break;
+		case 's': size += sizeof(uint32_t);
+			size += sizeof(char *);	break;
+		default:
+			printf("Unknown character '%c'\n",*p);
+			exit(1);
+		}
+	}
+
+	printf("Dest size is %d\n",size);
+
+	destbuf = calloc(len,size);
+	dest = destbuf;
+
+	for (i = 0 ; i < len ; i ++){
+		dest = destbuf + i * size;
+		va_start(ap,format);
+		for (p = format + 1 ; *p != ']' ; p ++){
+			off = va_arg(ap, ptrdiff_t);
+			printf("Parsing %c [%p -> %p + %d]\n",*p,buf,dest,off);
+			switch (*p){
+			case 'i':
+				memcpy(dest+off, buf, sizeof(uint32_t));
+				buf += 4;
+				break;
+			case 'l':
+				memcpy(dest+off, buf, sizeof(uint64_t));
+				buf += 8;
+				break;
+			}
+		}
+		va_end(ap);
+	}
+
+	return destbuf;
+}
+
+struct tut_i {
+	int i;
+};
+struct tut_il {
+	int i;
+	uint64_t l;
+};
+struct tut_li {
+	uint64_t l;
+	int i;
+};
+
+int 
+tpe_util_test(void){
+	int tutidatai[] = { 4, 27, 33, 33, 22 };
+	int tutidataii[] = { 2, 27, 33, 33, 22 };
+	int tutidataiiii[] = { 1, 27, 33, 33, 22 };
+	int tutildata[] = { 2, 42, 0xa5a5a5a5, 0x5a5a5a5a,
+				37, 0xb7b7b7b7, 0x7b7b7b7b };
+	struct tut_i *tut_i;
+	struct tut_il *tut_il;
+	struct tut_li *tut_li;
+	ptrdiff_t loff,ioff;
+	int i;
+
+	tut_i = tpe_util_parse_array(tutidatai ,tutidatai + 5, "[i]", 0);
+	for (i = 0 ; i < 4 ; i ++){
+		printf("%d -> %d [%d/%p] (%s)\n",tutidatai[i + 1],tut_i[i].i,
+				((int *)(tut_i))[i],&((int *)(tut_i))[i],
+				(tutidatai[i + 1] == tut_i[i].i) ?"Good": "Bad");
+	}
+	tut_i = tpe_util_parse_array(tutidataii,tutidataii + 5, "[ii]", 0,4);
+	for (i = 0 ; i < 4 ; i ++){
+		printf("%d -> %d [%d/%p] (%s)\n",tutidatai[i + 1],tut_i[i].i,
+				((int *)(tut_i))[i],&((int *)(tut_i))[i],
+				(tutidatai[i + 1] == tut_i[i].i) ?"Good": "Bad");
+	}
+	tut_i = tpe_util_parse_array(tutidataiiii,tutidataiiii + 5, "[iiii]",0,4,8,12);
+	for (i = 0 ; i < 4 ; i ++){
+		printf("%d -> %d [%d/%p] (%s)\n",tutidatai[i + 1],tut_i[i].i,
+				((int *)(tut_i))[i],&((int *)(tut_i))[i],
+				(tutidatai[i + 1] == tut_i[i].i) ?"Good": "Bad");
+	}
+
+	ioff = (char *)&tut_il->i - (char *)tut_il;
+	loff = (char *)&tut_il->l - (char *)tut_il;
+	tut_il = tpe_util_parse_array(tutildata, tutildata + sizeof(tutildata),
+			"[il]", ioff,loff);
+	for (i = 0 ; i < 2 ; i ++){
+		printf("%d -> %d && %llx -> %llx\n",
+				tutildata[i * 3 + 1],tut_il[i].i,
+				*((uint64_t*)(tutildata + (i * 3 + 2))),
+				tut_il[i].l);
+		//printf("%d -> %d [%d/%p] (%s)\n",tutidatai[i + 1],tut_i[i].i,
+		//		((int *)(tut_i))[i],&((int *)(tut_i))[i],
+		//		(tutidatai[i + 1] == tut_i[i].i) ?"Good": "Bad");
+	}
+
+	ioff = (char *)&tut_li->i - (char *)tut_li;
+	loff = (char *)&tut_li->l - (char *)tut_li;
+	tut_li = tpe_util_parse_array(tutildata, tutildata + sizeof(tutildata),
+			"[il]", ioff,loff);
+	for (i = 0 ; i < 2 ; i ++){
+		printf("%d -> %d && %llx -> %llx\n",
+				tutildata[i * 3 + 1],tut_li[i].i,
+				*((uint64_t*)(tutildata + (i * 3 + 2))),
+				tut_li[i].l);
+	}
+
+
+
+	exit(0);
 	return 0;
 }
 

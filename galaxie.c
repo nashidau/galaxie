@@ -69,6 +69,7 @@ struct startopt {
 
 static struct startopt *parse_args(int argc, char **argv);
 static int parse_usebrowser(struct startopt *opt, int i, char **args);
+static int parse_test(struct startopt *opt, int i, char **args);
 static int parse_username(struct startopt *opt, int i, char **args);
 static int parse_password(struct startopt *opt, int i, char **args);
 static int parse_server(struct startopt *opt, int i, char **args);
@@ -123,6 +124,7 @@ static struct args {
 	{ "--help",     parse_usage	},
 	{ "-h",    	parse_usage	},
 	{ "-?",    	parse_usage	},
+	{ "--test",	parse_test 	},
 };
 
 /* The regular expression for matching URLS */
@@ -258,6 +260,13 @@ static int
 parse_usebrowser(struct startopt *opt, int i, char **args){
 	opt->browse = 1;
 	i ++;
+	return i;
+}
+
+static int
+parse_test(struct startopt *opt, int i, char **args){
+	tpe_util_test();
+	
 	return i;
 }
 
