@@ -552,7 +552,8 @@ tpe_util_parse_array(void *bufv, void *end, char *format, ...){
 	va_list ap;
 	char *dest;
 	char *destbuf;
-	ptrdiff_t off;
+	ptrdiff_t off,off2;
+	uint32_t slen;
 	assert(bufv); assert(end); assert(format); 
 
 	assert(*format == '[');
@@ -585,7 +586,6 @@ tpe_util_parse_array(void *bufv, void *end, char *format, ...){
 		va_start(ap,format);
 		for (p = format + 1 ; *p != ']' ; p ++){
 			off = va_arg(ap, ptrdiff_t);
-			printf("Parsing %c [%p -> %p + %d]\n",*p,buf,dest,off);
 			switch (*p){
 			case 'i':
 				memcpy(dest+off, buf, sizeof(uint32_t));
@@ -595,6 +595,19 @@ tpe_util_parse_array(void *bufv, void *end, char *format, ...){
 				memcpy(dest+off, buf, sizeof(uint64_t));
 				buf += 8;
 				break;
+			case 's':
+				memcpy(dest+off, buf, sizeof(uint32_t));
+				buf += 4;
+				off2 = va_arg(ap,ptrdiff_t);
+				slen = *(int*)(dest+off);
+				if (slen){
+					*((char**)(dest+off2)) = malloc(slen+1);
+					memcpy(*(char **)(dest+off2),buf,slen);
+					(*(char **)(dest+off2))[slen] = 0;
+				} else {
+					*((char**)(dest+off2)) = NULL;
+				}
+				buf += slen;
 			}
 		}
 		va_end(ap);
@@ -615,6 +628,18 @@ struct tut_li {
 	int i;
 };
 
+struct tut_s {
+	uint32_t len;
+	char *buf;
+};
+
+struct tut_iisi {
+	uint32_t i2,i3;
+	uint32_t len;
+	char *buf;
+	uint32_t i4;
+};
+
 int 
 tpe_util_test(void){
 	int tutidatai[] = { 4, 27, 33, 33, 22 };
@@ -622,10 +647,20 @@ tpe_util_test(void){
 	int tutidataiiii[] = { 1, 27, 33, 33, 22 };
 	int tutildata[] = { 2, 42, 0xa5a5a5a5, 0x5a5a5a5a,
 				37, 0xb7b7b7b7, 0x7b7b7b7b };
+	int tutsdata[] = { 3,   4, 0x6873614e,
+				4, 0x61616161,
+				5, 0x69766c45, 0x73};
+	int tutiisidata[] = { 3,
+				99, 112, 4, 0x44434241, 0xdeadbeef,
+				1, 2, 4, 0x505421, 0xfeed,
+				4, 5, 9, 0x44434241, 0x48474645,
+					0xadbeef49, 0xde };
 	struct tut_i *tut_i;
 	struct tut_il *tut_il;
 	struct tut_li *tut_li;
-	ptrdiff_t loff,ioff;
+	struct tut_s *tut_s;
+	struct tut_iisi *tut_iisi;
+	ptrdiff_t loff,ioff,soff,ioff2,ioff3,ioff4;
 	int i;
 
 	tut_i = tpe_util_parse_array(tutidatai ,tutidatai + 5, "[i]", 0);
@@ -672,7 +707,31 @@ tpe_util_test(void){
 				tut_li[i].l);
 	}
 
+	ioff = (char *)&tut_s->len - (char*)tut_s;
+	soff = (char *)&tut_s->buf - (char*)tut_s;
+	tut_s = tpe_util_parse_array(tutsdata, tutsdata + sizeof(tutsdata), 
+			"[s]", ioff, soff);
+	for (i = 0 ; i < 3 ; i ++){
+		printf("[%d]%s -> [%d]%s\n",
+				0,"",
+				tut_s[i].len,tut_s[i].buf);
+	}
 
+
+	ioff = (char *)&tut_iisi->len - (char*)tut_iisi;
+	soff = (char *)&tut_iisi->buf - (char*)tut_iisi;
+	ioff2 = (char *)&tut_iisi->i2 - (char*)tut_iisi;
+	ioff3 = (char *)&tut_iisi->i3 - (char*)tut_iisi;
+	ioff4 = (char *)&tut_iisi->i4 - (char*)tut_iisi;
+	tut_iisi = tpe_util_parse_array(tutiisidata, 
+			tutiisidata + sizeof(tutiisidata), 
+			"[iisi]", ioff2, ioff3, ioff, soff, ioff4); 
+	for (i = 0 ; i < 3 ; i ++){
+		printf("[%d]%s -> [%d]%s\n",
+				0,"",
+				tut_iisi[i].len,tut_iisi[i].buf);
+	}
+	
 
 	exit(0);
 	return 0;
