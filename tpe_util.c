@@ -537,7 +537,6 @@ parse_header(void **data, void **end, va_list *ap){
 
 /* Parses a generic array.
  * Possible member types are:
- * 	b	a byte
  * 	i 	Int
  * 	l 	Long long (64 bit)
  * 	s	String (expexts two params:
@@ -545,38 +544,23 @@ parse_header(void **data, void **end, va_list *ap){
  * 			pointer to store buffer
  */
 void *
-tpe_util_parse_array(void *bufv, void *end, char *format, ...){
+tpe_util_parse_array(void *bufv, void *end, size_t size, char *format, ...){
 	char *p;
 	char *buf;
-	int i,len,size;
+	int i,len;
 	va_list ap;
 	char *dest;
 	char *destbuf;
 	ptrdiff_t off,off2;
 	uint32_t slen;
 	assert(bufv); assert(end); assert(format); 
+	assert(size);
 
 	assert(*format == '[');
 
 	buf = bufv;
 	len = *(int *)buf; // NTHOL
 	buf += 4;
-	printf("Looking for %d elements\n",len);
-
-	for (p = format + 1, size = 0 ; *p != ']' ; p ++){
-		switch (*p) {
-		case 'b': size ++; break;
-		case 'i': size += sizeof(uint32_t); break;
-		case 'l': size += sizeof(uint64_t); break;
-		case 's': size += sizeof(uint32_t);
-			size += sizeof(char *);	break;
-		default:
-			printf("Unknown character '%c'\n",*p);
-			exit(1);
-		}
-	}
-
-	printf("Dest size is %d\n",size);
 
 	destbuf = calloc(len,size);
 	dest = destbuf;
@@ -663,19 +647,24 @@ tpe_util_test(void){
 	ptrdiff_t loff,ioff,soff,ioff2,ioff3,ioff4;
 	int i;
 
-	tut_i = tpe_util_parse_array(tutidatai ,tutidatai + 5, "[i]", 0);
+	tut_i = tpe_util_parse_array(tutidatai ,tutidatai + 5, 
+				sizeof(struct tut_i), "[i]", 0);
 	for (i = 0 ; i < 4 ; i ++){
 		printf("%d -> %d [%d/%p] (%s)\n",tutidatai[i + 1],tut_i[i].i,
 				((int *)(tut_i))[i],&((int *)(tut_i))[i],
 				(tutidatai[i + 1] == tut_i[i].i) ?"Good": "Bad");
 	}
-	tut_i = tpe_util_parse_array(tutidataii,tutidataii + 5, "[ii]", 0,4);
+
+
+	tut_i = tpe_util_parse_array(tutidataii,tutidataii + 5, 
+				sizeof(int) * 2, "[ii]", 0,4);
 	for (i = 0 ; i < 4 ; i ++){
 		printf("%d -> %d [%d/%p] (%s)\n",tutidatai[i + 1],tut_i[i].i,
 				((int *)(tut_i))[i],&((int *)(tut_i))[i],
 				(tutidatai[i + 1] == tut_i[i].i) ?"Good": "Bad");
 	}
-	tut_i = tpe_util_parse_array(tutidataiiii,tutidataiiii + 5, "[iiii]",0,4,8,12);
+	tut_i = tpe_util_parse_array(tutidataiiii,tutidataiiii + 5, 
+				sizeof(int) * 4,"[iiii]",0,4,8,12);
 	for (i = 0 ; i < 4 ; i ++){
 		printf("%d -> %d [%d/%p] (%s)\n",tutidatai[i + 1],tut_i[i].i,
 				((int *)(tut_i))[i],&((int *)(tut_i))[i],
@@ -685,7 +674,7 @@ tpe_util_test(void){
 	ioff = (char *)&tut_il->i - (char *)tut_il;
 	loff = (char *)&tut_il->l - (char *)tut_il;
 	tut_il = tpe_util_parse_array(tutildata, tutildata + sizeof(tutildata),
-			"[il]", ioff,loff);
+			sizeof(struct tut_il),"[il]", ioff,loff);
 	for (i = 0 ; i < 2 ; i ++){
 		printf("%d -> %d && %llx -> %llx\n",
 				tutildata[i * 3 + 1],tut_il[i].i,
@@ -699,7 +688,7 @@ tpe_util_test(void){
 	ioff = (char *)&tut_li->i - (char *)tut_li;
 	loff = (char *)&tut_li->l - (char *)tut_li;
 	tut_li = tpe_util_parse_array(tutildata, tutildata + sizeof(tutildata),
-			"[il]", ioff,loff);
+			sizeof(struct tut_li),"[il]", ioff,loff);
 	for (i = 0 ; i < 2 ; i ++){
 		printf("%d -> %d && %llx -> %llx\n",
 				tutildata[i * 3 + 1],tut_li[i].i,
@@ -710,7 +699,7 @@ tpe_util_test(void){
 	ioff = (char *)&tut_s->len - (char*)tut_s;
 	soff = (char *)&tut_s->buf - (char*)tut_s;
 	tut_s = tpe_util_parse_array(tutsdata, tutsdata + sizeof(tutsdata), 
-			"[s]", ioff, soff);
+			sizeof(struct tut_s),"[s]", ioff, soff);
 	for (i = 0 ; i < 3 ; i ++){
 		printf("[%d]%s -> [%d]%s\n",
 				0,"",
@@ -725,13 +714,28 @@ tpe_util_test(void){
 	ioff4 = (char *)&tut_iisi->i4 - (char*)tut_iisi;
 	tut_iisi = tpe_util_parse_array(tutiisidata, 
 			tutiisidata + sizeof(tutiisidata), 
+			sizeof(struct tut_iisi),
 			"[iisi]", ioff2, ioff3, ioff, soff, ioff4); 
 	for (i = 0 ; i < 3 ; i ++){
 		printf("[%d]%s -> [%d]%s\n",
 				0,"",
 				tut_iisi[i].len,tut_iisi[i].buf);
 	}
-	
+
+	/* Parse a small amount of data into a large structure */
+	ioff = (char *)&tut_iisi->len - (char*)tut_iisi;
+	soff = (char *)&tut_iisi->buf - (char*)tut_iisi;
+	tut_iisi = tpe_util_parse_array(tutsdata, tutsdata + sizeof(tutsdata), 
+			sizeof(struct tut_iisi), "[s]", ioff, soff);
+	for (i = 0 ; i < 3 ; i ++){
+		printf("[%d]%s -> [%d]%s\n",
+				0,"",
+				tut_iisi[i].len,tut_iisi[i].buf);
+	}
+
+
+
+
 
 	exit(0);
 	return 0;

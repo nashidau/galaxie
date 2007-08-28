@@ -14,7 +14,7 @@ char *tpe_util_dump_packet(void *pdata);
 int tpe_util_parse_packet(void *pdata, void *endp, char *format, ...);
 uint64_t tpe_util_dist_calc2(struct object *obj1, struct object *obj2);
 
-void * tpe_util_parse_array(void *buf, void *end, char *format, ...);
+void * tpe_util_parse_array(void *buf, void *end, size_t size, char *format, ...);
 
 int tpe_util_test(void);
 
