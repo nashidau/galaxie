@@ -24,6 +24,7 @@
 #include "tpe_resources.h"
 #include "tpe_sequence.h"
 #include "tpe_ship.h"
+#include "tpe_util.h"
 
 #define TPE_AI(name,desc,func)  extern struct ai *func(struct tpe *);
 #include "ailist.h"
