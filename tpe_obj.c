@@ -32,6 +32,30 @@ struct tpe_obj {
 	struct object *home;
 };
 
+struct object otmp;
+#define OFFSET(field) ((char*)&otmp - (char*)&otmp.field)
+
+struct parseitem objparse[] = {
+	{ PARSETYPE_INT, OFFSET(oid), 0, NULL },
+	{ PARSETYPE_INT, OFFSET(type), 0, NULL },
+	{ PARSETYPE_STRING, OFFSET(name), 0, NULL },
+	{ PARSETYPE_LONG, OFFSET(pos.x), 0, NULL },
+	{ PARSETYPE_LONG, OFFSET(pos.y), 0, NULL },
+	{ PARSETYPE_LONG, OFFSET(pos.z), 0, NULL },
+	{ PARSETYPE_LONG, OFFSET(vel.x), 0, NULL },
+	{ PARSETYPE_LONG, OFFSET(vel.y), 0, NULL },
+	{ PARSETYPE_LONG, OFFSET(vel.z), 0, NULL },
+	{ PARSETYPE_ARRAYOF | PARSETYPE_INT, 
+			OFFSET(children), OFFSET(nchildren), NULL },
+	{ PARSETYPE_ARRAYOF | PARSETYPE_INT, 
+			OFFSET(ordertypes), OFFSET(nordertypes), NULL },
+	{ PARSETYPE_INT, OFFSET(type), 0, NULL },
+	{ PARSETYPE_LONG, OFFSET(updated), 0, NULL },
+	{ PARSETYPE_INT, -1, 0, NULL },
+	{ PARSETYPE_INT, -1, 0, NULL },
+	{ PARSETYPE_END, -1, 0, NULL },
+};
+
 
 const char *const object_magic = "ObjectMagic";
 

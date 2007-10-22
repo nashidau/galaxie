@@ -19,6 +19,9 @@
 /* Parser functions */
 static int parse_header(void **data, void **end, va_list *ap);
 
+static int extract_int(const char **src);
+static char *extract_string(const char **src, int *len);
+
 /**
  * tpe_util_string_extract
  *
@@ -559,7 +562,7 @@ tpe_util_parse_array(void *bufv, void *end, size_t size, char *format, ...){
 	assert(*format == '[');
 
 	buf = bufv;
-	len = *(int *)buf; // NTHOL
+	len = *(int *)buf; // FIXME: NTHOL
 	buf += 4;
 
 	destbuf = calloc(len,size);
@@ -599,6 +602,9 @@ tpe_util_parse_array(void *bufv, void *end, size_t size, char *format, ...){
 
 	return destbuf;
 }
+
+
+
 
 struct tut_i {
 	int i;
@@ -741,8 +747,74 @@ tpe_util_test(void){
 	return 0;
 }
 
+void *
+parse_block(const char *buf, struct parseitem *items, 
+		void *data, /* Where to put it of NULL */
+		size_t size,
+		char **end){
+	int i, j, count;
+
+	assert(buf); assert(items);
+	assert(data || size);
+
+	if (data == NULL)
+		data = calloc(1,size);
+
+	for (i = 0 ; items[i].type != PARSETYPE_END ; i ++){
+		/* FIXME: Should calculate the dest here -
+		 * 	if array, also need to malloc if necessary
+		 */
+		if (items[i].type & PARSETYPE_ARRAYOF)
+			count = extract_int(&buf);
+		else
+			count = 1;
+		for (j = 0 ; j < count ; j ++){
+			switch (items[i].type & ~PARSETYPE_ARRAYOF){
+			case PARSETYPE_INT:
+				extract_int(&buf);
+				break;
+			case PARSETYPE_LONG:
+				extract_int(&buf);
+				break;
+			case PARSETYPE_STRING:
+				extract_string(&buf, NULL);
+				break;
+			}
+		}
+	}
+
+	return 0;
+}
+
+static int 
+extract_int(const char **src){
+	int val;
+	memcpy(&val,*src,sizeof(int32_t));
+	*src += 4;
+	return val;
+}
+
+static char *
+extract_string(const char **src, int *lenp){
+	int len;
+	char *buf;
+
+	len = extract_int(src);
+	if (lenp) *lenp = len;
+	if (len == 0) return NULL;
+	/* FIXME: Sanity check len */
+	buf = calloc(1,len + 1);
+	memcpy(buf, src, len);
+	*src += len;	
+
+	return buf;	
+}
+
+
+
+
 /*
- * Returns distance between two objexct squared.
+ * Returns distance between two object squared.
  *
  * FIXME: Should check for overflow.
  */
