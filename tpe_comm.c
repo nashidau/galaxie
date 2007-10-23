@@ -132,36 +132,37 @@ tpe_comm_connect(struct tpe *tpe,
 
 
 static int
-tpe_comm_socket_connect(void *data, struct server *mcon){
-	struct tpe_comm *comm;
-	struct tpe *tpe;
+tpe_comm_socket_connect(void *data, struct server *server){
+	struct connect *connect;
 
-	comm = data;
-	tpe = comm->tpe;
+	connect = data;
 
-	server_send_strings(comm->server,"MsgConnect", tpe_comm_may_login, comm,
+	assert(connect->server == server);
+
+	server_send_strings(connect->server,"MsgConnect", 
+				tpe_comm_may_login, connect,
 				"GalaxiE", NULL);
 	return 1;
 }
 
 static int
 tpe_comm_may_login(void *data, struct msg *msg){
-	struct tpe_comm *comm;
-	struct tpe *tpe;
+	struct connect *connect;
 	char buf[100];
 
-	comm = data;
-	tpe = comm->tpe;
+	connect = data;
+	//tpe = connect->tpe;
 
-	if (comm->game){
-		snprintf(buf, 100, "%s@%s", comm->user, comm->game);
+	if (connect->game){
+		snprintf(buf, 100, "%s@%s", connect->user, connect->game);
 	} else {
-		snprintf(buf, 100, "%s", comm->user);
+		snprintf(buf, 100, "%s", connect->user);
 	}
 
 	server_send(msg->server, "MsgGetFeatures", NULL,NULL,NULL,0);
-	server_send_strings(msg->server, "MsgLogin",  tpe_comm_logged_in, comm,
-			buf, comm->pass, 0);
+	server_send_strings(msg->server, "MsgLogin",
+			tpe_comm_logged_in, connect,
+			buf, connect->pass, 0);
 
 	return 0;
 }
@@ -286,18 +287,20 @@ tpe_comm_msg_player_id(void *userdata, struct msg *msg){
  */
 static int 
 tpe_comm_available_features_msg(void *udata, int type, void *event){
+	struct msg *msg;
 	struct tpe *tpe = udata;
 	uint32_t *data;
 	int feature;
 	uint32_t i,j,len;
 
-	data = (uint32_t *)event + 4;
-	len = ntohl(*data);
-	if (len > 32) len = 32;
+	msg = event;
+	data = msg->data;
 
-	if ((len + 1) * 4!= ntohl(data[-1]))
+	len = ntohl(*(int*)data);
+
+	if ((len + 1) * 4!= msg->len)
 		printf("Data lengths don't match: %d items vs %d bytes\n",
-				len, ntohl(data[-1]));
+				len, msg->len);
 
 	for (i = 0 ; i < len ; i ++){
 		feature = ntohl(data[i + 1]);
@@ -321,6 +324,7 @@ tpe_comm_msg_fail(void *udata, int etype, void *event){
 	int rv;
 	char *str = NULL;
 
+assert(!"Incorrect callback!\n");
 	rv = tpe_util_parse_packet(event, NULL,
 			"His", &magic, &seq, &type, &len,
 			&errcode, &str);

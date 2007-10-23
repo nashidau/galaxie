@@ -94,7 +94,9 @@ browser_games_receive(void *serverv, struct msg *msg){
 	/* Note: This thing is a monster */
 	tpe_util_parse_packet(msg->data, msg->end, 
 			"ss", &name, &key);
-		
+	
+	
+
 	printf("Game: %s %s\n",name,key);
 
 	return 1;

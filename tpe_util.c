@@ -783,7 +783,7 @@ parse_block(const char *buf, struct parseitem *items,
 		}
 	}
 
-	return 0;
+	return NULL;
 }
 
 static int 

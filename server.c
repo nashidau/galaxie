@@ -29,7 +29,9 @@
  */
 
 enum {
-	HEADER_SIZE = 16
+	HEADER_SIZE = 16,
+
+	SERVER_MAGIC = 0xdeadbeef,
 };
 
 #define ID "GalaxiE"
@@ -120,6 +122,7 @@ struct servers {
  * for the system.
  */
 struct server {
+	int magic;
 	struct server *next;
 	struct servers *servers;
 
@@ -229,6 +232,7 @@ server_connect(struct tpe *tpe,
 	struct server *server;
 
 	server = calloc(1,sizeof(struct server));
+	server->magic = SERVER_MAGIC;
 	
 	/* Start by assuming TP 4 */
 	server->header = htonl(('T' << 24) | ('P' << 16) | (4 << 8) | 0);  
@@ -280,8 +284,10 @@ server_con_event_server_add(void *data, int type, void *edata){
 		return 1;
 	}
 
+	assert(server->magic == SERVER_MAGIC);
+	
 	if (server->conncb)
-		server->conncb(server->conndata, NULL);
+		server->conncb(server->conndata, server);
 	
 	server->conncb = NULL;
 	server->conndata = NULL;

@@ -12,6 +12,7 @@
 #include "gui_window.h"
 #include "tpe_obj.h"
 #include "tpe_orders.h"
+#include "gui_list.h"
 
 enum listtype {
 	LIST_IMAGE,
