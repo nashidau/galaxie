@@ -115,7 +115,7 @@ tpe_comm_connect(struct tpe *tpe,
 	connect = calloc(1,sizeof(struct connect));
 	connect->servername = strdup(server);
 	connect->user = strdup(user);
-	connect->password = strdup(password);
+	connect->pass = strdup(password);
 	if (game)
 		connect->game = strdup(game);
 	else 
