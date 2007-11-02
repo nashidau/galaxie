@@ -86,8 +86,8 @@ tpe_ship_design_updated_get(struct tpe *tpe, uint32_t design){
 
 static int 
 tpe_ship_msg_design(void *data, int eventid, void *event){
-	struct design *design = 0;
-	int32_t *cats = 0,ncats;
+	struct design *design = NULL;
+	int32_t *cats = NULL,ncats;
 	struct tpe *tpe = data;
 
 	design = calloc(1,sizeof(struct design));
