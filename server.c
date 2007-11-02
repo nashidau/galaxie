@@ -6,6 +6,7 @@
  * Decodes and encodes frames
  */
 #include <assert.h>
+#include <ctype.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -467,8 +468,25 @@ server_send(struct server *server, const char *msgtype,
 	buf[3] = htonl(len);
 	memcpy(buf + 4, data, len);
 
-	//printf("Sending Seq %d Type %d [%s] Len: %d [%p]\n",
-	//		server->seq,type,servertype, len,cb);
+	printf("Sending Seq %d Type %d [%s] Len: %d [%p]\n",
+			server->seq,type,msgtype, len,cb);
+	{ int i;
+		for (i = 0 ; i < len && i < 100 ; i ++){
+			printf("%2.2x",((char *)data)[i] & 0xff);
+			if (i % 4 == 3) printf(" ");
+			if (i % 32 == 31) printf("\n");
+		} 
+		if (i) printf("\n");
+		for (i = 0 ; i < len && i < 100 ; i ++){
+			printf("%c",isprint(((char *)data)[i])?
+					((char*)data)[i]:'.');
+			if (i % 4 == 3) printf(" ");
+			if (i % 32 == 31) printf("\n");
+		} 
+		if (i) printf("\n");
+
+
+	}
 	ecore_con_server_send(server->svr, buf, len + HEADER_SIZE);
 
 	free(buf);

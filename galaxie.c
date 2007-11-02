@@ -65,6 +65,10 @@ struct startopt {
 	unsigned int fullscreen :1; 
 	char *theme;
 
+	struct {
+		unsigned int messages : 1;
+	} debug;
+
 	int showoptions;
 };
 
@@ -85,6 +89,7 @@ static int parse_fullscreen(struct startopt *opt, int i, char **args);
 static int parse_theme(struct startopt *opt, int i, char **args);
 static int parse_usage(struct startopt *opt, int i, char **args);
 static int parse_options(struct startopt *opt, int i, char **args);
+static int parse_debug_messages(struct startopt *opt, int i, char **args);
 static const char *parse_option(char **args, int *i);
 static void dump_options(struct startopt *);
 
@@ -126,6 +131,8 @@ static struct args {
 	{ "-h",    	parse_usage	},
 	{ "-?",    	parse_usage	},
 	{ "--test",	parse_test 	},
+
+	{ "--debug-messages", parse_debug_messages },
 };
 
 /* The regular expression for matching URLS */
@@ -338,6 +345,13 @@ parse_gui(struct startopt *opt, int i, char **args){
 static int 
 parse_fullscreen(struct startopt *opt, int i, char **args){
 	opt->fullscreen = 1;	
+	return i;
+}
+
+
+static int 
+parse_debug_messages(struct startopt *opt, int i, char **args){
+	opt->debug.messages = 1;
 	return i;
 }
 
