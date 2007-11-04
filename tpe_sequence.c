@@ -9,6 +9,7 @@
 #include "tpe.h"
 #include "tpe_event.h"
 #include "tpe_sequence.h"
+#include "tpe_comm.h"
 #include "server.h"
 #include "tpe_util.h"
 
@@ -27,7 +28,9 @@ struct tpe_sequence {
 };
 
 static int tpe_sequence_new_turn(void *data, int eventid, void *event);
+static int tpe_sequence_coneect(void *data, int eventid, void *event);
 static int tpe_sequence_handle_oids(void *udata, int type, void *event);
+static int tpe_sequence_start(struct tpe *, struct server *);
 
 struct tpe_sequence *
 tpe_sequence_init(struct tpe *tpe){
@@ -38,7 +41,7 @@ tpe_sequence_init(struct tpe *tpe){
 	tpeseq->seqs = ecore_list_new();
 
 	tpe_event_handler_add(tpe->event,"NewTurn", tpe_sequence_new_turn, tpe);
-	tpe_event_handler_add(tpe->event,"Connected",tpe_sequence_new_turn, tpe);
+	tpe_event_handler_add(tpe->event,"Connected",tpe_sequence_coneect, tpe);
 
 	return tpeseq;
 }
@@ -87,14 +90,38 @@ tpe_sequence_register(struct tpe *tpe,
 static int 
 tpe_sequence_new_turn(void *data, int eventid, void *event){
 	struct tpe *tpe;
-	struct sequence *seq;
-	Ecore_List *seqs;
 	struct server *server;
 
 	tpe = data;
 	server = event;
+	/* XXX: Magic checks */
 
-	seqs = tpe->sequence->seqs;
+	return tpe_sequence_start(tpe, server);
+}
+
+/* Callback for connecting */
+static int
+tpe_sequence_coneect(void *data, int eventid, void *event){
+	struct connect *connect;
+	struct tpe *tpe;
+
+	tpe = data;
+	connect = event;
+
+	return tpe_sequence_start(tpe, connect->server);
+
+}
+
+
+
+static int 
+tpe_sequence_start(struct tpe *tpe, struct server *server){
+	struct tpe_sequence *tsequence;
+	struct sequence *seq;
+	Ecore_List *seqs;
+
+	tsequence = tpe->sequence;
+	seqs = tsequence->seqs;
 	
 	seq = ecore_list_first_goto(seqs);
 	while ((seq = ecore_list_next(seqs))){
