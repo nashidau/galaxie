@@ -321,16 +321,14 @@ tpe_comm_available_features_msg(void *udata, int type, void *event){
 
 static int
 tpe_comm_msg_fail(void *udata, int etype, void *event){
-	int magic, type, seq, len, errcode;
+	struct msg *msg = event;
 	int rv;
+	int errcode;
 	char *str = NULL;
 
-assert(!"Incorrect callback!\n");
-	rv = tpe_util_parse_packet(event, NULL,
-			"His", &magic, &seq, &type, &len,
-			&errcode, &str);
+	rv = tpe_util_parse_packet(msg->data, NULL, "is", &errcode, &str);
 
-	printf("** Error: Seq %d: Err %d: %s\n",seq,errcode,str);
+	printf("** Error: Seq %d: Err %d: %s\n",msg->seq,errcode,str);
 
 	free(str);
 
@@ -353,7 +351,7 @@ tpe_comm_time_remaining(void *udata, int type, void *event){
 		printf("Failed to parse time remaining packet\n");
 		return 0;
 	}
-	
+
 	if (msg->seq == 0 && remain == 0){
 		tpe->turn ++;
 		tpe_event_send(tpe->event, "NewTurn", msg->server, NULL, NULL);
