@@ -20,6 +20,8 @@
 #include <Ecore_Data.h>
 
 #include "tpe.h"
+#include "tpe_comm.h"
+#include "server.h"
 #include "tpe_event.h"
 #include "tpe_resources.h"
 #include "tpe_sequence.h"
@@ -129,7 +131,7 @@ static int
 tpe_resources_resourcedescription_msg(void *data,int etype,void *event){
 	struct resourcedescription *rd;
 	struct tpe *tpe;
-	int *msg;
+	struct msg *msg;
 	uint32_t id;
 	int rv;
 
@@ -137,9 +139,8 @@ tpe_resources_resourcedescription_msg(void *data,int etype,void *event){
 	msg = event;
 
 	assert(tpe->resources->magic == RESOURCE_MAGIC);
-	msg += 4;
 	
-	tpe_util_parse_packet(msg,NULL, "i", &id);
+	tpe_util_parse_packet(msg->data,msg->end, "i", &id);
 
 	rd = tpe_resources_resourcedescription_get(tpe, id);
 	if (rd == NULL){
@@ -152,7 +153,7 @@ tpe_resources_resourcedescription_msg(void *data,int etype,void *event){
 	}
 
 	/* FIXME: Check we got it all */
-	rv = tpe_util_parse_packet(msg, NULL, "-sssssiil",
+	rv = tpe_util_parse_packet(msg->data, msg->end, "-sssssiil",
 		&rd->name, &rd->name_plural,
 		&rd->unit, &rd->unit_plural,
 		&rd->description,
