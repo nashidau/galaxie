@@ -67,6 +67,9 @@ static void tpe_obj_cleanup(struct tpe *tpe, struct object *o);
 
 static void tpe_obj_home_check(struct tpe *tpe, struct object *o);
 
+static void tpe_obj_update_children(struct tpe *tpe, struct object *o, int noldchildren, int *oldchildren);
+
+
 //static int tpe_obj_hash_compare_data(const void *, const void *);
 //static int tpe_obj_hash_func(const void *);
 //	ecore_hash_dump_graph
@@ -113,11 +116,10 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 	struct msg *msg;
 	struct tpe *tpe;
 	struct tpe_obj *obj;
-	struct object *o,*child;
+	struct object *o;
 	int *oldchildren,noldchildren;
-	int id,n,i,j;
+	int id,n,i;
 	int isnew;
-	int oldowner;
 	void *end;
 	
 	tpe = data;
@@ -133,12 +135,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		o = tpe_obj_obj_add(obj,id);
 	}
 
-	/* Save children */
-	oldchildren = o->children;
-	o->children = NULL;
-	noldchildren = o->nchildren;
-
-	if (o->name){
+		if (o->name){
 		free(o->name);
 		o->name = NULL;
 	}
@@ -150,70 +147,39 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		free(o->orders);
 	}
 
-/*
- * 	Fixme: Gracefully use this 
- * 	TP 03 
-	n = tpe_util_parse_packet(msg->data, msg->end, "iislllllllaailiip",
-			&o->oid, &o->type, &o->name,
-			&o->size, 
-			&o->pos.x,&o->pos.y,&o->pos.z,
-			&o->vel.x,&o->vel.y,&o->vel.z,
-			&o->nchildren, &o->children, 
-			&o->nordertypes, &o->ordertypes,
-			&o->norders,
-			&o->updated,&unused,&unused, &end);
-*/
 
-	/* TP 04 */
-	n = tpe_util_parse_packet(msg->data, msg->end, 
-			"iissill",
-			&o->oid, &o->type, &o->name, &o->description,
-			&o->parent,  
-			&o->nchildren, &o->children, 
-			&o->updated);
+	if (msg->protocol == 3){
+		/* Save children */
+		oldchildren = o->children;
+		o->children = NULL;
+		noldchildren = o->nchildren;
+
+		n = tpe_util_parse_packet(msg->data, msg->end, 
+				"iislllllllaail--p",
+				&o->oid, &o->type, &o->name,
+				&o->size, 
+				&o->pos.x,&o->pos.y,&o->pos.z,
+				&o->vel.x,&o->vel.y,&o->vel.z,
+				&o->nchildren, &o->children, 
+				&o->nordertypes, &o->ordertypes,
+				&o->norders,
+				&o->updated,NULL, NULL, &end);
+		tpe_obj_update_children(tpe, o,noldchildren,oldchildren);
+	} else if (msg->protocol == 4){
+		/* TP 04 */
+		n = tpe_util_parse_packet(msg->data, msg->end, 
+				"iissill",
+				&o->oid, &o->type, &o->name, &o->description,
+				&o->parent,  
+				&o->nchildren, &o->children, 
+				&o->updated);
+	} else {
+		printf("Unknown protocol %d\n",msg->protocol);
+		return 1;
+	}
 			
 
-	/* Update children */
-#if 0
-/* FIXME: For TP03 */
-	for (i = 0 ; i < noldchildren ; i ++){
-		for (j = 0 ; j < o->nchildren ; j ++){
-			if (oldchildren[i] == o->children[j])
-				break;
-		}
-		if (j == o->nchildren){
-			/* No longer a child */
-			child = tpe_obj_obj_get_by_id(tpe,oldchildren[j]);
-			if (!child){
-				/* This should never happen */
-				child = tpe_obj_obj_add(obj, oldchildren[j]);
-				child->isnew = 1;
-			} else {
-				/* Don't mess up any which have already been
-				 * updated */
-				if (child->parent == o->oid){
-					child->parent = TPE_OBJ_NIL;
-					child->updated = 1;
-				}
-			}
-		}
-	}
-	free(oldchildren);
-	for (i = 0 ; i < o->nchildren ; i ++){
-		child = tpe_obj_obj_get_by_id(tpe,o->children[i]);
-		if (!child){
-			child = tpe_obj_obj_add(obj,o->children[i]);
-			child->updated = 1;
-			child->isnew = 1;
-			child->parent = o->oid;
-		} else if (child->parent != o->oid){
-			child->parent = o->oid;
-			child->updated = 1;
-		}
-	}
-#endif
-
-	/* Add slots for the orders */
+		/* Add slots for the orders */
 	if (o->norders)
 		o->orders = calloc(o->norders, sizeof(struct order *));
 	else
@@ -565,6 +531,52 @@ tpe_obj_home_get(struct tpe *tpe){
 	assert(tpe->obj);
 	return tpe->obj->home;
 }
+
+static void
+tpe_obj_update_children(struct tpe *tpe, struct object *o, int noldchildren, int *oldchildren){
+	struct object *child;
+	struct tpe_obj *obj;
+	int i,j;
+
+	obj = tpe->obj;
+
+	for (i = 0 ; i < noldchildren ; i ++){
+		for (j = 0 ; j < o->nchildren ; j ++){
+			if (oldchildren[i] == o->children[j])
+				break;
+		}
+		if (j == o->nchildren){
+			/* No longer a child */
+			child = tpe_obj_obj_get_by_id(tpe,oldchildren[j]);
+			if (!child){
+				/* This should never happen */
+				child = tpe_obj_obj_add(obj, oldchildren[j]);
+				child->isnew = 1;
+			} else {
+				/* Don't mess up any which have already been
+				 * updated */
+				if (child->parent == o->oid){
+					child->parent = TPE_OBJ_NIL;
+					child->updated = 1;
+				}
+			}
+		}
+	}
+	free(oldchildren);
+	for (i = 0 ; i < o->nchildren ; i ++){
+		child = tpe_obj_obj_get_by_id(tpe,o->children[i]);
+		if (!child){
+			child = tpe_obj_obj_add(obj,o->children[i]);
+			child->updated = 1;
+			child->isnew = 1;
+			child->parent = o->oid;
+		} else if (child->parent != o->oid){
+			child->parent = o->oid;
+			child->updated = 1;
+		}
+	}
+}
+
 
 
 
