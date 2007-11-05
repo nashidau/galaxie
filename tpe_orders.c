@@ -242,15 +242,15 @@ tpe_order_get_name(struct tpe *tpe, struct order *order){
  */
 static int
 tpe_orders_msg_order_description(void *data, int type, void *edata){
+	struct msg *msg;
 	struct tpe *tpe = data;
-	int *event = edata;
 	struct order_desc *od;
 
 	od = calloc(1,sizeof(struct order_desc));
 
-	event += 4;
+	msg = edata;
 
-	tpe_util_parse_packet(event, NULL, "issQl",
+	tpe_util_parse_packet(msg->data, msg->end, "issQl",
 			&od->otype,&od->name, &od->description, 
 			&od->nargs, &od->args, &od->updated);
 
