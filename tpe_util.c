@@ -33,10 +33,8 @@ tpe_util_string_extract(const char *src, int *lenp, const char **endp){
 	int len;
 	char *buf;
 	len = ntohl(*(int *)src);
-	if (len > 1000) {
-		printf("unusually long string: %d\n",len);
-		exit(1);
-	}
+	/* This assert needs to go */
+	assert(len < 2000);
 	if (endp) *endp = src + len + 4;
 	if (lenp) *lenp = len;
 	buf = malloc(len + 1);
