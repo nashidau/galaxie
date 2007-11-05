@@ -106,7 +106,6 @@ static int
 tpe_board_msg_board_receive(void *data, int type, void *event){
 	struct tpe *tpe;
 	struct msg *msg = event;
-	char *body;
 	struct board *board;
 	struct message **nm;
 	int32_t id;
@@ -114,10 +113,8 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
 	int ntoget;
 	int i;
 	tpe = data;
-	body = event;
-	body += 16;
 
-	tpe_util_parse_packet(body, NULL, "i", &id);
+	tpe_util_parse_packet(msg->data, msg->end, "i", &id);
 
 	board = tpe_board_board_get_by_id(tpe, id);
 	if (board == NULL)
@@ -126,7 +123,8 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
 	if (board->name) free(board->name);
 	if (board->description) free(board->description);
 
-	tpe_util_parse_packet(body, NULL, "issil", &id, &board->name, 
+	tpe_util_parse_packet(msg->data, msg->end, "issil", 
+			&id, &board->name, 
 			&board->description, &board->nmessages,
 			&board->updated);
 
