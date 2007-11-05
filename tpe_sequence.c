@@ -128,6 +128,7 @@ tpe_sequence_start(struct tpe *tpe, struct server *server){
 		if (seq->list_begin)
 			seq->list_begin(tpe);
 		seq->position = 0;
+		/* FIXME: For v4, I should send a time stanmp too */
 		server_send_format(server, seq->updatemsg,
 				NULL, NULL,
 				"i0i", -1,-1);

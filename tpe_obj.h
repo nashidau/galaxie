@@ -52,6 +52,7 @@ struct object {
 	uint32_t oid;	/* Unique ID */
 	enum objtype type;
 	char *name;
+	char *description;
 
 	int32_t owner;
 

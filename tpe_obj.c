@@ -110,24 +110,21 @@ tpe_obj_init(struct tpe *tpe){
  */
 static int
 tpe_obj_data_receive(void *data, int eventid, void *edata){
+	struct msg *msg;
 	struct tpe *tpe;
 	struct tpe_obj *obj;
 	struct object *o,*child;
 	int *oldchildren,noldchildren;
 	int id,n,i,j;
 	int isnew;
-	int unused;
 	int oldowner;
 	void *end;
-	void *msgend = NULL, *msgstart = NULL;
 	
 	tpe = data;
 	obj = tpe->obj;
+	msg = edata;
 
-	tpe_util_parse_packet(edata, NULL, "Hpi", 
-				/* H */ NULL, NULL, NULL, &msgend,
-				/* p */ &msgstart,
-				/* i */ &id);
+	tpe_util_parse_packet(msg->data, msg->end, "i", /* i */ &id);
 	isnew = 0;
 
 	o = tpe_obj_obj_get_by_id(tpe,id);
@@ -153,7 +150,10 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		free(o->orders);
 	}
 
-	n = tpe_util_parse_packet(msgstart, msgend, "iislllllllaailiip",
+/*
+ * 	Fixme: Gracefully use this 
+ * 	TP 03 
+	n = tpe_util_parse_packet(msg->data, msg->end, "iislllllllaailiip",
 			&o->oid, &o->type, &o->name,
 			&o->size, 
 			&o->pos.x,&o->pos.y,&o->pos.z,
@@ -162,8 +162,20 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 			&o->nordertypes, &o->ordertypes,
 			&o->norders,
 			&o->updated,&unused,&unused, &end);
+*/
+
+	/* TP 04 */
+	n = tpe_util_parse_packet(msg->data, msg->end, 
+			"iissill",
+			&o->oid, &o->type, &o->name, &o->description,
+			&o->parent,  
+			&o->nchildren, &o->children, 
+			&o->updated);
+			
 
 	/* Update children */
+#if 0
+/* FIXME: For TP03 */
 	for (i = 0 ; i < noldchildren ; i ++){
 		for (j = 0 ; j < o->nchildren ; j ++){
 			if (oldchildren[i] == o->children[j])
@@ -199,6 +211,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 			child->updated = 1;
 		}
 	}
+#endif
 
 	/* Add slots for the orders */
 	if (o->norders)
@@ -207,10 +220,12 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		o->orders = NULL;
 
 	/* Handle extra data for different types */
+#warning Fix this soon
+#if 0
 	switch (o->type){
 	case OBJTYPE_UNIVERSE:{
 		uint32_t turn;
-		tpe_util_parse_packet(end, msgend, "i", &turn);
+		tpe_util_parse_packet(end, msg->end, "i", &turn);
 
 		obj->tpe->turn = turn;
 		printf("Updated universe: Turn %d\n",turn);	
@@ -228,7 +243,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		} 
 		oldowner = o->owner;
 
-		tpe_util_parse_packet(end, msgend, "iR",
+		tpe_util_parse_packet(end, msg->end, "iR",
 				&o->owner, 
 				&o->planet->nresources, &o->planet->resources);
 
@@ -246,7 +261,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		/* FIXME: XXX: TODO: this is mithro's bug about bad messages */
 		/* This is one of the places triggering overflow in 
 		 * tpe_util */
-		tpe_util_parse_packet(end, msgend, "iSi",
+		tpe_util_parse_packet(end, msg->end, "iSi",
 				&o->owner, 
 				&o->fleet->nships, &o->fleet->ships,
 				&o->fleet->damage);
@@ -271,7 +286,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		else 
 			printf("A %d can take orders???\n", o->type);
 	}
-
+#endif
 	return 1;
 }
 
