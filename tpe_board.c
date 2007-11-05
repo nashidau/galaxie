@@ -171,16 +171,15 @@ tpe_board_msg_message_receive(void *data, int type, void *event){
 	struct board *board;
 	struct message *message;
 	struct tpe *tpe;
-	char *body;
+	struct msg *msg;
 
 	tpe = data;
-	body = event;
-	body += 16;
+	msg = event;
 
 	message = calloc(1,sizeof(struct message));
 	message->unread = 1;
 
-	tpe_util_parse_packet(body, NULL, "iiassir", &message->board,
+	tpe_util_parse_packet(msg->data, msg->end, "iiassir", &message->board,
 			&message->slot, NULL, NULL,
 			&message->title,
 			&message->body,
