@@ -143,7 +143,7 @@ static int tpe_orders_object_update(void *, int type, void *data);
 static int tpe_order_arg_format(struct tpe *tpe, char *buf, int pos, int maxlen,
 		struct order *order, struct order_desc *desc, int argnum);
 static void tpe_order_parse_args(struct tpe *tpe, struct order *order, 
-		struct order_desc *desc, int *p);
+		struct order_desc *desc, int *p, int *end);
 
 struct tpe_orders *
 tpe_orders_init(struct tpe *tpe){
@@ -327,7 +327,7 @@ tpe_orders_msg_order(void *data, int type, void *event){
 
 	desc = tpe_order_orders_get_desc_by_id(tpe, order->type);
 	if (desc)
-		tpe_order_parse_args(tpe, order, desc, end);
+		tpe_order_parse_args(tpe, order, desc, end, msg->end);
 	else {
 		printf("No description for order type %d\n",order->type);
 	}
@@ -367,7 +367,7 @@ tpe_orders_msg_order(void *data, int type, void *event){
  */
 static void
 tpe_order_parse_args(struct tpe *tpe, struct order *order, 
-		struct order_desc *desc, int *p){
+		struct order_desc *desc, int *p, int *end){
 	int i,j;
 	union order_arg_data *data;
 
