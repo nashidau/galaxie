@@ -20,3 +20,8 @@ struct tpe {
 };
 
 
+enum {
+	TPE_ERR_GENERIC = -1,
+	/* Using a TP04 message with TP03 servers */
+	TPE_ERR_MSG_NOT_SUPPORTED = -7,
+};
