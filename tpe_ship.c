@@ -1,6 +1,8 @@
 /*
  * For now just manages the ship names,
  * eventually should get designs and all that jazz.
+ *
+ * FIXME: Get components.
  */
 #include <arpa/inet.h>
 #include <inttypes.h>
