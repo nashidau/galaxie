@@ -63,6 +63,11 @@ static int tpe_obj_data_receive(void *data, int eventid, void *event);
 static void tpe_obj_list_begin(struct tpe *tpe);
 static void tpe_obj_list_end(struct tpe *tpe);
 
+
+static void tpe_obj_object_description_list_begin(struct tpe *tpe);
+static void tpe_obj_object_description_list_end(struct tpe *tpe);
+static uint64_t tpe_obj_object_description_updated(struct tpe *, uint32_t odid);
+
 static void tpe_obj_cleanup(struct tpe *tpe, struct object *o);
 
 static void tpe_obj_home_check(struct tpe *tpe, struct object *o);
@@ -93,6 +98,14 @@ tpe_obj_init(struct tpe *tpe){
 	tpe_event_type_add(event, "PlanetNoOrders");
 	tpe_event_type_add(event, "PlanetColonised");
 	tpe_event_type_add(event, "FleetNoOrders");
+
+	tpe_sequence_register(tpe,
+			"MsgGetObjectDescriptionIDs",
+			"MsgListOfObjectDescriptionIDs",
+			"MsgGetObjectDescriptionsByID",
+			tpe_obj_object_description_updated,
+			tpe_obj_object_description_list_begin,
+			tpe_obj_object_description_list_end);
 
 	tpe_sequence_register(tpe, 
 			"MsgGetObjectIDs", 
@@ -580,5 +593,17 @@ tpe_obj_update_children(struct tpe *tpe, struct object *o, int noldchildren, int
 
 
 
+static void 
+tpe_obj_object_description_list_begin(struct tpe *tpe){
+
+}
+static void 
+tpe_obj_object_description_list_end(struct tpe *tpe){
+
+}
+static uint64_t 
+tpe_obj_object_description_updated(struct tpe *tpe, uint32_t odid){
+	return 0;
+}
 
 
