@@ -248,15 +248,14 @@ gui_connected_handler(void *data, int eventid, void *event){
 static int
 gui_time_remaining(void *guip, int type, void *eventd){
 	struct gui *gui;
-	int *event;
+	struct msg *msg;
 	char buf[100];
 	int rem;
 
 	gui = guip;
-	
-	event = eventd;
-	if (tpe_util_parse_packet(event,NULL,"Hi",
-			NULL,NULL,NULL,NULL,&rem) == 2){
+
+	msg = eventd;
+	if (tpe_util_parse_packet(msg->data,msg->end,"i", &rem) == 2){
 		snprintf(buf,100,"%ds Remaining",rem);
 	} else {
 		snprintf(buf,100,"? Remaining");

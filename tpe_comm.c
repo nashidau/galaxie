@@ -326,7 +326,7 @@ tpe_comm_msg_fail(void *udata, int etype, void *event){
 	int errcode;
 	char *str = NULL;
 
-	rv = tpe_util_parse_packet(msg->data, NULL, "is", &errcode, &str);
+	rv = tpe_util_parse_packet(msg->data, msg->end, "is", &errcode, &str);
 
 	printf("** Error: Seq %d: Err %d: %s\n",msg->seq,errcode,str);
 

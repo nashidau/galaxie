@@ -16,6 +16,7 @@
 #include "tpe_util.h"
 #include "tpe_sequence.h"
 #include "tpe_ship.h"
+#include "server.h"
 
 struct tpe_ship {
 	Ecore_List *designs;
@@ -91,12 +92,13 @@ tpe_ship_msg_design(void *data, int eventid, void *event){
 	struct design *design = NULL;
 	int32_t *cats = NULL,ncats;
 	struct tpe *tpe = data;
+	struct msg *msg;
 
 	design = calloc(1,sizeof(struct design));
-	/* FIXME */
-	event = ((char *)event + 16);
 
-	tpe_util_parse_packet(event, NULL, "ilass", &design->did, 
+	msg = event;
+
+	tpe_util_parse_packet(msg->data, msg->end, "ilass", &design->did, 
 			&design->updated, &ncats,&cats, 
 			&design->name,
 			&design->description);
