@@ -41,74 +41,84 @@ enum {
 static const struct msgname {
 	const char *name;
 	int tp03;
+	int tp04;
 } msgnames[] = {
-	{ "MsgOK", 			 0 },
-	{ "MsgFail", 			 1 },
-	{ "MsgSEQUENCE", 		 2 },
-	{ "MsgConnect", 		 3 },
-	{ "MsgLogin", 			 4 },	
-	{ "MsgGetObjectsByID",		 5 },
-	{ "MsgUNUSED1", 		 6 },
-	{ "MsgObject", 			 7 },
-	{ "MsgGetOrderDescription",	 8 },
-	{ "MsgOrderDescription",	 9 },
-	{ "MsgGetOrder", 		10 },
-	{ "MsgOrder", 			11 },
-	{ "MsgInsertOrder", 		12 },
-	{ "MsgRemoveOrder", 		13 },
-	{ "MsgGetTimeRemaining", 	14 },
-	{ "MsgTimeRemaining", 		15 },
-	{ "MsgGetBoards", 		16 },
-	{ "MsgBoard", 			17 },
-	{ "MsgMessageGet", 		18 },
-	{ "MsgMessage", 		19 },
-	{ "MsgPOST_MESSAGE", 		20 },
-	{ "MsgREMOVE_MESSAGE", 		21 },
-	{ "MsgGetResourceDescription",		22 },
-	{ "MsgResourceDescription", 		23 },
-	{ "MsgREDIRECT", 			24 },
-	{ "MsgGetFeatures", 			25 },
-	{ "MsgAvailableFeatures", 		26 },
-	{ "MsgPING", 				27 },
-	{ "MsgGetObjectIDs", 			28 },
-	{ "MsgGET_OBJECT_IDS_BY_POSITION", 	29 },
-	{ "MsgGET_OBJECT_IDS_BY_CONTAINER", 	30 },
-	{ "MsgListOfObjectIDs", 		31 },
-	{ "MsgGetOrderDescriptionIDs",	 	32 },
-	{ "MsgOrderDescriptionIDs", 		33 },
-	{ "MsgProbeOrder", 			34 },
-	{ "MsgGetBoardIDs", 			35 },
-	{ "MsgListOfBoards", 			36 },
-	{ "MsgGetResourceDescriptionIDs",	37 },
-	{ "MsgListOfResourceDescriptionsIDs",	38 },
-	{ "MsgGetPlayerData",	 		39 },
-	{ "MsgPlayerData", 			40 },
-	{ "MsgGET_CATEGORY", 			41 },
-	{ "MsgCATEGORY", 			42 },
-	{ "MsgADD_CATEGORY", 			43 },
-	{ "MsgREMOVE_CATEGORY", 		44 },
-	{ "MsgGET_CATEGORY_IDS", 		45 },
-	{ "MsgLIST_OF_CATEGORY_IDS", 		46 },
-	{ "MsgGetDesign", 			47 },
-	{ "MsgDesign", 				48 },
-	{ "MsgADD_DESIGN", 			49 },
-	{ "MsgMODIFY_DESIGN", 			50 },
-	{ "MsgREMOVE_DESIGN", 			51 },
-	{ "MsgGetDesignIDs", 			52 },
-	{ "MsgListOfDesignIDs", 		53 },
-	{ "MsgGET_COMPONENT", 			54 },
-	{ "MsgCOMPONENT", 			55 },
-	{ "MsgGET_COMPONENT_IDS", 		56 },
-	{ "MsgLIST_OF_COMPONENT_IDS", 		57 },
-	{ "MsgGET_PROPERTY", 			58 },
-	{ "MsgPROPPERY", 			59 },
-	{ "MsgGET_PROPERTY_IDS", 		60 },
-	{ "MsgLIST_OF_PROPERTY_IDS", 		61 },
-	{ "MsgCreateAccount",			62 },
+	{ "MsgOK", 			 	 0,	 0 },
+	{ "MsgFail", 			 	 1,	 1 },
+	{ "MsgSEQUENCE", 			 2,	 2 },
+	{ "MsgConnect", 			 3,      3 },
+	{ "MsgLogin", 				 4,      4 },	
+	{ "MsgGetObjectsByID",			 5,      5 },
+	{ "MsgUNUSED1", 			 6,      6 },
+	{ "MsgObject", 				 7,      7 },
+	{ "MsgGetOrderDescription",		 8,      8 },
+	{ "MsgOrderDescription",		 9,      9 },
+	{ "MsgGetOrder", 			10,     10 },
+	{ "MsgOrder", 				11,     11 },
+	{ "MsgInsertOrder", 			12,     12 },
+	{ "MsgRemoveOrder", 			13,     13 },
+	{ "MsgGetTimeRemaining", 		14,     14 },
+	{ "MsgTimeRemaining", 			15,     15 },
+	{ "MsgGetBoards", 			16,     16 },
+	{ "MsgBoard", 				17,     17 },
+	{ "MsgMessageGet", 			18,     18 },
+	{ "MsgMessage", 			19,     19 },
+	{ "MsgPOST_MESSAGE", 			20,     20 },
+	{ "MsgREMOVE_MESSAGE", 			21,     21 },
+	{ "MsgGetResourceDescription",		22,     22 },
+	{ "MsgResourceDescription", 		23,     23 },
+	{ "MsgREDIRECT", 			24,     24 },
+	{ "MsgGetFeatures", 			25,     25 },
+	{ "MsgAvailableFeatures", 		26,     26 },
+	{ "MsgPING", 				27,     27 },
+	{ "MsgGetObjectIDs", 			28,     28 },
+	{ "MsgGET_OBJECT_IDS_BY_POSITION", 	29,     29 },
+	{ "MsgGET_OBJECT_IDS_BY_CONTAINER", 	30,     30 },
+	{ "MsgListOfObjectIDs", 		31,     31 },
+	{ "MsgGetOrderDescriptionIDs",	 	32,     32 },
+	{ "MsgOrderDescriptionIDs", 		33,     33 },
+	{ "MsgProbeOrder", 			34,     34 },
+	{ "MsgGetBoardIDs", 			35,     35 },
+	{ "MsgListOfBoards", 			36,     36 },
+	{ "MsgGetResourceDescriptionIDs",	37,     37 },
+	{ "MsgListOfResourceDescriptionsIDs",	38,     38 },
+	{ "MsgGetPlayerData",	 		39,     39 },
+	{ "MsgPlayerData", 			40,     40 },
+	{ "MsgGET_CATEGORY", 			41,     41 },
+	{ "MsgCATEGORY", 			42,     42 },
+	{ "MsgADD_CATEGORY", 			43,     43 },
+	{ "MsgREMOVE_CATEGORY", 		44,     44 },
+	{ "MsgGET_CATEGORY_IDS", 		45,     45 },
+	{ "MsgLIST_OF_CATEGORY_IDS", 		46,     46 },
+	{ "MsgGetDesign", 			47,     47 },
+	{ "MsgDesign", 				48,     48 },
+	{ "MsgADD_DESIGN", 			49,     49 },
+	{ "MsgMODIFY_DESIGN", 			50,     50 },
+	{ "MsgREMOVE_DESIGN", 			51,     51 },
+	{ "MsgGetDesignIDs", 			52,     52 },
+	{ "MsgListOfDesignIDs", 		53,     53 },
+	{ "MsgGET_COMPONENT", 			54,     54 },
+	{ "MsgCOMPONENT", 			55,     55 },
+	{ "MsgGET_COMPONENT_IDS", 		56,     56 },
+	{ "MsgLIST_OF_COMPONENT_IDS", 		57,     57 },
+	{ "MsgGET_PROPERTY", 			58,     58 },
+	{ "MsgPROPPERY", 			59,     59 },
+	{ "MsgGET_PROPERTY_IDS", 		60,     60 },
+	{ "MsgLIST_OF_PROPERTY_IDS", 		61,     61 },
+	{ "MsgCreateAccount",			62,     62 },
 
 	/* TP04 only */
-	{ "MsgGetGames",			65 },
-	{ "MsgGames",				66 },
+	{ "MsgFINISHED_TURN",			-1,	63 },
+	{ "MsgSET_FILTERS",			-1,	64 },
+
+	{ "MsgGetGames",			-1,     65 },
+	{ "MsgGames",				-1,     66 },
+
+	{ "MsgGetObjectDescriptions",		-1,	67 },
+	{ "MsgObjectDescription",		-1,	68 },
+	{ "MsgGetObjectDescriptionIDs",		-1,	69 },
+	{ "MsgListOfObjectDescriptionIDs",	-1,	70 },
+	{ "MsgMODIFY_OBJECT",			-1,	71 },
 };
 #define N_MESSAGETYPES (sizeof(msgnames)/sizeof(msgnames[0]))
 
@@ -140,6 +150,7 @@ struct server {
 
 	/* Header */
 	unsigned int header;
+	int protocol;
 
 	/* Buffered Data */
 	struct {
@@ -237,6 +248,7 @@ server_connect(struct tpe *tpe,
 	
 	/* Start by assuming TP 4 */
 	server->header = htonl(('T' << 24) | ('P' << 16) | (4 << 8) | 0);  
+	server->protocol = 4;
 	
 	server->seq = 1;
 	
@@ -445,17 +457,30 @@ server_send(struct server *server, const char *msgtype,
 	if (len > 100000) exit(1);
 	if (data == NULL && len != 0) exit(1);
 
+	/* FIXME: We should do better then a linear search */
 	for (i = 0 ; i < N_MESSAGETYPES ; i ++){
-		if (strcmp(msgtype,msgnames[i].name) == 0){
+		if (strcmp(msgtype,msgnames[i].name) != 0)
+			continue;
+		if (server->protocol == 3)
 			type = msgnames[i].tp03;
-			break;
-		}
+		else if (server->protocol == 4)
+			type = msgnames[i].tp03;
+		else {
+			printf("Unknown server...\n");
+			if (msgnames[i].tp03 != -1)
+				type = msgnames[i].tp04;
+			else
+				type = msgnames[i].tp03;
+		}	
 	}
 
-	if (type == -1){
+	if (type == -1 && i == N_MESSAGETYPES){
 		printf("Message type %s not found\n",msgtype);
+		/* FIXME: This exit should go */
 		exit(1);
 	}
+	if (type == -1)
+		return TPE_ERR_MSG_NOT_SUPPORTED;
 
 	buf = malloc(len + HEADER_SIZE);
 	if (buf == NULL) exit(1);
