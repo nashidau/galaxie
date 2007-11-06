@@ -21,6 +21,7 @@ struct sequence {
 	void (*list_begin)(struct tpe *);
 	void (*list_end)(struct tpe *);
 	int position;
+	int delete;
 };
 
 struct tpe_sequence {
@@ -119,19 +120,29 @@ tpe_sequence_start(struct tpe *tpe, struct server *server){
 	struct tpe_sequence *tsequence;
 	struct sequence *seq;
 	Ecore_List *seqs;
+	int rv;
 
 	tsequence = tpe->sequence;
 	seqs = tsequence->seqs;
 	
 	seq = ecore_list_first_goto(seqs);
 	while ((seq = ecore_list_next(seqs))){
-		if (seq->list_begin)
-			seq->list_begin(tpe);
 		seq->position = 0;
-		/* FIXME: For v4, I should send a time stanmp too */
-		server_send_format(server, seq->updatemsg,
+		/* FIXME: For v4, I should send a time stamp too */
+		rv = server_send_format(server, seq->updatemsg,
 				NULL, NULL,
 				"i0i", -1,-1);
+		if (rv == TPE_ERR_MSG_NOT_SUPPORTED){
+			printf("Sequence '%s' not supported in this server",
+				seq->updatemsg);
+			seq->delete = 1;
+		} else if (rv != 0){
+			printf("Error sending to server\n");
+			continue;
+		}
+		/* Don't trigger this until we know message was sent */
+		if (seq->list_begin)
+			seq->list_begin(tpe);
 	}
 
 	return 1;
