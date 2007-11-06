@@ -378,38 +378,37 @@ tpe_order_parse_args(struct tpe *tpe, struct order *order,
 	for (i = 0 ; i < desc->nargs ; i ++){
 		data = calloc(1,sizeof(union order_arg_data));
 		order->args[i] = data;
-
 		switch(desc->args[i].arg_type){
 		case ARG_COORD:
-			tpe_util_parse_packet(p,NULL,"lllp",
+			tpe_util_parse_packet(p,end,"lllp",
 					&data->coord.x,
 					&data->coord.y,
 					&data->coord.z,
 					&p);
 			break;
 		case ARG_TIME:
-			tpe_util_parse_packet(p,NULL,"iip",&data->time.turns,
+			tpe_util_parse_packet(p,end,"iip",&data->time.turns,
 					&data->time.max,&p);
 			break;
 		case ARG_OBJECT:
-			tpe_util_parse_packet(p,NULL,"ip",
+			tpe_util_parse_packet(p,end,"ip",
 					&data->object.oid,
 					&p);
 			break;
 		case ARG_PLAYER:
-			tpe_util_parse_packet(p,NULL,"iip",
+			tpe_util_parse_packet(p,end,"iip",
 					&data->player.pid,
 					&data->player.flags);
 			break;
 		case ARG_RELCOORD:
-			tpe_util_parse_packet(p,NULL,"illlp",
+			tpe_util_parse_packet(p,end,"illlp",
 					&data->relcoord.obj,
 					&data->relcoord.x,
 					&data->relcoord.y,
 					&data->relcoord.z,&p);
 			break;
 		case ARG_RANGE:
-			tpe_util_parse_packet(p,NULL,"iiii",
+			tpe_util_parse_packet(p,end,"iiii",
 					&data->range.value,
 					&data->range.min,
 					&data->range.max,
@@ -417,7 +416,7 @@ tpe_order_parse_args(struct tpe *tpe, struct order *order,
 					&p);
 			break;
 		case ARG_LIST:
-			tpe_util_parse_packet(p,NULL,"ip", 
+			tpe_util_parse_packet(p,end,"ip", 
 					&data->list.noptions,&p);
 			/* FIXME: Temp sanity check */
 			assert(data->list.noptions < 1000);
@@ -427,23 +426,23 @@ tpe_order_parse_args(struct tpe *tpe, struct order *order,
 			for (j = 0 ; j < data->list.noptions ; j ++){
 				struct order_arg_list_option *op;
 				op = data->list.options + j;
-				tpe_util_parse_packet(p,NULL,"isip",
+				tpe_util_parse_packet(p,end,"isip",
 						&op->id,&op->option,&op->max,
 						&p);
 			}
 			/* FIXME: Check selected option is a valid one */
-			tpe_util_parse_packet(p,NULL,"ip",&data->list.nselections,&p);
+			tpe_util_parse_packet(p,end,"ip",&data->list.nselections,&p);
 			data->list.selections = calloc(data->list.nselections,
 				       sizeof(struct order_arg_list_selection));
 			for (j = 0 ; j < data->list.nselections ; j ++){
 				struct order_arg_list_selection *sel;
 				sel = data->list.selections + j;
-				tpe_util_parse_packet(p,NULL,"iip",
+				tpe_util_parse_packet(p,end,"iip",
 						&sel->selection,&sel->count,&p);
 			}
 			break;
 		case ARG_STRING:
-			tpe_util_parse_packet(p, NULL,"isp", 
+			tpe_util_parse_packet(p, end,"isp", 
 					&data->string.maxlen,
 					&data->string.str,
 					&p);
