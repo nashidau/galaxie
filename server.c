@@ -464,7 +464,7 @@ server_send(struct server *server, const char *msgtype,
 		if (server->protocol == 3)
 			type = msgnames[i].tp03;
 		else if (server->protocol == 4)
-			type = msgnames[i].tp03;
+			type = msgnames[i].tp04;
 		else {
 			printf("Unknown server...\n");
 			if (msgnames[i].tp03 != -1)
@@ -472,6 +472,7 @@ server_send(struct server *server, const char *msgtype,
 			else
 				type = msgnames[i].tp03;
 		}	
+		break;
 	}
 
 	if (type == -1 && i == N_MESSAGETYPES){
