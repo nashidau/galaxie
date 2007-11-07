@@ -136,6 +136,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 	int *oldchildren,noldchildren;
 	int id,n,i;
 	int isnew;
+	int oldowner;
 	void *end;
 	
 	tpe = data;
@@ -202,8 +203,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		o->orders = NULL;
 
 	/* Handle extra data for different types */
-#warning Fix this soon
-#if 0
+	/* FIXME: Tp 03 only */
 	switch (o->type){
 	case OBJTYPE_UNIVERSE:{
 		uint32_t turn;
@@ -268,7 +268,6 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		else 
 			printf("A %d can take orders???\n", o->type);
 	}
-#endif
 	return 1;
 }
 

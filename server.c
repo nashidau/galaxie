@@ -247,8 +247,10 @@ server_connect(struct tpe *tpe,
 	server->magic = SERVER_MAGIC;
 	
 	/* Start by assuming TP 4 */
-	server->header = htonl(('T' << 24) | ('P' << 16) | (4 << 8) | 0);  
-	server->protocol = 4;
+//	server->header = htonl(('T' << 24) | ('P' << 16) | (4 << 8) | 0);  
+//	server->protocol = 4;
+	server->header = htonl(('T' << 24) | ('P' << 16) | ('0' << 8) | '3');
+	server->protocol = 3;
 	
 	server->seq = 1;
 	

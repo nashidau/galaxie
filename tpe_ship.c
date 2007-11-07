@@ -41,15 +41,13 @@ tpe_ship_init(struct tpe *tpe){
 
 	ships = calloc(1,sizeof(struct tpe_ship));
 	ships->designs = ecore_list_new();
-#warning Compiling with tpserver-cpp brokenness avoidance
-/* Only designs use new format! */
-/*
+
 	tpe_sequence_register(tpe, "MsgGetDesignIDs",
 			"MsgListOfDesignIDs",
 			"MsgGetDesign",
 			tpe_ship_design_updated_get,
 			NULL, NULL);
-*/
+
 	tpe_event_handler_add(event, "MsgDesign",
 			tpe_ship_msg_design, tpe);
 
@@ -106,7 +104,7 @@ tpe_ship_msg_design(void *data, int eventid, void *event){
 			&design->description);
 
 	ecore_list_append(tpe->ship->designs, design);
-
+printf("Design: %s [%d]\n",design->name, design->did);
 	free(cats);
 
 	return 1;
