@@ -387,7 +387,7 @@ server_handle_packet(struct server *server, int seq, int type,
 	int i;
 
 	for (i = 0 ; i < N_MESSAGETYPES ; i ++){ 
-		if (msgnames[i].tp03 == type){
+		if (msgnames[i].tp03 == type || msgnames[i].tp04 == type){
 			event = msgnames[i].name;
 			break;
 		}
@@ -404,7 +404,7 @@ server_handle_packet(struct server *server, int seq, int type,
 	msg->data = malloc(len);
 	memcpy(msg->data, (char *)data + 16, len);
 	msg->end = (char*)msg->data + len;
-	msg->protocol = 4; /* FIXME */
+	msg->protocol = 3; /* FIXME */
 
 	//printf("Handling Seq %d [%s]\n",seq,event);
 	if (seq){

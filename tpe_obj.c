@@ -164,7 +164,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		free(o->orders);
 	}
 
-
+	if (msg->protocol == 4) msg->protocol = 3;
 	if (msg->protocol == 3){
 		/* Save children */
 		oldchildren = o->children;
@@ -180,16 +180,18 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 				&o->nchildren, &o->children, 
 				&o->nordertypes, &o->ordertypes,
 				&o->norders,
-				&o->updated,NULL, NULL, &end);
+				&o->updated,&end);
 		tpe_obj_update_children(tpe, o,noldchildren,oldchildren);
 	} else if (msg->protocol == 4){
 		/* TP 04 */
+		printf("tp04 message\n");
 		n = tpe_util_parse_packet(msg->data, msg->end, 
-				"iissill",
+				"iissillp",
 				&o->oid, &o->type, &o->name, &o->description,
 				&o->parent,  
 				&o->nchildren, &o->children, 
-				&o->updated);
+				&o->updated,&end);
+		printf("%s (%s)\n",o->name,o->description);
 	} else {
 		printf("Unknown protocol %d\n",msg->protocol);
 		return 1;
