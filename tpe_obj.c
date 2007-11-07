@@ -63,7 +63,7 @@ static int tpe_obj_data_receive(void *data, int eventid, void *event);
 static void tpe_obj_list_begin(struct tpe *tpe);
 static void tpe_obj_list_end(struct tpe *tpe);
 
-
+static int tpe_obj_object_description_receive(void *data, int eventid, void *event);
 static void tpe_obj_object_description_list_begin(struct tpe *tpe);
 static void tpe_obj_object_description_list_end(struct tpe *tpe);
 static uint64_t tpe_obj_object_description_updated(struct tpe *, uint32_t odid);
@@ -91,6 +91,9 @@ tpe_obj_init(struct tpe *tpe){
 
 	tpe_event_handler_add(event, "MsgObject",
 			tpe_obj_data_receive, tpe);
+
+	tpe_event_handler_add(event, "MsgObjectDescription",
+			tpe_obj_object_description_receive, tpe);
 
 	tpe_event_type_add(event, "ObjectNew");
 	tpe_event_type_add(event, "ObjectChanged");
@@ -595,7 +598,6 @@ tpe_obj_update_children(struct tpe *tpe, struct object *o, int noldchildren, int
 
 static void 
 tpe_obj_object_description_list_begin(struct tpe *tpe){
-
 }
 static void 
 tpe_obj_object_description_list_end(struct tpe *tpe){
@@ -607,3 +609,16 @@ tpe_obj_object_description_updated(struct tpe *tpe, uint32_t odid){
 }
 
 
+static int 
+tpe_obj_object_description_receive(void *data, int eventid, void *event){
+	struct msg *msg;
+	int tmp;
+	char *name;
+
+	msg = event;
+
+	tpe_util_parse_packet(msg->data,msg->end,"is",&tmp,&name);
+	printf("Description of %s [%d]\n",name,tmp);
+	
+	return 1;
+}
