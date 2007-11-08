@@ -31,6 +31,8 @@
 #include "tpe_gui_orders.h"
 #include "gui_window.h"
 #include "gui_list.h"
+#include "ewl/gewl_object.h"
+
 
 enum {
 	WIDTH = 640,
@@ -405,7 +407,7 @@ star_mouse_in(void *data, Evas *e, Evas_Object *eo, void *event){
 	if (py < 0)
 		py = 2;
 	else if (py + h > sh)
-		py = sh - h - 5;
+		py = sh - h - 5;;
 	
 
 	evas_object_move(go->gui->popup,px,py);
@@ -623,13 +625,14 @@ star_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 	if (go->info){
 		evas_object_raise(go->info);
 	} else {
-
+/*
 		o = gui_objectwindow_add(go->gui);
 
 		gui_objectbox_object_set(go->gui, o, go->object);
 
 		evas_object_show(o);
-
+*/
+		o = tpe_ewl_planet_add(go->gui, go->object);
 		go->info = o;
 	}
 

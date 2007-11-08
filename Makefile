@@ -30,7 +30,8 @@ GUI=			\
 	tpe_gui.o	\
 	tpe_gui_orders.o	\
 	gui_window.o	\
-	gui_list.o
+	gui_list.o	\
+	ewl/gewl_object.o
 
 AIS=			\
 	ai_smith.o	\
