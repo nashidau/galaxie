@@ -114,6 +114,14 @@ smith_order_planet(void *data, int type, void *event){
 //			return 1;
 	}
 
+	if (o->server == NULL){
+		/* Big FIXME */
+		printf("$ Smith: Can't do anything\n");
+		printf("$ Smith: Object data is lacking server\n");
+		printf("$ Smith: Please Fix this!\n");
+		return 0;
+	}
+
 	server_send_format(o->server,  "MsgProbeOrder",
 			smith_order_insert_cb, smith,
 			"iii000000", o->oid, -1, build_id);
