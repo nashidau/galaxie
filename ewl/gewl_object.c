@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <inttypes.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -28,7 +29,15 @@ struct ewl_planet_data {
 	Ewl_Widget *resources;
 };
 
+static const char *resheaders[] = {
+	"Resource",
+	"On Surface",
+	"Accessable",
+	"Inaccessable"
+};
+
 void tpe_ewl_planet_set(struct ewl_planet_data *p, struct object *planet);
+char * alloc_printf(const char *format, ...);
 
 
 Evas_Object *
@@ -43,7 +52,7 @@ tpe_ewl_planet_add(struct gui *gui, struct object *planet){
 	/* FIXME: Move this to a more useful place */
 	p->window = window = gui_window_ewl_add(gui);
 
-	box = ewl_hbox_new();
+	box = ewl_vbox_new();
 	p->box = box; /* XXX */
 	ewl_container_child_append(EWL_CONTAINER(window), box);
 	ewl_widget_show(box);
@@ -55,6 +64,21 @@ tpe_ewl_planet_add(struct gui *gui, struct object *planet){
 	p->icon = ewl_icon_simple_new();
 	ewl_container_child_append(EWL_CONTAINER(box), p->icon);
 	ewl_widget_show(p->icon);
+
+	p->resources = ewl_tree_new(4); /* XXX */
+	ewl_container_child_append(EWL_CONTAINER(box), p->resources);
+	ewl_tree_headers_set(EWL_TREE(p->resources),(char**)resheaders);
+	ewl_widget_show(p->resources);
+
+	p->children = ewl_grid_new();
+	ewl_container_child_append(EWL_CONTAINER(box), p->children);
+	ewl_object_fill_policy_set(EWL_OBJECT(p->children), EWL_FLAG_FILL_FILL);
+	ewl_grid_dimensions_set(EWL_GRID(p->children), 2, 2);
+	//ewl_grid_column_relative_w_set(EWL_GRID(p->children), 0, 0.25);
+	ewl_grid_homogeneous_set(EWL_GRID(p->children), 1);
+	//ewl_grid_row_fixed_h_set(EWL_GRID(p->children), 3, 50);
+	//ewl_grid_row_preferred_h_use(EWL_GRID(p->children), 2);
+	ewl_widget_show(p->children);
 
 
 	tpe_ewl_planet_set(p, planet);
@@ -90,17 +114,36 @@ tpe_ewl_planet_set(struct ewl_planet_data *p, struct object *planet){
 	/* FIXME: This is TP03 only really */
 	/* TP04 should be more generic */
 	if (planet->planet){
+		char *resdata[4];
+		Ewl_Widget *widgets[4];
 		/* We have resources */
 		nres = planet->planet->nresources;
 		res = planet->planet->resources;
-		printf("%d resources\n",nres);
 				
 		for (i = 0; i <  nres ; i ++){
 			rdes = tpe_resources_resourcedescription_get(
 					planet->tpe,
 					res[i].rid);
-			printf("%s: %d %d %d\n",rdes->name,res[i].surface, 
-					res[i].minable, res[i].inaccessable);
+			resdata[0] = rdes->name;
+			/* FIXME: Implement standard version of these */
+			resdata[1] = alloc_printf("%d %s",res[i].surface,
+					rdes->unit);
+			resdata[2] = alloc_printf("%d %s",res[i].minable,
+					rdes->unit);
+			resdata[3] = alloc_printf("%d %s",res[i].inaccessable,
+					rdes->unit);
+
+			widgets[0] = ewl_label_new();
+			ewl_label_text_set(widgets[0],resdata[0]);
+			widgets[1] = ewl_label_new();
+			ewl_label_text_set(widgets[1],resdata[1]);
+			widgets[2] = ewl_label_new();
+			ewl_label_text_set(widgets[2],resdata[2]);
+			widgets[3] = ewl_label_new();
+			ewl_label_text_set(widgets[3],resdata[3]);
+
+			ewl_tree_row_add(EWL_TREE(p->resources), NULL, widgets);
+			free(resdata[1]); free(resdata[2]); free(resdata[3]); 
 		}
 	}
 
@@ -132,4 +175,21 @@ tpe_ewl_planet_set(struct ewl_planet_data *p, struct object *planet){
 }
 
 
+/* FIXME: Move to tpe_util */
+char *
+alloc_printf(const char *fmt, ...){
+	va_list ap;
+	int count;
+	char *buf;
 
+	va_start(ap, fmt);
+	count = vsnprintf(NULL, 0, fmt, ap);
+	va_end(ap);
+
+	buf = calloc(1,count + 1);
+	va_start(ap, fmt);
+	vsnprintf(buf, count + 1, fmt, ap);
+	va_end(ap);
+
+	return buf;
+}
