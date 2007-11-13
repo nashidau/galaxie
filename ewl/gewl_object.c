@@ -38,6 +38,7 @@ static const char *resheaders[] = {
 
 void tpe_ewl_planet_set(struct ewl_planet_data *p, struct object *planet);
 char * alloc_printf(const char *format, ...);
+static void icon_select(Ewl_Widget *icon, void *ev_data, void *planetv);
 
 
 Evas_Object *
@@ -67,6 +68,7 @@ tpe_ewl_planet_add(struct gui *gui, struct object *planet){
 
 	p->resources = ewl_tree_new(4); /* XXX */
 	ewl_container_child_append(EWL_CONTAINER(box), p->resources);
+	ewl_object_fill_policy_set(EWL_OBJECT(p->resources),EWL_FLAG_FILL_FILL);
 	ewl_tree_headers_set(EWL_TREE(p->resources),(char**)resheaders);
 	ewl_widget_show(p->resources);
 
@@ -135,15 +137,21 @@ tpe_ewl_planet_set(struct ewl_planet_data *p, struct object *planet){
 
 			widgets[0] = ewl_label_new();
 			ewl_label_text_set(widgets[0],resdata[0]);
+			ewl_widget_show(widgets[0]);
 			widgets[1] = ewl_label_new();
 			ewl_label_text_set(widgets[1],resdata[1]);
+			ewl_widget_show(widgets[1]);
 			widgets[2] = ewl_label_new();
 			ewl_label_text_set(widgets[2],resdata[2]);
+			ewl_widget_show(widgets[2]);
 			widgets[3] = ewl_label_new();
 			ewl_label_text_set(widgets[3],resdata[3]);
+			ewl_widget_show(widgets[3]);
 
 			ewl_tree_row_add(EWL_TREE(p->resources), NULL, widgets);
 			free(resdata[1]); free(resdata[2]); free(resdata[3]); 
+
+			printf("Res: %s\n",rdes->name);
 		}
 	}
 
@@ -168,9 +176,23 @@ tpe_ewl_planet_set(struct ewl_planet_data *p, struct object *planet){
 				ewl_icon_image_set(EWL_ICON(icon),"edje/images/fleet.png",NULL);
 
 			ewl_container_child_append(EWL_CONTAINER(p->box), icon);
+			ewl_callback_append(icon, EWL_CALLBACK_CLICKED, 
+					icon_select, kids[i]);
 			ewl_widget_show(icon);
+			ewl_widget_data_set(icon,"Window",p);
 		}
 	}
+
+}
+
+static void
+icon_select(Ewl_Widget *icon, void *ev_data, void *planetv){
+	struct ewl_planet_data *p;
+
+	p = ewl_widget_data_get(icon, "Window");
+	assert(p);
+
+	tpe_ewl_planet_set(p, planetv);
 
 }
 
