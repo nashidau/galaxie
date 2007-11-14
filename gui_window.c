@@ -34,7 +34,7 @@ gui_window_add2(struct gui *gui, const char *title, const char *icon){
 	window = edje_object_add(gui->e);
 	edje_object_file_set(window,"edje/basic.edj", "Window");
 	evas_object_show(window);
-	evas_object_resize(window,300,200);
+	evas_object_resize(window,300,400);
 	
 	if (title)
 		edje_object_part_text_set(window,"Title", title);
@@ -96,7 +96,7 @@ gui_window_ewl_add(struct gui *gui){
 	window = edje_object_add(gui->e);
 	edje_object_file_set(window,"edje/basic.edj", "Window");
 	evas_object_show(window);
-	evas_object_resize(window,300,200);
+	evas_object_resize(window,300,400);
 
 	emb = ewl_embed_new();
 	ewl_object_fill_policy_set(EWL_OBJECT(emb), EWL_FLAG_FILL_ALL);
@@ -106,6 +106,7 @@ gui_window_ewl_add(struct gui *gui){
 	ewl_widget_show(emb);
 
 	edje_object_part_swallow(window, "swallow", eo);
+	evas_object_data_set(window, "EWL", emb);
 
 	gui_window_add(gui, window);
 
@@ -122,6 +123,7 @@ gui_window_focus(struct gui *gui, Evas_Object *window){
 
 static void
 gui_window_delete(void *guiv, Evas *e, Evas_Object *window, void *dummy){
+	Ewl_Widget *emb;
 	struct gui *gui = guiv;
 	assert(gui != NULL); assert(window != NULL);
 	assert(gui->windows != NULL);
@@ -130,6 +132,10 @@ gui_window_delete(void *guiv, Evas *e, Evas_Object *window, void *dummy){
 		assert(!"Could not find item\n");
 		return;
 	}
+
+	emb = evas_object_data_get(window,"EWL");
+	if (emb)
+		ewl_widget_destroy(emb);
 
 	ecore_list_remove(gui->windows);
 }
