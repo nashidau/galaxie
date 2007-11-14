@@ -133,6 +133,9 @@ gui_window_delete(void *guiv, Evas *e, Evas_Object *window, void *dummy){
 		return;
 	}
 
+	/* FIXME: Maybe not the best strategy */
+	evas_object_focus_set(gui->main,1);
+
 	emb = evas_object_data_get(window,"EWL");
 	if (emb)
 		ewl_widget_destroy(emb);
