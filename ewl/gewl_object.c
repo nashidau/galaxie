@@ -70,10 +70,10 @@ tpe_ewl_planet_add(struct gui *gui, struct object *planet){
 	ewl_container_child_append(EWL_CONTAINER(box), p->icon);
 	ewl_widget_show(p->icon);
 
-	p->resources = ewl_tree_new(4); /* XXX */
+	p->resources = ewl_tree_new(5); /* XXX */
 	ewl_container_child_append(EWL_CONTAINER(box), p->resources);
-	ewl_object_fill_policy_set(EWL_OBJECT(p->resources),EWL_FLAG_FILL_FILL);
 	ewl_tree_headers_set(EWL_TREE(p->resources),(char**)resheaders);
+	ewl_object_fill_policy_set(EWL_OBJECT(p->resources),EWL_FLAG_FILL_FILL);
 	ewl_widget_show(p->resources);
 
 	p->children = ewl_grid_new();
@@ -85,7 +85,6 @@ tpe_ewl_planet_add(struct gui *gui, struct object *planet){
 	//ewl_grid_row_fixed_h_set(EWL_GRID(p->children), 3, 50);
 	//ewl_grid_row_preferred_h_use(EWL_GRID(p->children), 2);
 	ewl_widget_show(p->children);
-
 
 	tpe_ewl_planet_set(p, planet);
 
@@ -172,6 +171,7 @@ tpe_ewl_planet_set(struct ewl_planet_data *p, struct object *planet){
  */
 static void
 tpe_ewl_planet_clear(struct ewl_planet_data *p, int everything){
+	Ewl_Widget *row;
 	assert(p);
 	if (p == NULL) return;
 
@@ -179,7 +179,12 @@ tpe_ewl_planet_clear(struct ewl_planet_data *p, int everything){
 		fprintf(stderr, "%s:%s: Everything flag not implemented\n",
 				__FILE__, __FUNCTION__);
 
-	ewl_tree_init(EWL_TREE(p->resources), 4);	
+	/* FIXME: ewl_tree_init doesn't seem to work */
+	//ewl_tree_init(EWL_TREE(p->resources), 5);	
+	while ((row = ewl_tree_row_find(EWL_TREE(p->resources), 0)))
+		ewl_tree_row_destroy(EWL_TREE(p->resources), EWL_ROW(row));
+	
+	
 }
 
 
@@ -211,6 +216,7 @@ tpe_ewl_resource_append(struct tpe *tpe, Ewl_Widget *tree,
 	labels[3] = alloc_printf("%d %s",res->inaccessable,
 			rdes->unit);
 
+	widgets[0] = NULL;
 	for (i = 0 ; i < 4 ; i ++){
 		widgets[i + 1] = ewl_label_new();
 		ewl_label_text_set(EWL_LABEL(widgets[i+1]),labels[i]);
