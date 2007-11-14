@@ -646,7 +646,7 @@ test_orders_show(void *ob, Evas *e,Evas_Object *tb, void *mouse){
 
 	printf("Got mouse down: %d %d\n",down->canvas.x,down->canvas.y);
 	printf("              : %d %d\n",down->output.x,down->output.y);
-	evas_object_geometry_get(tb,&x,&y,0,0);
+	evas_object_geometry_get(tb,&x,&y,NULL,NULL);
 	x = down->canvas.x - x;
 	y = down->canvas.y - y;
 
@@ -1325,13 +1325,13 @@ gui_object_icon_get(struct gui *gui, uint32_t oid, int active){
 	/* FIXME: need to use media */
 	switch(obj->type){
 	case OBJTYPE_UNIVERSE:
-		evas_object_image_file_set(icon, "edje/images/universe.png",0);
+		evas_object_image_file_set(icon, "edje/images/universe.png",NULL);
 		break;
 	case OBJTYPE_GALAXY:
-		evas_object_image_file_set(icon, "edje/images/galaxy64.png",0);
+		evas_object_image_file_set(icon, "edje/images/galaxy64.png",NULL);
 		break;
 	case OBJTYPE_SYSTEM:
-		evas_object_image_file_set(icon, "edje/images/star.png",0);
+		evas_object_image_file_set(icon, "edje/images/star.png",NULL);
 		break;
 	case OBJTYPE_PLANET:
 		evas_object_image_file_set(icon, 
