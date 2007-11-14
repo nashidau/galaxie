@@ -96,7 +96,7 @@ gui_window_ewl_add(struct gui *gui){
 	window = edje_object_add(gui->e);
 	edje_object_file_set(window,"edje/basic.edj", "Window");
 	evas_object_show(window);
-	evas_object_resize(window,300,400);
+	evas_object_resize(window,400,400);
 
 	emb = ewl_embed_new();
 	ewl_object_fill_policy_set(EWL_OBJECT(emb), EWL_FLAG_FILL_ALL);
