@@ -30,6 +30,7 @@ struct ewl_planet_data {
 };
 
 static const char *resheaders[] = {
+	"",	/* Icon */
 	"Resource",
 	"On Surface",
 	"Accessable",
@@ -39,6 +40,9 @@ static const char *resheaders[] = {
 void tpe_ewl_planet_set(struct ewl_planet_data *p, struct object *planet);
 char * alloc_printf(const char *format, ...);
 static void icon_select(Ewl_Widget *icon, void *ev_data, void *planetv);
+static void tpe_ewl_planet_clear(struct ewl_planet_data *p, int everything);
+static void tpe_ewl_resource_append(struct tpe *tpe, Ewl_Widget *tree, 
+		struct planet_resource *res);
 
 
 Evas_Object *
@@ -93,7 +97,6 @@ void
 tpe_ewl_planet_set(struct ewl_planet_data *p, struct object *planet){
 	const char *file = NULL;
 	struct planet_resource *res;
-	struct resourcedescription *rdes;
 	int nres,i;
 
 	assert(p);
@@ -102,6 +105,8 @@ tpe_ewl_planet_set(struct ewl_planet_data *p, struct object *planet){
 	assert(p->window);
 	assert(p->name); assert(p->icon);
 
+	tpe_ewl_planet_clear(p, 0);
+	
 	ewl_label_text_set(EWL_LABEL(p->name), planet->name);
 
 	/* Hack */
@@ -116,42 +121,12 @@ tpe_ewl_planet_set(struct ewl_planet_data *p, struct object *planet){
 	/* FIXME: This is TP03 only really */
 	/* TP04 should be more generic */
 	if (planet->planet){
-		char *resdata[4];
-		Ewl_Widget *widgets[4];
 		/* We have resources */
 		nres = planet->planet->nresources;
 		res = planet->planet->resources;
 				
 		for (i = 0; i <  nres ; i ++){
-			rdes = tpe_resources_resourcedescription_get(
-					planet->tpe,
-					res[i].rid);
-			resdata[0] = rdes->name;
-			/* FIXME: Implement standard version of these */
-			resdata[1] = alloc_printf("%d %s",res[i].surface,
-					rdes->unit);
-			resdata[2] = alloc_printf("%d %s",res[i].minable,
-					rdes->unit);
-			resdata[3] = alloc_printf("%d %s",res[i].inaccessable,
-					rdes->unit);
-
-			widgets[0] = ewl_label_new();
-			ewl_label_text_set(widgets[0],resdata[0]);
-			ewl_widget_show(widgets[0]);
-			widgets[1] = ewl_label_new();
-			ewl_label_text_set(widgets[1],resdata[1]);
-			ewl_widget_show(widgets[1]);
-			widgets[2] = ewl_label_new();
-			ewl_label_text_set(widgets[2],resdata[2]);
-			ewl_widget_show(widgets[2]);
-			widgets[3] = ewl_label_new();
-			ewl_label_text_set(widgets[3],resdata[3]);
-			ewl_widget_show(widgets[3]);
-
-			ewl_tree_row_add(EWL_TREE(p->resources), NULL, widgets);
-			free(resdata[1]); free(resdata[2]); free(resdata[3]); 
-
-			printf("Res: %s\n",rdes->name);
+			tpe_ewl_resource_append(planet->tpe,p->resources,res+i);
 		}
 	}
 
@@ -174,6 +149,7 @@ tpe_ewl_planet_set(struct ewl_planet_data *p, struct object *planet){
 				ewl_icon_image_set(EWL_ICON(icon),"edje/images/planet.png",NULL);
 			else 
 				ewl_icon_image_set(EWL_ICON(icon),"edje/images/fleet.png",NULL);
+			ewl_icon_label_set(EWL_ICON(icon), kids[i]->name);
 
 			ewl_container_child_append(EWL_CONTAINER(p->box), icon);
 			ewl_callback_append(icon, EWL_CALLBACK_CLICKED, 
@@ -182,6 +158,70 @@ tpe_ewl_planet_set(struct ewl_planet_data *p, struct object *planet){
 			ewl_widget_data_set(icon,"Window",p);
 		}
 	}
+
+}
+
+/**
+ * Clear the UI components for a planet structure
+ *
+ * If everything is set clears all members, including labels.
+ * Otherwise just clears lists and elements that are appended to.
+ *
+ * @param p Planet data
+ * @param everything Clear all labels
+ */
+static void
+tpe_ewl_planet_clear(struct ewl_planet_data *p, int everything){
+	assert(p);
+	if (p == NULL) return;
+
+	if (everything) 
+		fprintf(stderr, "%s:%s: Everything flag not implemented\n",
+				__FILE__, __FUNCTION__);
+
+	ewl_tree_init(EWL_TREE(p->resources), 4);	
+}
+
+
+static void
+tpe_ewl_resource_append(struct tpe *tpe, Ewl_Widget *tree, 
+		struct planet_resource *res){
+	struct resourcedescription *rdes;
+	Ewl_Widget *widgets[5];
+	char *labels[4];
+	int i;
+
+	rdes = tpe_resources_resourcedescription_get(tpe, res->rid);
+	assert(rdes);
+	if (rdes == NULL){
+		/* FIXME: Handle */
+		/* Should insert basic row with formated rdes */
+		return;
+	}
+
+	/* FIXME: Insert icon */
+
+	labels[0] = rdes->name;
+	
+	/* FIXME: Implement standard version of these */
+	labels[1] = alloc_printf("%d %s",res->surface,
+			rdes->unit);
+	labels[2] = alloc_printf("%d %s",res->minable,
+			rdes->unit);
+	labels[3] = alloc_printf("%d %s",res->inaccessable,
+			rdes->unit);
+
+	for (i = 0 ; i < 4 ; i ++){
+		widgets[i + 1] = ewl_label_new();
+		ewl_label_text_set(EWL_LABEL(widgets[i+1]),labels[i]);
+		ewl_widget_show(widgets[i+1]);
+	}
+		
+
+	ewl_tree_row_add(EWL_TREE(tree), NULL, widgets);
+	free(labels[1]); free(labels[2]); free(labels[3]); 
+
+	printf("Res: %s\n",rdes->name); /* XXX: Debug */
 
 }
 
