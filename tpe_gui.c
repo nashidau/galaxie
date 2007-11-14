@@ -525,7 +525,7 @@ star_update(struct tpe *tpe, struct object *object){
 		nchildren ++;
 		if (child->owner == tpe->player) 
 			nowned ++;
-		else if (child->owner != -1)
+		else if (child->owner != 0)
 			nother ++;
 	}
 
