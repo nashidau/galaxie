@@ -75,11 +75,11 @@ tpe_ewl_planet_add(struct gui *gui, struct object *planet){
 	p->children = ewl_grid_new();
 	ewl_container_child_append(EWL_CONTAINER(box), p->children);
 	ewl_object_fill_policy_set(EWL_OBJECT(p->children), EWL_FLAG_FILL_FILL);
-	ewl_grid_dimensions_set(EWL_GRID(p->children), 2, 2);
-	//ewl_grid_column_relative_w_set(EWL_GRID(p->children), 0, 0.25);
+	ewl_grid_dimensions_set(EWL_GRID(p->children), 3, 3);
+	ewl_grid_column_relative_w_set(EWL_GRID(p->children), 0, 0.25);
 	ewl_grid_homogeneous_set(EWL_GRID(p->children), 1);
-	//ewl_grid_row_fixed_h_set(EWL_GRID(p->children), 3, 50);
-	//ewl_grid_row_preferred_h_use(EWL_GRID(p->children), 2);
+	ewl_grid_row_fixed_h_set(EWL_GRID(p->children), 3, 50);
+	ewl_grid_row_preferred_h_use(EWL_GRID(p->children), 2);
 	ewl_widget_show(p->children);
 
 	tpe_ewl_planet_set(p, planet);
@@ -141,12 +141,17 @@ tpe_ewl_planet_set(struct ewl_planet_data *p, struct object *planet){
 		for (i = 0 ; i < planet->nchildren ; i ++){
 			icon = ewl_icon_simple_new();
 			if (kids[i]->type == OBJTYPE_PLANET)
-				ewl_icon_image_set(EWL_ICON(icon),"edje/images/planet.png",NULL);
+				ewl_icon_image_set(EWL_ICON(icon),
+						"edje/images/planet.png",NULL);
 			else 
-				ewl_icon_image_set(EWL_ICON(icon),"edje/images/fleet.png",NULL);
+				ewl_icon_image_set(EWL_ICON(icon),
+						"edje/images/fleet.png",NULL);
 			ewl_icon_label_set(EWL_ICON(icon), kids[i]->name);
 
-			ewl_container_child_append(EWL_CONTAINER(p->box), icon);
+			ewl_container_child_append(EWL_CONTAINER(p->children),
+					icon);
+			ewl_grid_child_position_set(EWL_GRID(p->children), icon,
+					i % 3, i % 3 + 1, i / 3, i / 3 + 1);
 			ewl_callback_append(icon, EWL_CALLBACK_CLICKED, 
 					icon_select, kids[i]);
 			ewl_widget_show(icon);
@@ -179,7 +184,9 @@ tpe_ewl_planet_clear(struct ewl_planet_data *p, int everything){
 	//ewl_tree_init(EWL_TREE(p->resources), 5);	
 	while ((row = ewl_tree_row_find(EWL_TREE(p->resources), 0)))
 		ewl_tree_row_destroy(EWL_TREE(p->resources), EWL_ROW(row));
-	
+
+	//ewl_grid_init(EWL_GRID(p->children));
+	//ewl_grid_dimensions_set(EWL_GRID(p->children), 3,3);
 	
 }
 
