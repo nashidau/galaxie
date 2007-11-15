@@ -24,6 +24,8 @@ struct ewl_planet_data {
 	Ewl_Widget *icon;
 	Ewl_Widget *children;
 	Ewl_Widget *resources;
+	Ewl_Widget *orders;
+	Ewl_Widget *edit;
 };
 
 static const char *resheaders[] = {
@@ -34,12 +36,19 @@ static const char *resheaders[] = {
 	"Inaccessable"
 };
 
+static const char *orderheaders[] = {
+	"Order",
+	"Args"
+};
+
 void tpe_ewl_planet_set(struct ewl_planet_data *p, struct object *planet);
 char * alloc_printf(const char *format, ...);
 static void icon_select(Ewl_Widget *icon, void *ev_data, void *planetv);
+static void tpe_ewl_edit_orders(Ewl_Widget *icon, void *ev_data, void *planetv);
 static void tpe_ewl_planet_clear(struct ewl_planet_data *p, int everything);
 static void tpe_ewl_resource_append(struct tpe *tpe, Ewl_Widget *tree, 
 		struct planet_resource *res);
+static void tpe_ewl_tree_clear(Ewl_Widget *tree);
 
 
 Evas_Object *
@@ -81,6 +90,22 @@ tpe_ewl_planet_add(struct gui *gui, struct object *planet){
 	ewl_grid_row_fixed_h_set(EWL_GRID(p->children), 3, 50);
 	ewl_grid_row_preferred_h_use(EWL_GRID(p->children), 2);
 	ewl_widget_show(p->children);
+
+	p->orders = ewl_tree_new(2); /* XXX */
+	ewl_container_child_append(EWL_CONTAINER(box), p->orders);
+	ewl_tree_headers_set(EWL_TREE(p->orders), (char**)orderheaders);
+	ewl_object_fill_policy_set(EWL_OBJECT(p->orders), EWL_FLAG_FILL_FILL);
+	ewl_widget_show(p->orders);
+
+	/* TODO: Align right */
+	p->edit = ewl_button_new();
+	ewl_button_label_set(EWL_BUTTON(p->edit), "Edit Orders");
+	ewl_container_child_append(EWL_CONTAINER(box), p->edit);
+	ewl_object_fill_policy_set(EWL_OBJECT(p->edit), 
+			EWL_FLAG_ALIGN_RIGHT | EWL_FLAG_FILL_NONE);
+	ewl_callback_append(p->edit, EWL_CALLBACK_CLICKED, 
+			tpe_ewl_edit_orders, p);
+	ewl_widget_show(p->edit);
 
 	tpe_ewl_planet_set(p, planet);
 
@@ -159,6 +184,19 @@ tpe_ewl_planet_set(struct ewl_planet_data *p, struct object *planet){
 		}
 	}
 
+	/* FIXME: Insert orders */
+
+	/* Can we edit orders */
+	/* FIXME: Instead of setting window all the time,
+	 * 	I should be able to get the toplevel window, and attach data
+	 * 	to that one */
+	ewl_widget_data_set(p->edit,"Window",p);
+	if (planet->nordertypes)
+		ewl_widget_enable(p->edit);
+	else 
+		ewl_widget_disable(p->edit);
+	
+
 }
 
 /**
@@ -172,7 +210,6 @@ tpe_ewl_planet_set(struct ewl_planet_data *p, struct object *planet){
  */
 static void
 tpe_ewl_planet_clear(struct ewl_planet_data *p, int everything){
-	Ewl_Widget *row;
 	assert(p);
 	if (p == NULL) return;
 
@@ -180,16 +217,24 @@ tpe_ewl_planet_clear(struct ewl_planet_data *p, int everything){
 		fprintf(stderr, "%s:%s: Everything flag not implemented\n",
 				__FILE__, __FUNCTION__);
 
-	/* FIXME: ewl_tree_init doesn't seem to work */
-	//ewl_tree_init(EWL_TREE(p->resources), 5);	
-	while ((row = ewl_tree_row_find(EWL_TREE(p->resources), 0)))
-		ewl_tree_row_destroy(EWL_TREE(p->resources), EWL_ROW(row));
+	tpe_ewl_tree_clear(p->resources);
+
+	tpe_ewl_tree_clear(p->orders);
 
 	//ewl_grid_init(EWL_GRID(p->children));
 	//ewl_grid_dimensions_set(EWL_GRID(p->children), 3,3);
 	
 }
 
+
+static void 
+tpe_ewl_tree_clear(Ewl_Widget *tree){
+	Ewl_Widget *row;
+
+	while ((row = ewl_tree_row_find(EWL_TREE(tree), 0)))
+		ewl_tree_row_destroy(EWL_TREE(tree), EWL_ROW(row));
+
+}
 
 static void
 tpe_ewl_resource_append(struct tpe *tpe, Ewl_Widget *tree, 
@@ -245,6 +290,16 @@ icon_select(Ewl_Widget *icon, void *ev_data, void *planetv){
 
 }
 
+
+static void
+tpe_ewl_edit_orders(Ewl_Widget *button, void *ev_data, void *planetv){
+	struct ewl_planet_data *p;
+
+	p = ewl_widget_data_get(button, "Window");
+	assert(p);
+
+	printf("BUtton\n");
+}
 
 /* FIXME: Move to tpe_util */
 char *
