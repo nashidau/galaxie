@@ -19,9 +19,6 @@ struct ewl_planet_data {
 	//Evas_Object *window;	
 	Ewl_Widget *window;
 
-	/* FIXME: Hack for the planet_set call */
-	Ewl_Widget *box;
-	
 	/* Various pieces */ 
 	Ewl_Widget *name;
 	Ewl_Widget *icon;
@@ -58,7 +55,6 @@ tpe_ewl_planet_add(struct gui *gui, struct object *planet){
 	p->window = window = gui_window_ewl_add(gui);
 
 	box = ewl_vbox_new();
-	p->box = box; /* XXX */
 	ewl_container_child_append(EWL_CONTAINER(window), box);
 	ewl_widget_show(box);
 
