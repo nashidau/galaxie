@@ -298,7 +298,12 @@ tpe_ewl_edit_orders(Ewl_Widget *button, void *ev_data, void *planetv){
 	p = ewl_widget_data_get(button, "Window");
 	assert(p);
 
-	printf("BUtton\n");
+	/* Add the edit orders window */
+
+	/* Set the data in the edit orders window */
+		/* List of current orders */
+		/* List of possible orders */
+
 }
 
 /* FIXME: Move to tpe_util */
