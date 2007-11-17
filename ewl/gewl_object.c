@@ -155,14 +155,17 @@ tpe_ewl_planet_set(struct ewl_planet_data *p, struct object *planet){
 	/* Resources */
 	/* FIXME: This is TP03 only really */
 	/* TP04 should be more generic */
-	if (planet->planet){
+	if (planet->planet && planet->planet->nresources){
 		/* We have resources */
 		nres = planet->planet->nresources;
 		res = planet->planet->resources;
-				
+			
+		//ewl_widget_show(p->resources);
 		for (i = 0; i <  nres ; i ++){
 			tpe_ewl_resource_append(planet->tpe,p->resources,res+i);
 		}
+	} else {
+		//ewl_widget_hide(p->resources);
 	}
 
 	if (planet->children){
@@ -349,7 +352,6 @@ tpe_ewl_edit_orders(Ewl_Widget *button, void *ev_data, void *planetv){
 
 
 	/* Seed possible orders on this object */
-	printf("Nordertypes: %s %d!\n", p->planet->name, p->planet->nordertypes);
 	for (i = 0 ; i < p->planet->nordertypes ; i ++){
 		Ewl_Widget *label;
 		uint32_t otype;
@@ -360,7 +362,6 @@ tpe_ewl_edit_orders(Ewl_Widget *button, void *ev_data, void *planetv){
 			printf("Warning: Unable to find order for %d\n",otype);
 			continue;
 		}
-		printf("oname: %s\n",oname);
 		label = ewl_label_new();
 		ewl_label_text_set(EWL_LABEL(label), oname);
 		ewl_widget_show(label);
