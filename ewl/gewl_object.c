@@ -11,11 +11,13 @@
 struct gui;
 #include "../tpe_obj.h"
 #include "../gui_window.h"
+#include "../tpe_orders.h"
 #include "../tpe_resources.h"
 #include "gewl_object.h"
 
 #define EWL_DATA_MAGIC	"getkdata"
 struct ewl_planet_data {
+	struct gui *gui;
 	//Evas_Object *window;	
 	Ewl_Widget *window;
 
@@ -26,6 +28,17 @@ struct ewl_planet_data {
 	Ewl_Widget *resources;
 	Ewl_Widget *orders;
 	Ewl_Widget *edit;
+
+	struct object *planet;
+};
+
+struct ewl_order_data {
+	Ewl_Widget *window;
+
+	Ewl_Widget *box;
+	Ewl_Widget *pane1;
+	Ewl_Widget *curorders;
+	Ewl_Widget *posorders;
 };
 
 static const char *resheaders[] = {
@@ -58,6 +71,8 @@ tpe_ewl_planet_add(struct gui *gui, struct object *planet){
 	Ewl_Widget *box;
 	
 	p = calloc(1,sizeof(struct ewl_planet_data));
+	p->gui = gui;
+	
 
 
 	/* FIXME: Move this to a more useful place */
@@ -104,7 +119,7 @@ tpe_ewl_planet_add(struct gui *gui, struct object *planet){
 	ewl_object_fill_policy_set(EWL_OBJECT(p->edit), 
 			EWL_FLAG_ALIGN_RIGHT | EWL_FLAG_FILL_NONE);
 	ewl_callback_append(p->edit, EWL_CALLBACK_CLICKED, 
-			tpe_ewl_edit_orders, p);
+			tpe_ewl_edit_orders, planet);
 	ewl_widget_show(p->edit);
 
 	tpe_ewl_planet_set(p, planet);
@@ -196,7 +211,7 @@ tpe_ewl_planet_set(struct ewl_planet_data *p, struct object *planet){
 	else 
 		ewl_widget_disable(p->edit);
 	
-
+	p->planet = planet;
 }
 
 /**
@@ -294,15 +309,66 @@ icon_select(Ewl_Widget *icon, void *ev_data, void *planetv){
 static void
 tpe_ewl_edit_orders(Ewl_Widget *button, void *ev_data, void *planetv){
 	struct ewl_planet_data *p;
+	struct ewl_order_data *od;
+	int i;
 
 	p = ewl_widget_data_get(button, "Window");
 	assert(p);
 
+	od = calloc(1,sizeof(struct ewl_order_data));
+
 	/* Add the edit orders window */
+	od->window = gui_window_ewl_add(p->gui);
 
 	/* Set the data in the edit orders window */
-		/* List of current orders */
-		/* List of possible orders */
+	od->box = ewl_hbox_new();
+	ewl_container_child_append(EWL_CONTAINER(od->window), od->box);
+	ewl_widget_show(od->box);
+
+	od->pane1 = ewl_paned_new();
+	ewl_container_child_append(EWL_CONTAINER(od->box), od->pane1);
+	ewl_widget_show(od->pane1);
+
+	/* List of current orders */
+	od->curorders = ewl_tree_new(2); /* XXX */
+	ewl_container_child_append(EWL_CONTAINER(od->pane1), od->curorders);
+	ewl_tree_headers_set(EWL_TREE(od->curorders), (char**)orderheaders);
+	ewl_object_fill_policy_set(EWL_OBJECT(od->curorders), 
+			EWL_FLAG_FILL_FILL);
+	ewl_widget_show(od->curorders);
+
+	/* List of possible orders */
+	od->posorders = ewl_tree_new(1); /* XXX */
+	ewl_container_child_append(EWL_CONTAINER(od->pane1), od->posorders);
+	ewl_tree_headers_set(EWL_TREE(od->posorders), (char**)orderheaders);
+	ewl_object_fill_policy_set(EWL_OBJECT(od->posorders), 
+			EWL_FLAG_FILL_FILL);
+	ewl_widget_show(od->posorders);
+
+	ewl_widget_show(od->window);
+
+
+	/* Seed possible orders on this object */
+	printf("Nordertypes: %s %d!\n", p->planet->name, p->planet->nordertypes);
+	for (i = 0 ; i < p->planet->nordertypes ; i ++){
+		Ewl_Widget *label;
+		uint32_t otype;
+		const char *oname;
+		otype = p->planet->ordertypes[i];
+		oname = tpe_order_get_name_by_type(p->planet->tpe, otype);
+		if (oname == NULL){
+			printf("Warning: Unable to find order for %d\n",otype);
+			continue;
+		}
+		printf("oname: %s\n",oname);
+		label = ewl_label_new();
+		ewl_label_text_set(EWL_LABEL(label), oname);
+		ewl_widget_show(label);
+
+		ewl_tree_row_add(EWL_TREE(od->posorders), NULL, &label);
+	}
+	
+
 
 }
 
