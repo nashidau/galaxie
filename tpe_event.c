@@ -140,6 +140,7 @@ tpe_event_send(struct tpe_event *tpeev, const char *event, void *edata,
 		printf("Warning: tpe_event_send with NULL freefn.\n");
 		printf("\tThis doesn't do what you think it does.\n");
 		printf("\tEvent is `%s'\n",event);
+		assert(freefn && edata);
 	}
 
 
