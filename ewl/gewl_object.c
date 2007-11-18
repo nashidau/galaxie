@@ -386,6 +386,7 @@ tpe_ewl_edit_orders(Ewl_Widget *button, void *ev_data, void *planetv){
 	ewl_tree_headers_set(EWL_TREE(od->posorders), (char**)orderheaders);
 	ewl_object_fill_policy_set(EWL_OBJECT(od->posorders), 
 			EWL_FLAG_FILL_FILL);
+	ewl_tree_mode_set(EWL_TREE(od->posorders), EWL_SELECTION_MODE_SINGLE);
 	ewl_widget_show(od->posorders);
 
 	ewl_widget_show(od->window);
