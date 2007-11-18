@@ -39,6 +39,8 @@ struct ewl_order_data {
 	Ewl_Widget *pane1;
 	Ewl_Widget *curorders;
 	Ewl_Widget *posorders;
+
+	struct object *planet;
 };
 
 static const char *resheaders[] = {
@@ -62,6 +64,7 @@ static void tpe_ewl_planet_clear(struct ewl_planet_data *p, int everything);
 static void tpe_ewl_resource_append(struct tpe *tpe, Ewl_Widget *tree, 
 		struct planet_resource *res);
 static void tpe_ewl_tree_clear(Ewl_Widget *tree);
+static void order_type_selected(Ewl_Widget *row, void *edata, void *pdata);
 
 
 Evas_Object *
@@ -293,8 +296,6 @@ tpe_ewl_resource_append(struct tpe *tpe, Ewl_Widget *tree,
 	ewl_tree_row_add(EWL_TREE(tree), NULL, widgets);
 	free(labels[1]); free(labels[2]); free(labels[3]); 
 
-	printf("Res: %s\n",rdes->name); /* XXX: Debug */
-
 }
 
 static void
@@ -319,9 +320,12 @@ tpe_ewl_edit_orders(Ewl_Widget *button, void *ev_data, void *planetv){
 	assert(p);
 
 	od = calloc(1,sizeof(struct ewl_order_data));
+	od->planet = p->planet;
 
 	/* Add the edit orders window */
 	od->window = gui_window_ewl_add(p->gui);
+/* FIXME: This shoudl be in the set call */
+	ewl_widget_data_set(od->window, "Object", od);
 
 	/* Set the data in the edit orders window */
 	od->box = ewl_hbox_new();
@@ -354,6 +358,7 @@ tpe_ewl_edit_orders(Ewl_Widget *button, void *ev_data, void *planetv){
 	/* Seed possible orders on this object */
 	for (i = 0 ; i < p->planet->nordertypes ; i ++){
 		Ewl_Widget *label;
+		Ewl_Widget *row;
 		uint32_t otype;
 		const char *oname;
 		otype = p->planet->ordertypes[i];
@@ -366,12 +371,33 @@ tpe_ewl_edit_orders(Ewl_Widget *button, void *ev_data, void *planetv){
 		ewl_label_text_set(EWL_LABEL(label), oname);
 		ewl_widget_show(label);
 
-		ewl_tree_row_add(EWL_TREE(od->posorders), NULL, &label);
+		row = ewl_tree_row_add(EWL_TREE(od->posorders), NULL, &label);
+		ewl_callback_append(row, EWL_CALLBACK_CLICKED, 
+				order_type_selected, (void*)otype);
 	}
-	
-
 
 }
+
+static void
+order_type_selected(Ewl_Widget *row, void *edata, void *otypev){
+	uint32_t otype;
+	Ewl_Widget *parent,*next;
+	struct object *planet;
+	struct ewl_order_data *od;
+
+	otype = (uint32_t)otypev;
+	printf("A row selected: %d\n",otype);
+
+	parent = row;
+	while ((next = ewl_widget_parent_get(parent)))
+		parent = next;
+	assert(parent);
+	od = ewl_widget_data_get(parent, "Object");
+	assert(od);
+
+	printf("Object is %s\n",od->planet->name);	
+}
+
 
 /* FIXME: Move to tpe_util */
 char *
