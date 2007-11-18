@@ -494,6 +494,175 @@ gewl_arg_string(struct ewl_order_data *od, struct order_arg *arg){
 }
 
 
+
+
+static void 
+gewl_arg_coords(struct ewl_order_data *od, struct order_arg *arg){
+	Ewl_Widget *box;
+	Ewl_Widget *entry;
+
+	assert(od);
+	assert(arg);
+
+	box = gewl_box_with_label(arg->name, od->argbox);
+
+	box = gewl_box_with_label("X:", od->argbox);
+	entry = ewl_entry_new();
+	ewl_container_child_append(EWL_CONTAINER(box), entry);
+	ewl_widget_show(entry);
+
+	box = gewl_box_with_label("Y:", od->argbox);
+	entry = ewl_entry_new();
+	ewl_container_child_append(EWL_CONTAINER(box), entry);
+	ewl_widget_show(entry);
+
+	box = gewl_box_with_label("Z:", od->argbox);
+	entry = ewl_entry_new();
+	ewl_container_child_append(EWL_CONTAINER(box), entry);
+	ewl_widget_show(entry);
+}
+static void 
+gewl_arg_turns(struct ewl_order_data *od, struct order_arg *arg){
+	Ewl_Widget *box;
+	Ewl_Widget *entry;
+
+	assert(od);
+	assert(arg);
+
+	box = gewl_box_with_label(arg->name, od->argbox);
+
+	/* FIXME: Should use a numeric entry */
+	entry = ewl_entry_new();
+	//if (arg->max > 0)
+	//	ewl_text_length_maximum_set(EWL_TEXT(entry), arg->max);
+	ewl_container_child_append(EWL_CONTAINER(box), entry);
+	ewl_widget_show(entry);
+}
+static void 
+gewl_arg_object(struct ewl_order_data *od, struct order_arg *arg){
+	Ewl_Widget *box;
+	Ewl_Widget *entry;
+
+	assert(od);
+	assert(arg);
+
+	box = gewl_box_with_label(arg->name, od->argbox);
+
+	/* FIXME: Should use a drop down or similar */
+	entry = ewl_entry_new();
+	//if (arg->max > 0)
+	//	ewl_text_length_maximum_set(EWL_TEXT(entry), arg->max);
+	ewl_container_child_append(EWL_CONTAINER(box), entry);
+	ewl_widget_show(entry);
+
+}
+static void 
+gewl_arg_player(struct ewl_order_data *od, struct order_arg *arg){
+	Ewl_Widget *box;
+	Ewl_Widget *entry;
+
+	assert(od);
+	assert(arg);
+
+	box = gewl_box_with_label(arg->name, od->argbox);
+
+	/* FIXME: Should use a drop down or similar */
+	entry = ewl_entry_new();
+	//if (arg->max > 0)
+	//	ewl_text_length_maximum_set(EWL_TEXT(entry), arg->max);
+	ewl_container_child_append(EWL_CONTAINER(box), entry);
+	ewl_widget_show(entry);
+
+}
+static void gewl_arg_relcoords(struct ewl_order_data *od, struct order_arg *arg){
+	Ewl_Widget *box;
+	Ewl_Widget *entry;
+
+	assert(od);
+	assert(arg);
+
+	box = gewl_box_with_label(arg->name, od->argbox);
+
+	/* FIXME: Should use a drop down or similar */
+	box = gewl_box_with_label("To:", od->argbox);
+	entry = ewl_entry_new();
+	//if (arg->max > 0)
+	//	ewl_text_length_maximum_set(EWL_TEXT(entry), arg->max);
+	ewl_container_child_append(EWL_CONTAINER(box), entry);
+	ewl_widget_show(entry);
+
+	box = gewl_box_with_label("X:", od->argbox);
+	entry = ewl_entry_new();
+	ewl_container_child_append(EWL_CONTAINER(box), entry);
+	ewl_widget_show(entry);
+
+	box = gewl_box_with_label("Y:", od->argbox);
+	entry = ewl_entry_new();
+	ewl_container_child_append(EWL_CONTAINER(box), entry);
+	ewl_widget_show(entry);
+
+	box = gewl_box_with_label("Z:", od->argbox);
+	entry = ewl_entry_new();
+	ewl_container_child_append(EWL_CONTAINER(box), entry);
+	ewl_widget_show(entry);
+
+}
+static void 
+gewl_arg_range(struct ewl_order_data *od, struct order_arg *arg){
+	Ewl_Widget *box;
+	Ewl_Widget *entry;
+	box = gewl_box_with_label(arg->name, od->argbox);
+
+	/* FIXME: Should use a drop down or similar */
+	entry = ewl_entry_new();
+	ewl_container_child_append(EWL_CONTAINER(box), entry);
+	ewl_widget_show(entry);
+
+}
+static void 
+gewl_arg_list(struct ewl_order_data *od, struct order_arg *arg){
+	Ewl_Widget *box;
+	Ewl_Widget *entry;
+	Ewl_Widget *button,*label;
+
+	box = gewl_box_with_label(arg->name, od->argbox);
+
+	box = ewl_hbox_new();
+	ewl_container_child_append(EWL_CONTAINER(od->argbox), box);
+	ewl_widget_show(box);
+
+	/* Needs to be a drop down */
+	entry = ewl_entry_new();
+	ewl_container_child_append(EWL_CONTAINER(box), entry);
+	ewl_widget_show(entry);
+
+	label = ewl_label_new();
+	ewl_label_text_set(EWL_LABEL(label), "x");
+	ewl_container_child_append(EWL_CONTAINER(box), label);
+	ewl_widget_show(label);
+
+	/* Should be an in counter */
+	entry = ewl_entry_new();
+	ewl_container_child_append(EWL_CONTAINER(box), entry);
+	ewl_widget_show(entry);
+
+	button = ewl_button_new();
+	ewl_button_label_set(EWL_BUTTON(button), "Another");
+	ewl_container_child_append(EWL_CONTAINER(box), button);
+	ewl_widget_show(button);
+
+}
+static void 
+gewl_arg_ref(struct ewl_order_data *od, struct order_arg *arg){
+	printf("Arg not handled\n");
+}
+
+static void 
+gewl_arg_reflist(struct ewl_order_data *od, struct order_arg *arg){
+	printf("Arg not handled\n");
+}
+
+
 static Ewl_Widget *
 gewl_box_with_label(const char *str, Ewl_Widget *parent){
 	Ewl_Widget *label;
@@ -510,36 +679,6 @@ gewl_box_with_label(const char *str, Ewl_Widget *parent){
 
 	return box;
 }
-
-
-static void gewl_arg_coords(struct ewl_order_data *od, struct order_arg *arg){
-	printf("Arg not handled\n");
-}
-static void gewl_arg_turns(struct ewl_order_data *od, struct order_arg *arg){
-	printf("Arg not handled\n");
-}
-static void gewl_arg_object(struct ewl_order_data *od, struct order_arg *arg){
-	printf("Arg not handled\n");
-}
-static void gewl_arg_player(struct ewl_order_data *od, struct order_arg *arg){
-	printf("Arg not handled\n");
-}
-static void gewl_arg_relcoords(struct ewl_order_data *od, struct order_arg *arg){
-	printf("Arg not handled\n");
-}
-static void gewl_arg_range(struct ewl_order_data *od, struct order_arg *arg){
-	printf("Arg not handled\n");
-}
-static void gewl_arg_list(struct ewl_order_data *od, struct order_arg *arg){
-	printf("Arg not handled\n");
-}
-static void gewl_arg_ref(struct ewl_order_data *od, struct order_arg *arg){
-	printf("Arg not handled\n");
-}
-static void gewl_arg_reflist(struct ewl_order_data *od, struct order_arg *arg){
-	printf("Arg not handled\n");
-}
-
 
 /* FIXME: Move to tpe_util */
 
