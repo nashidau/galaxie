@@ -257,7 +257,7 @@ gui_time_remaining(void *guip, int type, void *eventd){
 	gui = guip;
 
 	msg = eventd;
-	if (tpe_util_parse_packet(msg->data,msg->end,"i", &rem) == 2){
+	if (tpe_util_parse_packet(msg->data,msg->end,"i", &rem) == 1){
 		snprintf(buf,100,"%ds Remaining",rem);
 	} else {
 		snprintf(buf,100,"? Remaining");
