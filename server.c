@@ -433,6 +433,11 @@ server_handle_packet(struct server *server, int seq, int type,
 
 	}
 
+	assert(server);
+	assert(server->magic == SERVER_MAGIC);
+	assert(server->servers);
+	assert(server->servers->tpe);
+	assert(server->servers->tpe->event);
 
 	tpe_event_send(server->servers->tpe->event, event, 
 			msg, msg_free, NULL);
