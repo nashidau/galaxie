@@ -354,7 +354,8 @@ tpe_comm_time_remaining(void *udata, int type, void *event){
 
 	if (msg->seq == 0 && remain == 0){
 		tpe->turn ++;
-		tpe_event_send(tpe->event, "NewTurn", msg->server, NULL, NULL);
+		tpe_event_send(tpe->event, "NewTurn", msg->server, 
+				tpe_event_nofree, NULL);
 	}
 
 	return 1;
