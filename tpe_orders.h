@@ -12,6 +12,19 @@ struct order_arg {
 	char *description;
 };
 
+struct order_desc {
+	uint32_t otype;	 /* Type */
+	const char *name;
+	const char *description;
+	
+	int nargs;
+	struct order_arg *args; /* The type of the args */
+
+	uint64_t updated;
+};
+
+
+
 struct arg_type6 {
 	int id;
 	char *name;

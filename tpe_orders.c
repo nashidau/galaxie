@@ -110,17 +110,6 @@ union order_arg_data {
 	struct order_arg_string string;
 };
 
-struct order_desc {
-	uint32_t otype;	 /* Type */
-	const char *name;
-	const char *description;
-	
-	int nargs;
-	struct order_arg *args; /* The type of the args */
-
-	uint64_t updated;
-};
-
 
 
 struct order {
