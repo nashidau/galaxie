@@ -38,7 +38,10 @@ struct ewl_order_data {
 	Ewl_Widget *box;
 	Ewl_Widget *pane1;
 	Ewl_Widget *curorders;
+	Ewl_Widget *addorders;
+	Ewl_Widget *argbox;
 	Ewl_Widget *posorders;
+
 
 	struct object *planet;
 };
@@ -64,8 +67,34 @@ static void tpe_ewl_planet_clear(struct ewl_planet_data *p, int everything);
 static void tpe_ewl_resource_append(struct tpe *tpe, Ewl_Widget *tree, 
 		struct planet_resource *res);
 static void tpe_ewl_tree_clear(Ewl_Widget *tree);
-static void order_type_selected(Ewl_Widget *row, void *edata, void *pdata);
 
+static void order_type_selected(Ewl_Widget *row, void *edata, void *pdata);
+static void gewl_arg_coords(struct ewl_order_data *od, struct order_arg *arg);
+static void gewl_arg_turns(struct ewl_order_data *od, struct order_arg *arg);
+static void gewl_arg_object(struct ewl_order_data *od, struct order_arg *arg);
+static void gewl_arg_player(struct ewl_order_data *od, struct order_arg *arg);
+static void gewl_arg_relcoords(struct ewl_order_data *od, struct order_arg *);
+static void gewl_arg_range(struct ewl_order_data *od, struct order_arg *arg);
+static void gewl_arg_list(struct ewl_order_data *od, struct order_arg *arg);
+static void gewl_arg_string(struct ewl_order_data *od, struct order_arg *arg);
+static void gewl_arg_ref(struct ewl_order_data *od, struct order_arg *arg);
+static void gewl_arg_reflist(struct ewl_order_data *od, struct order_arg *arg);
+static Ewl_Widget *gewl_box_with_label(const char *str, Ewl_Widget *parent);
+
+static void (*arg_handlers[])(struct ewl_order_data *od, 
+		struct order_arg *) = {
+	/* 0: Coords */ gewl_arg_coords, 
+	/* 1: Turns */  gewl_arg_turns,
+	/* 2: Object */ gewl_arg_object, 
+	/* 3: Player */ gewl_arg_player,
+	/* 4: RelCoords */ gewl_arg_relcoords,
+	/* 5: Range */  gewl_arg_range,
+	/* 6: List */   gewl_arg_list,
+	/* 7: String */ gewl_arg_string,
+	/* 8: Ref */	gewl_arg_ref,
+	/* 9: Reflist */gewl_arg_reflist, 
+};
+#define N_ARGTYPES (sizeof(arg_handlers)/sizeof(arg_handlers[0]))
 
 Evas_Object *
 tpe_ewl_planet_add(struct gui *gui, struct object *planet){
@@ -344,15 +373,29 @@ tpe_ewl_edit_orders(Ewl_Widget *button, void *ev_data, void *planetv){
 			EWL_FLAG_FILL_FILL);
 	ewl_widget_show(od->curorders);
 
+	od->addorders = ewl_vbox_new();
+	ewl_container_child_append(EWL_CONTAINER(od->pane1), od->addorders);
+	ewl_object_fill_policy_set(EWL_OBJECT(od->addorders), 
+			EWL_FLAG_FILL_FILL);
+	ewl_widget_show(od->addorders);
+
 	/* List of possible orders */
+
 	od->posorders = ewl_tree_new(1); /* XXX */
-	ewl_container_child_append(EWL_CONTAINER(od->pane1), od->posorders);
+	ewl_container_child_append(EWL_CONTAINER(od->addorders), od->posorders);
 	ewl_tree_headers_set(EWL_TREE(od->posorders), (char**)orderheaders);
 	ewl_object_fill_policy_set(EWL_OBJECT(od->posorders), 
 			EWL_FLAG_FILL_FILL);
 	ewl_widget_show(od->posorders);
 
 	ewl_widget_show(od->window);
+
+	/* Arguments for orders */
+	od->argbox = ewl_vbox_new();
+	ewl_container_child_append(EWL_CONTAINER(od->addorders), od->argbox);
+	ewl_object_fill_policy_set(EWL_OBJECT(od->argbox), 
+			EWL_FLAG_FILL_FILL);
+	ewl_widget_show(od->argbox);
 
 
 	/* Seed possible orders on this object */
@@ -384,6 +427,8 @@ order_type_selected(Ewl_Widget *row, void *edata, void *otypev){
 	Ewl_Widget *parent,*next;
 	struct object *planet;
 	struct ewl_order_data *od;
+	struct order_desc *desc;
+	int i;
 
 	otype = (uint32_t)otypev;
 	printf("A row selected: %d\n",otype);
@@ -394,12 +439,109 @@ order_type_selected(Ewl_Widget *row, void *edata, void *otypev){
 	assert(parent);
 	od = ewl_widget_data_get(parent, "Object");
 	assert(od);
+	planet = od->planet;
 
 	printf("Object is %s\n",od->planet->name);	
+
+	/* First: Check we can use this order ! */
+	for (i = 0 ; i < planet->nordertypes ; i ++){
+		if (planet->ordertypes[i] == otype)
+			break;
+	}
+	assert(i < planet->nordertypes);
+	if (i == planet->nordertypes){
+		printf("Couldn't find ordertype on object\n");
+		exit(1);
+	}
+
+	/* Now we work out it args */
+	desc = tpe_order_orders_get_desc_by_id(planet->tpe, otype);
+
+	ewl_container_reset(EWL_CONTAINER(od->argbox));
+
+	printf("Order is a %s\n", desc->name);
+
+	for (i = 0 ; i < desc->nargs ; i ++){
+		printf("Arg is a %s: %d\n",desc->args[i].name,
+				desc->args[i].arg_type);
+		assert(desc->args[i].arg_type < N_ARGTYPES);
+		if (desc->args[i].arg_type >= N_ARGTYPES){
+			printf("\tUnhandled arg type: %d\n",
+					desc->args[i].arg_type);
+			continue;
+		}
+		arg_handlers[desc->args[i].arg_type](od,desc->args + i);
+	}
+		
+}
+
+static void
+gewl_arg_string(struct ewl_order_data *od, struct order_arg *arg){
+	Ewl_Widget *box;
+	Ewl_Widget *entry;
+
+	assert(od);
+	assert(arg);
+
+	box = gewl_box_with_label(arg->name, od->argbox);
+
+	entry = ewl_entry_new();
+	//if (arg->max > 0)
+	//	ewl_text_length_maximum_set(EWL_TEXT(entry), arg->max);
+	ewl_container_child_append(EWL_CONTAINER(box), entry);
+	ewl_widget_show(entry);
+}
+
+
+static Ewl_Widget *
+gewl_box_with_label(const char *str, Ewl_Widget *parent){
+	Ewl_Widget *label;
+	Ewl_Widget *box;
+
+	box = ewl_vbox_new();
+	ewl_container_child_append(EWL_CONTAINER(parent), box);
+	ewl_widget_show(box);
+
+	label = ewl_label_new();
+	ewl_label_text_set(EWL_LABEL(label), str);
+	ewl_container_child_append(EWL_CONTAINER(box), label);
+	ewl_widget_show(label);
+
+	return box;
+}
+
+
+static void gewl_arg_coords(struct ewl_order_data *od, struct order_arg *arg){
+	printf("Arg not handled\n");
+}
+static void gewl_arg_turns(struct ewl_order_data *od, struct order_arg *arg){
+	printf("Arg not handled\n");
+}
+static void gewl_arg_object(struct ewl_order_data *od, struct order_arg *arg){
+	printf("Arg not handled\n");
+}
+static void gewl_arg_player(struct ewl_order_data *od, struct order_arg *arg){
+	printf("Arg not handled\n");
+}
+static void gewl_arg_relcoords(struct ewl_order_data *od, struct order_arg *arg){
+	printf("Arg not handled\n");
+}
+static void gewl_arg_range(struct ewl_order_data *od, struct order_arg *arg){
+	printf("Arg not handled\n");
+}
+static void gewl_arg_list(struct ewl_order_data *od, struct order_arg *arg){
+	printf("Arg not handled\n");
+}
+static void gewl_arg_ref(struct ewl_order_data *od, struct order_arg *arg){
+	printf("Arg not handled\n");
+}
+static void gewl_arg_reflist(struct ewl_order_data *od, struct order_arg *arg){
+	printf("Arg not handled\n");
 }
 
 
 /* FIXME: Move to tpe_util */
+
 char *
 alloc_printf(const char *fmt, ...){
 	va_list ap;
