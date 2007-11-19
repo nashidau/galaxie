@@ -801,12 +801,13 @@ tpe_orders_object_probe(struct tpe *tpe, struct object *obj,uint32_t otype){
 	for (i = 0, size = 0 ; i < desc->nargs ; i ++){
 		size += argsizesempty[desc->args[i].arg_type];
 	}
+	size /= 4;
 
 	buf = calloc(size,sizeof(int32_t));
 
 	return server_send_format(obj->server, "MsgProbeOrder",
 			NULL, NULL, /* FIXME */
-			"iiir", obj->oid, -1 /* Slot */, otype,
+			"iii00r", obj->oid, -1 /* Slot */, otype,
 			size, buf);
 
 
