@@ -199,12 +199,8 @@ tpe_comm_logged_in(void *data, struct msg *msg){
 	server_send(msg->server, "MsgGetTimeRemaining", NULL, NULL,NULL,0);
 
 	/* FIXME: Need a class to handle these */
-#if 0
-	buf[0] = htonl(1);	/* One player to get */
-	buf[1] = htonl(0); 	/* 0 = Myself */
 	server_send_format(msg->server,"MsgGetPlayerData",
-			tpe_comm_msg_player_id,"i0",1);
-#endif
+			tpe_comm_msg_player_id,msg->tpe,"i0",1);
 
 	ecore_timer_add(5, tpe_comm_get_time, msg->server);
 	/* The rest of the system know */
