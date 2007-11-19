@@ -118,6 +118,7 @@ tpe_orders.o : tpe_orders.h tpe.h
 tpe_resources.o : tpe_resources.h tpe.h
 tpe_sequence.o: tpe.h tpe_event.h tpe_sequence.h server.h tpe_util.h
 tpe_ship.o : tpe.h tpe_event.h server.h tpe_util.h tpe_sequence.h tpe_ship.h
+ewl/gewl_object.o : tpe.h server.h tpe_orders.h
 
 $Iarrowright.png : $Imailviewer.svg
 	inkscape -j --export-id=path5138 --export-png $@ $<
