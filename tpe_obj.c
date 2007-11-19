@@ -72,7 +72,7 @@ static void tpe_obj_cleanup(struct tpe *tpe, struct object *o);
 
 static void tpe_obj_home_check(struct tpe *tpe, struct object *o);
 
-static void tpe_obj_update_children(struct tpe *tpe, struct object *o, int noldchildren, int *oldchildren);
+static void tpe_obj_update_children(struct tpe *tpe, struct server *server, struct object *o, int noldchildren, int *oldchildren);
 
 
 //static int tpe_obj_hash_compare_data(const void *, const void *);
@@ -150,9 +150,10 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 	if (o == NULL){
 		isnew = 1;
 		o = tpe_obj_obj_add(obj,id);
+		o->server = msg->server;
 	}
 
-		if (o->name){
+	if (o->name){
 		free(o->name);
 		o->name = NULL;
 	}
@@ -181,7 +182,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 				&o->nordertypes, &o->ordertypes,
 				&o->norders,
 				&o->updated,&end);
-		tpe_obj_update_children(tpe, o,noldchildren,oldchildren);
+		tpe_obj_update_children(tpe, msg->server, o,noldchildren,oldchildren);
 	} else if (msg->protocol == 4){
 		/* TP 04 */
 		printf("tp04 message\n");
@@ -550,7 +551,7 @@ tpe_obj_home_get(struct tpe *tpe){
 }
 
 static void
-tpe_obj_update_children(struct tpe *tpe, struct object *o, int noldchildren, int *oldchildren){
+tpe_obj_update_children(struct tpe *tpe, struct server *server, struct object *o, int noldchildren, int *oldchildren){
 	struct object *child;
 	struct tpe_obj *obj;
 	int i,j;
@@ -569,6 +570,7 @@ tpe_obj_update_children(struct tpe *tpe, struct object *o, int noldchildren, int
 				/* This should never happen */
 				child = tpe_obj_obj_add(obj, oldchildren[j]);
 				child->isnew = 1;
+				child->server = server;
 			} else {
 				/* Don't mess up any which have already been
 				 * updated */
@@ -587,6 +589,7 @@ tpe_obj_update_children(struct tpe *tpe, struct object *o, int noldchildren, int
 			child->updated = 1;
 			child->isnew = 1;
 			child->parent = o->oid;
+			child->server = server;
 		} else if (child->parent != o->oid){
 			child->parent = o->oid;
 			child->updated = 1;
