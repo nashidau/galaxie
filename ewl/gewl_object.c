@@ -67,22 +67,34 @@ static void tpe_ewl_planet_clear(struct ewl_planet_data *p, int everything);
 static void tpe_ewl_resource_append(struct tpe *tpe, Ewl_Widget *tree, 
 		struct planet_resource *res);
 static void tpe_ewl_tree_clear(Ewl_Widget *tree);
+static void order_probe_cb(void *odv, struct object *obj, struct order_desc *desc, struct order *order);
+
 
 static void order_type_selected(Ewl_Widget *row, void *edata, void *pdata);
-static void gewl_arg_coords(struct ewl_order_data *od, struct order_arg *arg);
-static void gewl_arg_turns(struct ewl_order_data *od, struct order_arg *arg);
-static void gewl_arg_object(struct ewl_order_data *od, struct order_arg *arg);
-static void gewl_arg_player(struct ewl_order_data *od, struct order_arg *arg);
-static void gewl_arg_relcoords(struct ewl_order_data *od, struct order_arg *);
-static void gewl_arg_range(struct ewl_order_data *od, struct order_arg *arg);
-static void gewl_arg_list(struct ewl_order_data *od, struct order_arg *arg);
-static void gewl_arg_string(struct ewl_order_data *od, struct order_arg *arg);
-static void gewl_arg_ref(struct ewl_order_data *od, struct order_arg *arg);
-static void gewl_arg_reflist(struct ewl_order_data *od, struct order_arg *arg);
+static void gewl_arg_coords(struct ewl_order_data *od, struct order_arg *arg,
+		union order_arg_data *);
+static void gewl_arg_turns(struct ewl_order_data *od, struct order_arg *arg,
+		union order_arg_data *);
+static void gewl_arg_object(struct ewl_order_data *od, struct order_arg *arg,
+		union order_arg_data *);
+static void gewl_arg_player(struct ewl_order_data *od, struct order_arg *arg,
+		union order_arg_data *);
+static void gewl_arg_relcoords(struct ewl_order_data *od, struct order_arg *,
+		union order_arg_data *);
+static void gewl_arg_range(struct ewl_order_data *od, struct order_arg *arg,
+		union order_arg_data *);
+static void gewl_arg_list(struct ewl_order_data *od, struct order_arg *arg,
+		union order_arg_data *);
+static void gewl_arg_string(struct ewl_order_data *od, struct order_arg *arg,
+		union order_arg_data *);
+static void gewl_arg_ref(struct ewl_order_data *od, struct order_arg *arg,
+		union order_arg_data *);
+static void gewl_arg_reflist(struct ewl_order_data *od, struct order_arg *arg,
+		union order_arg_data *);
 static Ewl_Widget *gewl_box_with_label(const char *str, Ewl_Widget *parent);
 
 static void (*arg_handlers[])(struct ewl_order_data *od, 
-		struct order_arg *) = {
+		struct order_arg *, union order_arg_data *) = {
 	/* 0: Coords */ gewl_arg_coords, 
 	/* 1: Turns */  gewl_arg_turns,
 	/* 2: Object */ gewl_arg_object, 
@@ -428,11 +440,8 @@ order_type_selected(Ewl_Widget *row, void *edata, void *otypev){
 	Ewl_Widget *parent,*next;
 	struct object *planet;
 	struct ewl_order_data *od;
-	struct order_desc *desc;
-	int i;
 
 	otype = (uint32_t)otypev;
-	printf("A row selected: %d\n",otype);
 
 	parent = row;
 	while ((next = ewl_widget_parent_get(parent)))
@@ -442,13 +451,19 @@ order_type_selected(Ewl_Widget *row, void *edata, void *otypev){
 	assert(od);
 	planet = od->planet;
 
-	printf("Object is %s\n",od->planet->name);	
+	ewl_container_reset(EWL_CONTAINER(od->argbox));
+	gewl_box_with_label("Getting Args...", od->argbox);
 
-	tpe_orders_object_probe(planet->tpe, planet, otype);
+	tpe_orders_object_probe(planet->tpe, planet, otype, order_probe_cb, od);
+}
 
-	/* Now we work out it args */
-#if 0
-	desc = tpe_order_orders_get_desc_by_id(planet->tpe, otype);
+static void
+order_probe_cb(void *odv, struct object *obj, struct order_desc *desc,
+		struct order *order){
+	struct ewl_order_data *od = odv;
+	int i;
+
+	assert(od);
 
 	ewl_container_reset(EWL_CONTAINER(od->argbox));
 
@@ -463,13 +478,14 @@ order_type_selected(Ewl_Widget *row, void *edata, void *otypev){
 					desc->args[i].arg_type);
 			continue;
 		}
-		arg_handlers[desc->args[i].arg_type](od,desc->args + i);
+		arg_handlers[desc->args[i].arg_type](od,desc->args + i,
+				order->args[i]);
 	}
-#endif		
 }
 
 static void
-gewl_arg_string(struct ewl_order_data *od, struct order_arg *arg){
+gewl_arg_string(struct ewl_order_data *od, struct order_arg *arg,
+		union order_arg_data *orderinfo){
 	Ewl_Widget *box;
 	Ewl_Widget *entry;
 
@@ -489,7 +505,8 @@ gewl_arg_string(struct ewl_order_data *od, struct order_arg *arg){
 
 
 static void 
-gewl_arg_coords(struct ewl_order_data *od, struct order_arg *arg){
+gewl_arg_coords(struct ewl_order_data *od, struct order_arg *arg,
+		union order_arg_data *orderinfo){
 	Ewl_Widget *box;
 	Ewl_Widget *entry;
 
@@ -514,7 +531,8 @@ gewl_arg_coords(struct ewl_order_data *od, struct order_arg *arg){
 	ewl_widget_show(entry);
 }
 static void 
-gewl_arg_turns(struct ewl_order_data *od, struct order_arg *arg){
+gewl_arg_turns(struct ewl_order_data *od, struct order_arg *arg,
+		union order_arg_data *orderinfo){
 	Ewl_Widget *box;
 	Ewl_Widget *entry;
 
@@ -531,7 +549,8 @@ gewl_arg_turns(struct ewl_order_data *od, struct order_arg *arg){
 	ewl_widget_show(entry);
 }
 static void 
-gewl_arg_object(struct ewl_order_data *od, struct order_arg *arg){
+gewl_arg_object(struct ewl_order_data *od, struct order_arg *arg,
+		union order_arg_data *orderinfo){
 	Ewl_Widget *box;
 	Ewl_Widget *entry;
 
@@ -549,7 +568,8 @@ gewl_arg_object(struct ewl_order_data *od, struct order_arg *arg){
 
 }
 static void 
-gewl_arg_player(struct ewl_order_data *od, struct order_arg *arg){
+gewl_arg_player(struct ewl_order_data *od, struct order_arg *arg,
+		union order_arg_data *orderinfo){
 	Ewl_Widget *box;
 	Ewl_Widget *entry;
 
@@ -566,7 +586,9 @@ gewl_arg_player(struct ewl_order_data *od, struct order_arg *arg){
 	ewl_widget_show(entry);
 
 }
-static void gewl_arg_relcoords(struct ewl_order_data *od, struct order_arg *arg){
+static void 
+gewl_arg_relcoords(struct ewl_order_data *od, struct order_arg *arg,
+		union order_arg_data *orderinfo){
 	Ewl_Widget *box;
 	Ewl_Widget *entry;
 
@@ -600,7 +622,8 @@ static void gewl_arg_relcoords(struct ewl_order_data *od, struct order_arg *arg)
 
 }
 static void 
-gewl_arg_range(struct ewl_order_data *od, struct order_arg *arg){
+gewl_arg_range(struct ewl_order_data *od, struct order_arg *arg,
+		union order_arg_data *orderinfo){
 	Ewl_Widget *box;
 	Ewl_Widget *entry;
 	box = gewl_box_with_label(arg->name, od->argbox);
@@ -612,7 +635,8 @@ gewl_arg_range(struct ewl_order_data *od, struct order_arg *arg){
 
 }
 static void 
-gewl_arg_list(struct ewl_order_data *od, struct order_arg *arg){
+gewl_arg_list(struct ewl_order_data *od, struct order_arg *arg,
+		union order_arg_data *orderinfo){
 	Ewl_Widget *box;
 	Ewl_Widget *entry;
 	Ewl_Widget *button,*label;
@@ -645,12 +669,14 @@ gewl_arg_list(struct ewl_order_data *od, struct order_arg *arg){
 
 }
 static void 
-gewl_arg_ref(struct ewl_order_data *od, struct order_arg *arg){
+gewl_arg_ref(struct ewl_order_data *od, struct order_arg *arg,
+		union order_arg_data *orderinfo){
 	printf("Arg not handled\n");
 }
 
 static void 
-gewl_arg_reflist(struct ewl_order_data *od, struct order_arg *arg){
+gewl_arg_reflist(struct ewl_order_data *od, struct order_arg *arg,
+		union order_arg_data *orderinfo){
 	printf("Arg not handled\n");
 }
 
