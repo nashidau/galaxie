@@ -444,18 +444,10 @@ order_type_selected(Ewl_Widget *row, void *edata, void *otypev){
 
 	printf("Object is %s\n",od->planet->name);	
 
-	/* First: Check we can use this order ! */
-	for (i = 0 ; i < planet->nordertypes ; i ++){
-		if (planet->ordertypes[i] == otype)
-			break;
-	}
-	assert(i < planet->nordertypes);
-	if (i == planet->nordertypes){
-		printf("Couldn't find ordertype on object\n");
-		exit(1);
-	}
+	tpe_orders_object_probe(planet->tpe, planet, otype);
 
 	/* Now we work out it args */
+#if 0
 	desc = tpe_order_orders_get_desc_by_id(planet->tpe, otype);
 
 	ewl_container_reset(EWL_CONTAINER(od->argbox));
@@ -473,7 +465,7 @@ order_type_selected(Ewl_Widget *row, void *edata, void *otypev){
 		}
 		arg_handlers[desc->args[i].arg_type](od,desc->args + i);
 	}
-		
+#endif		
 }
 
 static void
