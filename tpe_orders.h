@@ -40,6 +40,7 @@ const char *tpe_order_get_name_by_type(struct tpe *tpe, uint32_t type);
 const char *tpe_order_get_name(struct tpe *tpe, struct order *order);
 
 
+int tpe_orders_object_probe(struct tpe *tpe, struct object *obj,uint32_t otype);
 int tpe_orders_object_clear(struct tpe *tpe, struct object *obj);
 int tpe_orders_object_move(struct tpe *tpe, struct object *obj, int slot,
 		int64_t x,int64_t y, int64_t z);

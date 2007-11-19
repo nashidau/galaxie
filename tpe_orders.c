@@ -33,6 +33,20 @@ enum {
 	ARG_REFERENCE_LIST = 9,
 };
 
+/* For sending with probe orders */
+static const int argsizesempty[] = {
+	/* ARG_COORD */   sizeof(int64_t) * 3,
+	/* ARG_TIME  */   sizeof(int32_t) * 2,
+	/* ARG_OBJECT */  sizeof(int32_t),
+	/* ARG_PLAYER */  sizeof(int32_t) * 2,
+	/* ARG_RELCOORD*/ sizeof(int32_t) + sizeof(int64_t) * 3,
+	/* ARG_RANGE */   sizeof(int32_t) * 4,
+	/* ARG_LIST */    sizeof(int32_t) * 4,
+	/* ARG_STRING */  sizeof(int32_t) * 2,
+	/* ARG_REF */     sizeof(int32_t) * 3,
+	/* ARG_REFLIST */ sizeof(int32_t) * 2,
+};
+
 struct tpe_orders {
 	struct tpe *tpe;
 
@@ -754,3 +768,46 @@ tpe_orders_object_clear(struct tpe *tpe, struct object *obj){
 	return rv;
 }
 
+/** 
+ * Sends a probe order to the server for a particular object/order type
+ * combination.
+ *
+ * Sets the callback for when the data arrives so the client may handle it
+ * themselves if they wish.
+ */
+int 
+tpe_orders_object_probe(struct tpe *tpe, struct object *obj,uint32_t otype){
+	int i;
+	struct order_desc *desc;
+	int size;
+	uint32_t *buf;
+	
+	assert(tpe); assert(obj);
+	assert(obj->server);
+
+        for (i = 0 ; i < obj->nordertypes ; i ++){
+                if (obj->ordertypes[i] == otype)
+                        break;
+        }
+        assert(i < obj->nordertypes);
+        if (i == obj->nordertypes){
+                printf("Couldn't find ordertype on object\n");
+		return -1;
+        }
+
+	desc = tpe_order_orders_get_desc_by_id(obj->tpe, otype);	
+
+	/* Pass 1: Work out size */
+	for (i = 0, size = 0 ; i < desc->nargs ; i ++){
+		size += argsizesempty[desc->args[i].arg_type];
+	}
+
+	buf = calloc(size,sizeof(int32_t));
+
+	return server_send_format(obj->server, "MsgProbeOrder",
+			NULL, NULL, /* FIXME */
+			"iiir", obj->oid, -1 /* Slot */, otype,
+			size, buf);
+
+
+}
