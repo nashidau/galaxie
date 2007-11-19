@@ -23,6 +23,89 @@ struct order_desc {
 	uint64_t updated;
 };
 
+/* Type 0: ARG_COORD */
+struct order_arg_coord {
+	int64_t x,y,z;
+};
+/* Type 1: ARG_TIME */
+struct order_arg_time {
+	uint32_t turns;
+	uint32_t max;
+};
+/* Type 2: ARG_OBJECT */
+struct order_arg_object {
+	uint32_t oid;
+};
+/* Type 3: ARG_PLAYER */
+struct order_arg_player {
+	uint32_t pid;
+	uint32_t flags;
+};
+/* Type 4: ARG_RELCOORD */
+struct order_arg_relcoord {
+	uint32_t obj;
+	int64_t x,y,z;
+};
+
+/* Type 5: ARG_RANGE */
+struct order_arg_range {
+	int32_t value;
+	int32_t min,max;
+	int32_t inc;
+};
+
+/* Type 6: ARG_LIST */
+struct order_arg_list_option {
+	int id;
+	int max;
+	char *option;
+};
+struct order_arg_list_selection {
+	uint32_t selection;
+	uint32_t count;
+};
+struct order_arg_list {
+	uint32_t noptions; /* # of Options */
+	struct order_arg_list_option *options;
+	uint32_t nselections;
+	struct order_arg_list_selection *selections;
+};
+
+
+/* Type 7: ARG_STRING */ 
+struct order_arg_string {
+	uint32_t maxlen;
+	char *str;
+};
+
+/* Type 8: ARG_REFERENCE */
+/* FIXME: Not implemented */
+
+union order_arg_data {
+	struct order_arg_coord coord;
+	struct order_arg_time time;
+	struct order_arg_object object;
+	struct order_arg_player player;
+	struct order_arg_relcoord relcoord;
+	struct order_arg_range range;
+	struct order_arg_list list;
+	struct order_arg_string string;
+};
+
+
+
+struct order {
+	int oid;
+	int slot;
+	int type;
+	int turns;
+	int nresources;
+	struct build_resources *resources;
+	
+	/* These come from the order desc */
+	union order_arg_data **args;
+};
+
 
 
 struct arg_type6 {
@@ -40,7 +123,10 @@ const char *tpe_order_get_name_by_type(struct tpe *tpe, uint32_t type);
 const char *tpe_order_get_name(struct tpe *tpe, struct order *order);
 
 
-int tpe_orders_object_probe(struct tpe *tpe, struct object *obj,uint32_t otype);
+int tpe_orders_object_probe(struct tpe *tpe, struct object *obj,uint32_t otype,
+		void (*cb)(void *, struct object *, struct order_desc *,
+				struct order *), void *udata);
+
 int tpe_orders_object_clear(struct tpe *tpe, struct object *obj);
 int tpe_orders_object_move(struct tpe *tpe, struct object *obj, int slot,
 		int64_t x,int64_t y, int64_t z);
