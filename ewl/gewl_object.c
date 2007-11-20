@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <inttypes.h>
+#include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -91,6 +92,13 @@ static void gewl_arg_ref(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *);
 static void gewl_arg_reflist(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *);
+
+static Ewl_Widget * gewl_arg_list_header_fetch(void *data, unsigned int col);
+static void *gewl_arg_list_data_fetch(void *data, unsigned int row, 
+		unsigned int col);
+static unsigned int gewl_arg_list_count_get(void *data);
+
+
 static Ewl_Widget *gewl_box_with_label(const char *str, Ewl_Widget *parent);
 
 static void (*arg_handlers[])(struct ewl_order_data *od, 
@@ -488,15 +496,19 @@ gewl_arg_string(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *orderinfo){
 	Ewl_Widget *box;
 	Ewl_Widget *entry;
+	struct order_arg_string *str;
 
 	assert(od);
 	assert(arg);
+	assert(orderinfo);
+
+	str = &(orderinfo->string);
 
 	box = gewl_box_with_label(arg->name, od->argbox);
 
 	entry = ewl_entry_new();
-	//if (arg->max > 0)
-	//	ewl_text_length_maximum_set(EWL_TEXT(entry), arg->max);
+	if (str->maxlen > 0)
+		ewl_text_length_maximum_set(EWL_TEXT(entry), str->maxlen);
 	ewl_container_child_append(EWL_CONTAINER(box), entry);
 	ewl_widget_show(entry);
 }
@@ -535,16 +547,21 @@ gewl_arg_turns(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *orderinfo){
 	Ewl_Widget *box;
 	Ewl_Widget *entry;
+	struct order_arg_time *tm;
 
 	assert(od);
 	assert(arg);
 
+	tm = &orderinfo->time;
+
 	box = gewl_box_with_label(arg->name, od->argbox);
 
 	/* FIXME: Should use a numeric entry */
-	entry = ewl_entry_new();
-	//if (arg->max > 0)
-	//	ewl_text_length_maximum_set(EWL_TEXT(entry), arg->max);
+	entry = ewl_spinner_new();
+	ewl_range_maximum_value_set(EWL_RANGE(entry), tm->max);
+	ewl_range_minimum_value_set(EWL_RANGE(entry), tm->max);
+	ewl_range_step_set(EWL_RANGE(entry), 1);
+	ewl_spinner_digits_set(EWL_SPINNER(entry), log(tm->max)/log(10));
 	ewl_container_child_append(EWL_CONTAINER(box), entry);
 	ewl_widget_show(entry);
 }
@@ -561,8 +578,6 @@ gewl_arg_object(struct ewl_order_data *od, struct order_arg *arg,
 
 	/* FIXME: Should use a drop down or similar */
 	entry = ewl_entry_new();
-	//if (arg->max > 0)
-	//	ewl_text_length_maximum_set(EWL_TEXT(entry), arg->max);
 	ewl_container_child_append(EWL_CONTAINER(box), entry);
 	ewl_widget_show(entry);
 
@@ -579,9 +594,8 @@ gewl_arg_player(struct ewl_order_data *od, struct order_arg *arg,
 	box = gewl_box_with_label(arg->name, od->argbox);
 
 	/* FIXME: Should use a drop down or similar */
+	/* FIXME: need to generate a list using filter */
 	entry = ewl_entry_new();
-	//if (arg->max > 0)
-	//	ewl_text_length_maximum_set(EWL_TEXT(entry), arg->max);
 	ewl_container_child_append(EWL_CONTAINER(box), entry);
 	ewl_widget_show(entry);
 
@@ -626,10 +640,18 @@ gewl_arg_range(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *orderinfo){
 	Ewl_Widget *box;
 	Ewl_Widget *entry;
+	struct order_arg_range *range;
+
 	box = gewl_box_with_label(arg->name, od->argbox);
 
+	range = &orderinfo->range;
+
 	/* FIXME: Should use a drop down or similar */
-	entry = ewl_entry_new();
+	entry = ewl_spinner_new();
+	ewl_range_minimum_value_set(EWL_RANGE(entry),range->min);
+	ewl_range_maximum_value_set(EWL_RANGE(entry),range->max);
+	ewl_range_step_set(EWL_RANGE(entry), range->inc);
+	ewl_spinner_digits_set(EWL_SPINNER(entry), log(range->max) / log(10));
 	ewl_container_child_append(EWL_CONTAINER(box), entry);
 	ewl_widget_show(entry);
 
@@ -638,19 +660,37 @@ static void
 gewl_arg_list(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *orderinfo){
 	Ewl_Widget *box;
-	Ewl_Widget *entry;
+	Ewl_Widget *combo;
 	Ewl_Widget *button,*label;
+	Ewl_Widget *spinner;
+	Ewl_Model *model;
+	Ewl_View *view;
+	struct order_arg_list *list;
 
 	box = gewl_box_with_label(arg->name, od->argbox);
+
+	list = &(orderinfo->list);
 
 	box = ewl_hbox_new();
 	ewl_container_child_append(EWL_CONTAINER(od->argbox), box);
 	ewl_widget_show(box);
 
-	/* Needs to be a drop down */
-	entry = ewl_entry_new();
-	ewl_container_child_append(EWL_CONTAINER(box), entry);
-	ewl_widget_show(entry);
+	model = ewl_model_new();
+	ewl_model_data_fetch_set(model, gewl_arg_list_data_fetch);
+	ewl_model_data_count_set(model, gewl_arg_list_count_get);
+
+	/* create the view for ewl_label widgets */
+	view = ewl_view_clone(ewl_label_view_get());
+	ewl_view_header_fetch_set(view, gewl_arg_list_header_fetch);
+
+	combo = ewl_combo_new();
+	ewl_container_child_append(EWL_CONTAINER(box), combo);
+//	ewl_callback_append(combo, EWL_CALLBACK_VALUE_CHANGED,
+//					combo_value_changed, NULL);
+	ewl_mvc_model_set(EWL_MVC(combo), model);
+	ewl_mvc_view_set(EWL_MVC(combo), view);
+	ewl_mvc_data_set(EWL_MVC(combo), list);
+	ewl_widget_show(combo);
 
 	label = ewl_label_new();
 	ewl_label_text_set(EWL_LABEL(label), "x");
@@ -658,16 +698,53 @@ gewl_arg_list(struct ewl_order_data *od, struct order_arg *arg,
 	ewl_widget_show(label);
 
 	/* Should be an in counter */
-	entry = ewl_entry_new();
-	ewl_container_child_append(EWL_CONTAINER(box), entry);
-	ewl_widget_show(entry);
+	spinner = ewl_spinner_new();
+	/* FIXME: Do better attributes for this */
+	ewl_container_child_append(EWL_CONTAINER(box), spinner);
+	ewl_widget_show(spinner);
 
 	button = ewl_button_new();
 	ewl_button_label_set(EWL_BUTTON(button), "Another");
-	ewl_container_child_append(EWL_CONTAINER(box), button);
+	ewl_container_child_append(EWL_CONTAINER(od->argbox), button);
+	ewl_object_fill_policy_set(EWL_OBJECT(button), EWL_FLAG_ALIGN_RIGHT | 
+			EWL_FLAG_FILL_HSHRINK);
 	ewl_widget_show(button);
-
 }
+
+static Ewl_Widget *
+gewl_arg_list_header_fetch(void *data, unsigned int col){
+	Ewl_Widget *header;
+
+	header = ewl_label_new();
+	/* FIXME: Use label from data */
+	ewl_label_text_set(EWL_LABEL(header), "Option");
+	ewl_widget_show(header);
+
+	return header;
+}
+
+static void *
+gewl_arg_list_data_fetch(void *data, unsigned int row, 
+		unsigned int col){
+	struct order_arg_list *ol;
+
+	ol = data;
+
+	if (row > ol->noptions)
+		return NULL;
+	else
+		return ol->options[row].option;
+}
+
+static unsigned int 
+gewl_arg_list_count_get(void *data){
+	struct order_arg_list *ol;
+
+	ol = data;
+	return ol->noptions;
+}
+
+
 static void 
 gewl_arg_ref(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *orderinfo){
