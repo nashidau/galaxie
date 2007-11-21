@@ -88,7 +88,7 @@ gui_window_add(struct gui *gui, Evas_Object *window){
 
 
 Ewl_Widget *
-gui_window_ewl_add(struct gui *gui){
+gui_window_ewl_add(struct gui *gui, const char *title, const char *icon){
 	Ewl_Widget *emb;
 	Evas_Object *eo;
 	Evas_Object *window;
@@ -97,6 +97,16 @@ gui_window_ewl_add(struct gui *gui){
 	edje_object_file_set(window,"edje/basic.edj", "Window");
 	evas_object_show(window);
 	evas_object_resize(window,400,400);
+
+	if (title)
+		edje_object_part_text_set(window,"Title", title);
+	if (icon){
+		printf(__FILE__ ":FIXME: "
+			"setting icon not implemented\n");
+
+	}
+	
+
 
 	emb = ewl_embed_new();
 	ewl_object_fill_policy_set(EWL_OBJECT(emb), EWL_FLAG_FILL_ALL);

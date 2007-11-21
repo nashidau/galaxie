@@ -145,7 +145,7 @@ tpe_ewl_planet_add(struct gui *gui, struct object *planet){
 
 
 	/* FIXME: Move this to a more useful place */
-	p->window = window = gui_window_ewl_add(gui);
+	p->window = window = gui_window_ewl_add(gui, planet->name, NULL);
 
 	box = ewl_vbox_new();
 	ewl_container_child_append(EWL_CONTAINER(window), box);
@@ -389,7 +389,7 @@ tpe_ewl_edit_orders(Ewl_Widget *button, void *ev_data, void *planetv){
 	od->planet = p->planet;
 
 	/* Add the edit orders window */
-	od->window = gui_window_ewl_add(p->gui);
+	od->window = gui_window_ewl_add(p->gui, p->planet->name, NULL);
 /* FIXME: This shoudl be in the set call */
 	ewl_widget_data_set(od->window, "Object", od);
 

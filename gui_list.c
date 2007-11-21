@@ -224,7 +224,7 @@ void gui_list_planet_add(struct gui *gui){
 
 	/* Most of this needs to be put into a subfunction */
 
-	win = gui_window_ewl_add(gui);
+	win = gui_window_ewl_add(gui, NULL, NULL);
 
 	vbox = ewl_vbox_new();
 	ewl_container_child_append(EWL_CONTAINER(win), vbox);
