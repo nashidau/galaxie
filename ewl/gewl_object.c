@@ -114,7 +114,7 @@ static void *gewl_arg_list_data_fetch(void *data, unsigned int row,
 static unsigned int gewl_arg_list_count_get(void *data);
 static void gewl_arg_list_value_changed(Ewl_Widget *widget, void *event,void*);
 static void gewl_arg_list_add_row_cb(Ewl_Widget *widget, void *data, void *gal);
-static void gewl_arg_list_row_add(struct gewl_arg_list *gal);
+static Ewl_Widget *gewl_arg_list_row_add(struct gewl_arg_list *gal);
 
 static Ewl_Widget *gewl_box_with_label(const char *str, Ewl_Widget *parent);
 
@@ -677,6 +677,8 @@ static void
 gewl_arg_list(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *orderinfo){
 	Ewl_Widget *button;
+	Ewl_Widget *box;
+	Ewl_Widget *row;
 	struct order_arg_list *list;
 	struct gewl_arg_list *gal;
 
@@ -686,11 +688,12 @@ gewl_arg_list(struct ewl_order_data *od, struct order_arg *arg,
 
 	gal = calloc(1,sizeof(struct gewl_arg_list));
 	gal->list = list;
+	gal->box = od->argbox;
 	
 
-	gal->box = ewl_hbox_new();
-	ewl_container_child_append(EWL_CONTAINER(od->argbox), gal->box);
-	ewl_widget_show(gal->box);
+	box = ewl_hbox_new();
+	ewl_container_child_append(EWL_CONTAINER(od->argbox), box);
+	ewl_widget_show(box);
 
 	gal->model = ewl_model_new();
 	ewl_model_data_fetch_set(gal->model, gewl_arg_list_data_fetch);
@@ -700,7 +703,8 @@ gewl_arg_list(struct ewl_order_data *od, struct order_arg *arg,
 	gal->view = ewl_view_clone(ewl_label_view_get());
 	ewl_view_header_fetch_set(gal->view, gewl_arg_list_header_fetch);
 
-	gewl_arg_list_row_add(gal);
+	row = gewl_arg_list_row_add(gal);
+	ewl_container_child_append(EWL_CONTAINER(gal->box),row);
 
 	button = ewl_button_new();
 	ewl_button_label_set(EWL_BUTTON(button), "Another");
@@ -713,19 +717,32 @@ gewl_arg_list(struct ewl_order_data *od, struct order_arg *arg,
 }
 
 static void
-gewl_arg_list_add_row_cb(Ewl_Widget *widget, void *data, void *gal){
-	gewl_arg_list_row_add(gal);
+gewl_arg_list_add_row_cb(Ewl_Widget *w, void *data, void *galv){
+	struct gewl_arg_list *gal = galv;
+	Ewl_Widget *row;
+	int i;
+	
+	row = gewl_arg_list_row_add(gal);
+	printf("%d rows\n", ewl_container_child_count_get(EWL_CONTAINER(gal->box)));
+
+	i = ewl_container_child_index_get(EWL_CONTAINER(gal->box), w);
+	ewl_container_child_insert(EWL_CONTAINER(gal->box), row,i - 1);
+
 }
 
-static void
+static Ewl_Widget *
 gewl_arg_list_row_add(struct gewl_arg_list *gal){
 	Ewl_Widget *combo;
 	Ewl_Widget *spinner;
 	Ewl_Widget *label;
-	Ewl_Widget *row;
+	Ewl_Widget *box;
+
+	box = ewl_hbox_new();
+	ewl_container_child_append(EWL_CONTAINER(gal->box), box);
+	ewl_widget_show(box);
 
 	combo = ewl_combo_new();
-	ewl_container_child_append(EWL_CONTAINER(gal->box), combo);
+	ewl_container_child_append(EWL_CONTAINER(box), combo);
 	ewl_mvc_model_set(EWL_MVC(combo), gal->model);
 	ewl_mvc_view_set(EWL_MVC(combo), gal->view);
 	ewl_mvc_data_set(EWL_MVC(combo), gal->list);
@@ -733,7 +750,7 @@ gewl_arg_list_row_add(struct gewl_arg_list *gal){
 
 	label = ewl_label_new();
 	ewl_label_text_set(EWL_LABEL(label), "x");
-	ewl_container_child_append(EWL_CONTAINER(gal->box), label);
+	ewl_container_child_append(EWL_CONTAINER(box), label);
 	ewl_widget_show(label);
 
 	spinner = ewl_spinner_new();
@@ -741,14 +758,14 @@ gewl_arg_list_row_add(struct gewl_arg_list *gal){
 	ewl_range_minimum_value_set(EWL_RANGE(spinner), 0);
 	ewl_range_maximum_value_set(EWL_RANGE(spinner), 1);
 	ewl_spinner_digits_set(EWL_SPINNER(spinner), 0);
-	ewl_container_child_append(EWL_CONTAINER(gal->box), spinner);
+	ewl_container_child_append(EWL_CONTAINER(box), spinner);
 	ewl_widget_show(spinner);
 
 	/* Now we have a spinner, associate it to the combo callback */
 	ewl_callback_append(combo, EWL_CALLBACK_VALUE_CHANGED,
 					gewl_arg_list_value_changed, spinner);
 
-
+	return box;
 }
 
 static Ewl_Widget *
