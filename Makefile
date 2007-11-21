@@ -148,10 +148,10 @@ $Iwindow.png : $Iwindow.svg
 	inkscape -j --export-area-drawing -w 300 -h 400 --export-png $@ $<
 
 clean: 
-	rm -f *.o ailist.h ${EDJE}
+	rm -f **/*.o ailist.h ${EDJE}
 
 reallyclean: 
-	rm -f *.o ailist.h ${EDJE} ${IMAGES}
+	rm -f **/*.o ailist.h ${EDJE} ${IMAGES}
 
 veryclean: clean
 	rm -f  ${IMAGES}
