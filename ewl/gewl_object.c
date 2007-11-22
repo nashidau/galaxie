@@ -91,67 +91,47 @@ static void order_probe_cb(void *odv, struct object *obj, struct order_desc *des
 
 
 static void order_type_selected(Ewl_Widget *row, void *edata, void *pdata);
-static void *gewl_arg_coords(struct ewl_order_data *od, struct order_arg *arg,
+static void gewl_arg_coords(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *);
-static void *gewl_arg_turns(struct ewl_order_data *od, struct order_arg *arg,
+static void gewl_arg_turns(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *);
-static void *gewl_arg_object(struct ewl_order_data *od, struct order_arg *arg,
+static void gewl_arg_object(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *);
-static void *gewl_arg_player(struct ewl_order_data *od, struct order_arg *arg,
+static void gewl_arg_player(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *);
-static void *gewl_arg_relcoords(struct ewl_order_data *od, struct order_arg *,
+static void gewl_arg_relcoords(struct ewl_order_data *od, struct order_arg *,
 		union order_arg_data *);
-static void *gewl_arg_range(struct ewl_order_data *od, struct order_arg *arg,
+static void gewl_arg_range(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *);
-static void *gewl_arg_list(struct ewl_order_data *od, struct order_arg *arg,
+static void gewl_arg_list(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *);
-static void *gewl_arg_string(struct ewl_order_data *od, struct order_arg *arg,
+static void gewl_arg_string(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *);
-static void *gewl_arg_ref(struct ewl_order_data *od, struct order_arg *arg,
+static void gewl_arg_ref(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *);
-static void *gewl_arg_reflist(struct ewl_order_data *od, struct order_arg *arg,
+static void gewl_arg_reflist(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *);
-static int coords_size_get(struct ewl_order_data *id, struct order_arg *,
-		union order_arg_data *, void *);
-static int turns_size_get(struct ewl_order_data *id, struct order_arg *,
-		union order_arg_data *, void *);
-static int object_size_get(struct ewl_order_data *id, struct order_arg *,
-		union order_arg_data *, void *);
-static int player_size_get(struct ewl_order_data *id, struct order_arg *,
-		union order_arg_data *, void *);
-static int relc_size_get(struct ewl_order_data *id, struct order_arg *,
-		union order_arg_data *, void *);
-static int range_size_get(struct ewl_order_data *id, struct order_arg *,
-		union order_arg_data *, void *);
-static int list_size_get(struct ewl_order_data *id, struct order_arg *,
-		union order_arg_data *, void *);
-static int string_size_get(struct ewl_order_data *id, struct order_arg *,
-		union order_arg_data *, void *);
-static int ref_size_get(struct ewl_order_data *id, struct order_arg *,
-		union order_arg_data *, void *);
-static int refl_size_get(struct ewl_order_data *id, struct order_arg *,
-		union order_arg_data *, void *);
 
 static int coords_save(struct ewl_order_data *id, struct order_arg *,
-		union order_arg_data *, void *, int *buf);
+		union order_arg_data *);
 static int turn_save(struct ewl_order_data *id, struct order_arg *,
-		union order_arg_data *, void *, int *buf);
+		union order_arg_data *);
 static int object_save(struct ewl_order_data *id, struct order_arg *,
-		union order_arg_data *, void *, int *buf);
+		union order_arg_data *);
 static int player_save(struct ewl_order_data *id, struct order_arg *,
-		union order_arg_data *, void *, int *buf);
+		union order_arg_data *);
 static int relc_save(struct ewl_order_data *id, struct order_arg *,
-		union order_arg_data *, void *, int *buf);
+		union order_arg_data *);
 static int range_save(struct ewl_order_data *id, struct order_arg *,
-		union order_arg_data *, void *, int *buf);
+		union order_arg_data *);
 static int list_save(struct ewl_order_data *id, struct order_arg *,
-		union order_arg_data *, void *, int *buf);
+		union order_arg_data *);
 static int string_save(struct ewl_order_data *id, struct order_arg *,
-		union order_arg_data *, void *, int *buf);
+		union order_arg_data *);
 static int ref_save(struct ewl_order_data *id, struct order_arg *,
-		union order_arg_data *, void *, int *buf);
+		union order_arg_data *);
 static int refl_save(struct ewl_order_data *id, struct order_arg *,
-		union order_arg_data *, void *, int *buf);
+		union order_arg_data *);
 
 
 
@@ -168,25 +148,23 @@ static void gewl_order_submit(Ewl_Widget *widget, void *data, void *gal);
 static Ewl_Widget *gewl_box_with_label(const char *str, Ewl_Widget *parent);
 
 struct arg_handler {
-	void *(*create)(struct ewl_order_data *od,
+	void (*create)(struct ewl_order_data *od,
 			struct order_arg *, union order_arg_data *);
-	int (*size)(struct ewl_order_data *od, struct order_arg *,
-				union order_arg_data *, void *data);
 	int (*save)(struct  ewl_order_data *od, struct order_arg *,
-				union order_arg_data *, void *data, int *buf);
+				union order_arg_data *);
 };
 
 static const struct arg_handler arg_handlers[] = {
-	{ /* 0: Coords */ gewl_arg_coords, coords_size_get, coords_save	},
-	{ /* 1: Turns */  gewl_arg_turns,  turns_size_get,  turn_save	},
-	{ /* 2: Object */ gewl_arg_object, object_size_get, object_save	},
-	{ /* 3: Player */ gewl_arg_player, player_size_get, player_save	},
-	{ /* 4: RelCoords */ gewl_arg_relcoords,relc_size_get,relc_save	},
-	{ /* 5: Range */  gewl_arg_range,  range_size_get,  range_save	},
-	{ /* 6: List */   gewl_arg_list,   list_size_get,   list_save	},
-	{ /* 7: String */ gewl_arg_string, string_size_get, string_save	},
-	{ /* 8: Ref */	gewl_arg_ref,    ref_size_get,      ref_save	},
-	{ /* 9: Reflist */gewl_arg_reflist,refl_size_get,   refl_save	},
+	{ /* 0: Coords */ gewl_arg_coords,	coords_save	},
+	{ /* 1: Turns */  gewl_arg_turns,	turn_save	},
+	{ /* 2: Object */ gewl_arg_object,	object_save	},
+	{ /* 3: Player */ gewl_arg_player,	player_save	},
+	{ /* 4: RelCoords */ gewl_arg_relcoords,relc_save	},
+	{ /* 5: Range */  gewl_arg_range,	range_save	},
+	{ /* 6: List */   gewl_arg_list,	list_save	},
+	{ /* 7: String */ gewl_arg_string,  	string_save	},
+	{ /* 8: Ref */	  gewl_arg_ref,		ref_save	},
+	{ /* 9: Reflist */gewl_arg_reflist,	refl_save	},
 };
 #define N_ARGTYPES (sizeof(arg_handlers)/sizeof(arg_handlers[0]))
 
@@ -587,15 +565,21 @@ gewl_order_submit(Ewl_Widget *widget, void *data, void *odv){
 	desc = od->desc;
 	order = od->order;
 
-	/* Need to build the order buffer */
 	for (i = 0 ; i < desc->nargs ; i ++){
-		
+		if (desc->args[i].arg_type >= N_ARGTYPES){
+			printf("\tUnhandled arg type: %d\n",
+					desc->args[i].arg_type);
+			continue;
+		}
+		arg_handlers[desc->args[i].arg_type].save(od,desc->args + i,
+				order->args[i]);
 	}
 
+	tpe_orders_order_update(od->planet->tpe, order);
 }
 
 
-static void *
+static void
 gewl_arg_string(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *orderinfo){
 	Ewl_Widget *box;
@@ -613,40 +597,46 @@ gewl_arg_string(struct ewl_order_data *od, struct order_arg *arg,
 	entry = ewl_entry_new();
 	if (str->maxlen > 0)
 		ewl_text_length_maximum_set(EWL_TEXT(entry), str->maxlen);
+	if (str->str && str->str[0])
+		ewl_text_text_set(EWL_TEXT(entry), str->str);
 	ewl_container_child_append(EWL_CONTAINER(box), entry);
 	ewl_widget_show(entry);
+
+	str->data = entry;
 }
 
 
 
 
-static void *
+static void
 gewl_arg_coords(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *orderinfo){
 	Ewl_Widget *box;
-	Ewl_Widget *entry;
+	Ewl_Widget **entries;
+	struct order_arg_coord *coords;
+	const char *labels[] = { "X:", "Y:", "Z:" };
+	int i;
 
 	assert(od);
 	assert(arg);
 
+	coords = &(orderinfo->coord);
+
+	entries = calloc(3,sizeof(Ewl_Widget *));
+	coords->data = entries;
+
 	box = gewl_box_with_label(arg->name, od->argbox);
 
-	box = gewl_box_with_label("X:", od->argbox);
-	entry = ewl_entry_new();
-	ewl_container_child_append(EWL_CONTAINER(box), entry);
-	ewl_widget_show(entry);
-
-	box = gewl_box_with_label("Y:", od->argbox);
-	entry = ewl_entry_new();
-	ewl_container_child_append(EWL_CONTAINER(box), entry);
-	ewl_widget_show(entry);
-
-	box = gewl_box_with_label("Z:", od->argbox);
-	entry = ewl_entry_new();
-	ewl_container_child_append(EWL_CONTAINER(box), entry);
-	ewl_widget_show(entry);
+	for (i = 0 ; i < 3 ; i ++){
+		/* FIXME: Convert to spinners */
+		box = gewl_box_with_label(labels[i], od->argbox);
+		entries[i] = ewl_entry_new();
+		ewl_container_child_append(EWL_CONTAINER(box), entries[i]);
+		ewl_widget_show(entries[i]);
+	}
 }
-static void *
+
+static void 
 gewl_arg_turns(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *orderinfo){
 	Ewl_Widget *box;
@@ -668,7 +658,7 @@ gewl_arg_turns(struct ewl_order_data *od, struct order_arg *arg,
 	ewl_container_child_append(EWL_CONTAINER(box), entry);
 	ewl_widget_show(entry);
 }
-static void *
+static void 
 gewl_arg_object(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *orderinfo){
 	Ewl_Widget *box;
@@ -685,7 +675,7 @@ gewl_arg_object(struct ewl_order_data *od, struct order_arg *arg,
 	ewl_widget_show(entry);
 
 }
-static void *
+static void
 gewl_arg_player(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *orderinfo){
 	Ewl_Widget *box;
@@ -703,7 +693,7 @@ gewl_arg_player(struct ewl_order_data *od, struct order_arg *arg,
 	ewl_widget_show(entry);
 
 }
-static void *
+static void
 gewl_arg_relcoords(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *orderinfo){
 	Ewl_Widget *box;
@@ -738,7 +728,7 @@ gewl_arg_relcoords(struct ewl_order_data *od, struct order_arg *arg,
 	ewl_widget_show(entry);
 
 }
-static void *
+static void 
 gewl_arg_range(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *orderinfo){
 	Ewl_Widget *box;
@@ -759,7 +749,7 @@ gewl_arg_range(struct ewl_order_data *od, struct order_arg *arg,
 	ewl_widget_show(entry);
 
 }
-static void *
+static void
 gewl_arg_list(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *orderinfo){
 	Ewl_Widget *button;
@@ -916,13 +906,13 @@ gewl_arg_list_value_changed(Ewl_Widget *widget, void *event, void *data){
 }
 
 
-static void *
+static void
 gewl_arg_ref(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *orderinfo){
 	printf("Arg Reference not handled\n");
 }
 
-static void *
+static void
 gewl_arg_reflist(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *orderinfo){
 	printf("Arg Reference list not handled\n");
@@ -947,104 +937,92 @@ gewl_box_with_label(const char *str, Ewl_Widget *parent){
 }
 
 static int
-coords_size_get(struct ewl_order_data *id, struct order_arg *arg,
-		union order_arg_data *argdata, void *data){
-	return 6;
-}
-static int
-turns_size_get(struct ewl_order_data *id, struct order_arg *arg,
-		union order_arg_data *argdata, void *data){
-	return 2;
-}
-static int
-object_size_get(struct ewl_order_data *id, struct order_arg *arg,
-		union order_arg_data *argdata, void *data){
-	return 2;
-}
-static int
-player_size_get(struct ewl_order_data *id, struct order_arg *arg,
-		union order_arg_data *argdata, void *data){
-	return 1;
-}
-static int
-relc_size_get(struct ewl_order_data *id, struct order_arg *arg,
-		union order_arg_data *argdata, void *data){
-	return 1;
-}
-static int
-range_size_get(struct ewl_order_data *id, struct order_arg *arg,
-		union order_arg_data *argdata, void *data){
-	return 1;
-}
-static int
-list_size_get(struct ewl_order_data *id, struct order_arg *arg,
-		union order_arg_data *argdata, void *data){
-	return 1;
-}
-static int
-string_size_get(struct ewl_order_data *id, struct order_arg *arg,
-		union order_arg_data *argdata, void *data){
-	return 1;
-}
-static int
-ref_size_get(struct ewl_order_data *id, struct order_arg *arg,
-		union order_arg_data *argdata, void *data){
-	return 1;
-}
-static int
-refl_size_get(struct ewl_order_data *id, struct order_arg *arg,
-		union order_arg_data *argdata, void *data){
-	return 1;
-}
-
-static int
 coords_save(struct ewl_order_data *id, struct order_arg *arg,
-		union order_arg_data *argdata, void *data, int *buf){
-	return 1;
+		union order_arg_data *argdata){
+	struct order_arg_coord *coords;
+	int i;
+	Ewl_Widget **entries;
+
+	coords = &(argdata->coord);
+
+	assert(coords->data);
+	entries = coords->data;
+
+	coords->x = ewl_range_value_get(EWL_RANGE(entries[0]));
+	coords->y = ewl_range_value_get(EWL_RANGE(entries[1]));
+	coords->z = ewl_range_value_get(EWL_RANGE(entries[2]));
+
+	for (i = 0 ; i < 3 ; i ++)
+		ewl_widget_destroy(entries[i]);
+	free(entries);
+	coords->data = NULL;
+
+	return 0;
 }
 static int
 turn_save(struct ewl_order_data *id, struct order_arg *arg,
-		union order_arg_data *argdata, void *data, int *buf){
-	return 1;
+		union order_arg_data *argdata){
+	struct order_arg_time *tm;
+	Ewl_Widget *spinner;
+
+	tm = &(argdata->time);
+
+	assert(tm->data);
+	spinner = tm->data;
+
+	tm->turns = ewl_range_value_get(EWL_RANGE(spinner));
+
+	ewl_widget_destroy(spinner);
+	tm->data = NULL;
+	return 0;
 }
 static int
 object_save(struct ewl_order_data *id, struct order_arg *arg,
-		union order_arg_data *argdata, void *data, int *buf){
+		union order_arg_data *argdata){
 	return 1;
 }
 static int
 player_save(struct ewl_order_data *id, struct order_arg *arg,
-		union order_arg_data *argdata, void *data, int *buf){
+		union order_arg_data *argdata){
 	return 1;
 }
 static int
 relc_save(struct ewl_order_data *id, struct order_arg *arg,
-		union order_arg_data *argdata, void *data, int *buf){
+		union order_arg_data *argdata){
 	return 1;
 }
 static int
 range_save(struct ewl_order_data *id, struct order_arg *arg,
-		union order_arg_data *argdata, void *data, int *buf){
+		union order_arg_data *argdata){
 	return 1;
 }
 static int
 list_save(struct ewl_order_data *id, struct order_arg *arg,
-		union order_arg_data *argdata, void *data, int *buf){
+		union order_arg_data *argdata){
 	return 1;
 }
 static int
 string_save(struct ewl_order_data *id, struct order_arg *arg,
-		union order_arg_data *argdata, void *data, int *buf){
-	return 1;
+		union order_arg_data *orderinfo){
+	struct order_arg_string *str;
+
+	str = &(orderinfo->string);
+
+	if (str->str) free(str->str);
+	str->str = ewl_text_text_get(EWL_TEXT(str->data));
+	
+	ewl_widget_destroy(str->data);
+	
+	return 0;
 }
 static int
 ref_save(struct ewl_order_data *id, struct order_arg *arg,
-		union order_arg_data *argdata, void *data, int *buf){
+		union order_arg_data *argdata){
 	return 1;
 }
 static int
 refl_save(struct ewl_order_data *id, struct order_arg *arg,
-		union order_arg_data *argdata, void *data, int *buf){
+		union order_arg_data *argdata){
 	return 1;
 }
 
