@@ -99,25 +99,25 @@ tags:
 		-s/home/nash/work/e17--cvs/libs/ecore/src/lib
 
 
-galaxie.o: ailist.h
+galaxie.o: ailist.h tpe_orders.h
 ai_smith.o: tpe_obj.h tpe.h tpe_event.h server.h tpe_orders.h tpe_ship.h \
 		tpe_util.h
+ai_jones.o : tpe.h tpe_orders.h
 tpe_gui.o: tpe.h tpe_gui.h tpe_board.h tpe_comm.h tpe_event.h tpe_obj.h \
 		tpe_orders.h tpe_ship.h tpe_util.h tpe_reference.h \
 		tpe_gui_private.h
-tpe_gui_orders.o: tpe.h tpe_gui_private.h
-ai_jones.o : tpe.h
-ai_smith.o : tpe.h
+tpe_gui_orders.o: tpe.h tpe_gui_private.h tpe_orders.h
 ai_util.o : tpe.h
 gui_window.o : tpe.h tpe_gui.h tpe_gui_private.h
-gui_list.o : tpe.h tpe_gui.h gui_window.h
+gui_list.o : tpe.h tpe_gui.h gui_window.h tpe_orders.h
 tpe_board.o : tpe.h tpe_board.h
 tpe_comm.o : tpe.h tpe_comm.h
-tpe_obj.o : tpe_obj.h tpe.h
+tpe_obj.o : tpe_obj.h tpe.h tpe_orders.h 
 tpe_orders.o : tpe_orders.h tpe.h
 tpe_resources.o : tpe_resources.h tpe.h
 tpe_sequence.o: tpe.h tpe_event.h tpe_sequence.h server.h tpe_util.h
 tpe_ship.o : tpe.h tpe_event.h server.h tpe_util.h tpe_sequence.h tpe_ship.h
+tpe_util.o : tpe.h tpe_orders.h tpe_util.h
 ewl/gewl_object.o : tpe.h server.h tpe_orders.h
 
 $Iarrowright.png : $Imailviewer.svg
