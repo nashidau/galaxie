@@ -389,6 +389,7 @@ tpe_order_parse_args(struct tpe *tpe, struct order *order,
 
 int
 tpe_orders_order_free(struct order *order){
+	/* FIXME: Leaks lots */
 	if (order){
 		free(order->resources);
 		free(order);
@@ -783,6 +784,15 @@ object_probe_data(void *userdata, struct msg *msg){
 	if (probeinfo->cb)
 		probeinfo->cb(probeinfo->data, probeinfo->obj, 
 				probeinfo->desc, order);
+
+	return 0;
+}
+
+int
+tpe_orders_order_update(struct tpe *tpe, struct order *order){
+	assert(tpe);
+	assert(order);
+
 
 	return 0;
 }

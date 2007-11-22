@@ -26,25 +26,30 @@ struct order_desc {
 /* Type 0: ARG_COORD */
 struct order_arg_coord {
 	int64_t x,y,z;
+	void *data;
 };
 /* Type 1: ARG_TIME */
 struct order_arg_time {
 	uint32_t turns;
 	uint32_t max;
+	void *data;
 };
 /* Type 2: ARG_OBJECT */
 struct order_arg_object {
 	uint32_t oid;
+	void *data;
 };
 /* Type 3: ARG_PLAYER */
 struct order_arg_player {
 	uint32_t pid;
 	uint32_t flags;
+	void *data;
 };
 /* Type 4: ARG_RELCOORD */
 struct order_arg_relcoord {
 	uint32_t obj;
 	int64_t x,y,z;
+	void *data;
 };
 
 /* Type 5: ARG_RANGE */
@@ -52,6 +57,7 @@ struct order_arg_range {
 	int32_t value;
 	int32_t min,max;
 	int32_t inc;
+	void *data;
 };
 
 /* Type 6: ARG_LIST */
@@ -59,6 +65,7 @@ struct order_arg_list_option {
 	int id;
 	int max;
 	char *option;
+	void *data;
 };
 struct order_arg_list_selection {
 	uint32_t selection;
@@ -76,6 +83,7 @@ struct order_arg_list {
 struct order_arg_string {
 	uint32_t maxlen;
 	char *str;
+	void *data;
 };
 
 /* Type 8: ARG_REFERENCE */
@@ -126,6 +134,7 @@ const char *tpe_order_get_name(struct tpe *tpe, struct order *order);
 int tpe_orders_object_probe(struct tpe *tpe, struct object *obj,uint32_t otype,
 		void (*cb)(void *, struct object *, struct order_desc *,
 				struct order *), void *udata);
+int tpe_orders_order_update(struct tpe *tpe, struct order *order);
 
 int tpe_orders_object_clear(struct tpe *tpe, struct object *obj);
 int tpe_orders_object_move(struct tpe *tpe, struct object *obj, int slot,
