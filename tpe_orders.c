@@ -34,6 +34,7 @@ enum {
 };
 
 /* For sending with probe orders */
+/* FIXME: This needs to go - use argsize below */
 static const int argsizesempty[] = {
 	/* ARG_COORD */   sizeof(int64_t) * 3,
 	/* ARG_TIME  */   sizeof(int32_t) * 2,
@@ -46,6 +47,30 @@ static const int argsizesempty[] = {
 	/* ARG_REF */     sizeof(int32_t) * 3,
 	/* ARG_REFLIST */ sizeof(int32_t) * 2,
 };
+
+
+static int arg_list_size_get(struct order_arg *, union order_arg_data *);
+static int arg_string_size_get(struct order_arg *, union order_arg_data *);
+static int arg_string_write(struct order_arg *, union order_arg_data *, char *);
+static const struct argsize {
+	int empty;
+	int (*wdata)(struct order_arg *, union order_arg_data *);
+	int (*write)(struct order_arg *, union order_arg_data *, char *buf);
+} argsizes[] = {
+	{ /* ARG_COORD */   sizeof(int64_t) * 3,	NULL,NULL },
+	{ /* ARG_TIME  */   sizeof(int32_t) * 2,	NULL,NULL },
+	{ /* ARG_OBJECT */  sizeof(int32_t),		NULL,NULL },
+	{ /* ARG_PLAYER */  sizeof(int32_t) * 2,	NULL,NULL },
+	{ /* ARG_RELCOORD*/ sizeof(int32_t) + sizeof(int64_t) * 3, NULL,NULL },
+	{ /* ARG_RANGE */   sizeof(int32_t) * 4,	NULL,NULL },
+	{ /* ARG_LIST */    sizeof(int32_t) * 4,	arg_list_size_get,NULL },
+	{ /* ARG_STRING */  
+	  sizeof(int32_t) * 2,	arg_string_size_get, arg_string_write },
+	{ /* ARG_REF */     sizeof(int32_t) * 3,	NULL,NULL },
+	{ /* ARG_REFLIST */ sizeof(int32_t) * 2,	NULL,NULL },
+
+};
+
 
 struct tpe_orders {
 	struct tpe *tpe;
@@ -788,11 +813,82 @@ object_probe_data(void *userdata, struct msg *msg){
 	return 0;
 }
 
+/*
+ * Takes an order structure, either from a probe, or from a current list, and
+ * submits it to the server.
+ */
 int
 tpe_orders_order_update(struct tpe *tpe, struct order *order){
+	struct order_desc *desc;
 	assert(tpe);
 	assert(order);
+	int i;
+	int len;
+	char *buf;
+	
+	desc = tpe_order_orders_get_desc_by_id(tpe, order->type);
 
+	for (i = 0, len = 0 ; i < desc->nargs ; i ++){
+		if (argsizes[desc->args[i].arg_type].wdata == NULL)
+			len += argsizes[desc->args[i].arg_type].empty;
+		else
+			len += argsizes[desc->args[i].arg_type].wdata(
+					desc->args + i, order->args[i]);
+		
+	}
+	buf = calloc(1,len);
+	for (i = 0, len = 0 ; i < desc->nargs ; i ++){
+		len += argsizes[desc->args[i].arg_type].write(
+				desc->args + i, order->args[i], buf + len);
+	}
 
+/*
+	server_send_format(server, "MsgInsertOrder", 
+			"iii0r", order->oid, order->slot, order->type, 
+			len / 4, buf);
+*/
 	return 0;
 }
+
+
+static int 
+arg_list_size_get(struct order_arg *arg, union order_arg_data *data){
+	printf("Not implemented yet!!\n");
+	return 0;
+}
+static int 
+arg_string_size_get(struct order_arg *arg, union order_arg_data *data){
+	struct order_arg_string *str;
+	int len;
+	assert(arg); assert(data);
+
+	str = &(data->string);
+
+	if (!str->str)
+		return sizeof(uint32_t) * 2;	
+	
+	len = strlen(str->str);
+	if (len > str->maxlen)
+		len = str->maxlen;
+	return sizeof(uint32_t) * 2 + len;
+
+}
+
+static int 
+arg_string_write(struct order_arg *arg, union order_arg_data *data, char *buf){
+	struct order_arg_string *str;
+	int len;
+	int *ibuf;
+
+	len = arg_string_size_get(arg, data);
+
+	str = &(data->string);
+
+	ibuf = (void*)buf;
+	*ibuf ++ = 0; /* Maxlen: Read-only */
+	*ibuf ++ = htonl(len);
+	strncpy((char*)ibuf, str->str, len - sizeof(uint32_t) * 2); 
+
+	return len;
+}
+
