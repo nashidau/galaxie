@@ -529,6 +529,8 @@ order_probe_cb(void *odv, struct object *obj, struct order_desc *desc,
 	ewl_container_reset(EWL_CONTAINER(od->argbox));
 
 	printf("Order is a %s\n", desc->name);
+	od->desc = desc;
+	od->order = order;
 
 	for (i = 0 ; i < desc->nargs ; i ++){
 		printf("Arg is a %s: %d\n",desc->args[i].name,
@@ -1010,7 +1012,7 @@ string_save(struct ewl_order_data *id, struct order_arg *arg,
 
 	if (str->str) free(str->str);
 	str->str = ewl_text_text_get(EWL_TEXT(str->data));
-	
+printf("New name is %s\n",str->str);	
 	ewl_widget_destroy(str->data);
 	
 	return 0;

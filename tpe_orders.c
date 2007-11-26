@@ -841,12 +841,17 @@ tpe_orders_order_update(struct tpe *tpe, struct order *order){
 		len += argsizes[desc->args[i].arg_type].write(
 				desc->args + i, order->args[i], buf + len);
 	}
-
-/*
-	server_send_format(server, "MsgInsertOrder", 
-			"iii0r", order->oid, order->slot, order->type, 
+	
+	{ 
+		struct object *obj;
+		obj = tpe_obj_obj_get_by_id(tpe,order->oid);
+		
+	server_send_format(obj->server, "MsgInsertOrder", 
+			NULL, NULL,
+			"iii00r", order->oid, order->slot, order->type, 
 			len / 4, buf);
-*/
+	}
+
 	return 0;
 }
 
