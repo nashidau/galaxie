@@ -52,6 +52,7 @@ static const int argsizesempty[] = {
 static int arg_list_size_get(struct order_arg *, union order_arg_data *);
 static int arg_string_size_get(struct order_arg *, union order_arg_data *);
 static int arg_string_write(struct order_arg *, union order_arg_data *, char *);
+static int arg_object_write(struct order_arg *, union order_arg_data *, char *);
 static const struct argsize {
 	int empty;
 	int (*wdata)(struct order_arg *, union order_arg_data *);
@@ -59,7 +60,7 @@ static const struct argsize {
 } argsizes[] = {
 	{ /* ARG_COORD */   sizeof(int64_t) * 3,	NULL,NULL },
 	{ /* ARG_TIME  */   sizeof(int32_t) * 2,	NULL,NULL },
-	{ /* ARG_OBJECT */  sizeof(int32_t),		NULL,NULL },
+	{ /* ARG_OBJECT */  sizeof(int32_t),		NULL,arg_object_write },
 	{ /* ARG_PLAYER */  sizeof(int32_t) * 2,	NULL,NULL },
 	{ /* ARG_RELCOORD*/ sizeof(int32_t) + sizeof(int64_t) * 3, NULL,NULL },
 	{ /* ARG_RANGE */   sizeof(int32_t) * 4,	NULL,NULL },
@@ -841,14 +842,16 @@ tpe_orders_order_update(struct tpe *tpe, struct order *order){
 		len += argsizes[desc->args[i].arg_type].write(
 				desc->args + i, order->args[i], buf + len);
 	}
-	
+
+
+
 	{ 
 		struct object *obj;
 		obj = tpe_obj_obj_get_by_id(tpe,order->oid);
 		
 	server_send_format(obj->server, "MsgInsertOrder", 
 			NULL, NULL,
-			"iii00r", order->oid, order->slot, order->type, 
+			"Viii00r", order->oid, order->slot, order->type, 
 			len / 4, buf);
 	}
 
@@ -875,8 +878,11 @@ arg_string_size_get(struct order_arg *arg, union order_arg_data *data){
 	len = strlen(str->str);
 	if (len > str->maxlen)
 		len = str->maxlen;
+	/* For TP03 this is a hack, for TP04 we shouldn't do this */
+	if (len % 4)
+		len += 4 - len % 4;
+	assert(len % 4 == 0);
 	return sizeof(uint32_t) * 2 + len;
-
 }
 
 static int 
@@ -895,5 +901,15 @@ arg_string_write(struct order_arg *arg, union order_arg_data *data, char *buf){
 	strncpy((char*)ibuf, str->str, len - sizeof(uint32_t) * 2); 
 
 	return len;
+}
+
+
+static int 
+arg_object_write(struct order_arg *arg, union order_arg_data *data, char *buf){
+	int *ibuf;
+
+	ibuf = (void*)buf;
+	*ibuf = htonl(data->object.oid);
+	return 4;
 }
 

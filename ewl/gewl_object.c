@@ -577,6 +577,9 @@ gewl_order_submit(Ewl_Widget *widget, void *data, void *odv){
 				order->args[i]);
 	}
 
+	/* FIXME: Need to update UI, and display a message until it is
+	 * submittied */
+
 	tpe_orders_order_update(od->planet->tpe, order);
 }
 
@@ -665,9 +668,12 @@ gewl_arg_object(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *orderinfo){
 	Ewl_Widget *box;
 	Ewl_Widget *entry;
+	struct order_arg_object *objectarg;
 
 	assert(od);
 	assert(arg);
+
+	objectarg = &(orderinfo->object);
 
 	box = gewl_box_with_label(arg->name, od->argbox);
 
@@ -676,7 +682,9 @@ gewl_arg_object(struct ewl_order_data *od, struct order_arg *arg,
 	ewl_container_child_append(EWL_CONTAINER(box), entry);
 	ewl_widget_show(entry);
 
+	objectarg->data = entry;
 }
+
 static void
 gewl_arg_player(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *orderinfo){
@@ -981,7 +989,21 @@ turn_save(struct ewl_order_data *id, struct order_arg *arg,
 static int
 object_save(struct ewl_order_data *id, struct order_arg *arg,
 		union order_arg_data *argdata){
-	return 1;
+	struct order_arg_object *argobject;
+	Ewl_Widget *entry;
+	const char *objid;
+
+	argobject = &(argdata->object);
+	
+	entry = argobject->data;
+	
+	objid = ewl_text_text_get(EWL_TEXT(entry));
+
+	argobject->oid = strtol(objid,NULL,0);
+
+	argobject->data = NULL;
+
+	return 0;
 }
 static int
 player_save(struct ewl_order_data *id, struct order_arg *arg,
