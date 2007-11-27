@@ -1,5 +1,5 @@
 PKGCONFIG=pkg-config
-PKGS='evas ecore ecore-con ecore-job edje ewl imlib2 lua5.1'
+PKGS='evas ecore ecore-con ecore-job edje ewl imlib2 lua5.1 talloc'
 
 CFLAGS+=`${PKGCONFIG} --cflags ${PKGS}`
 LDFLAGS+=`${PKGCONFIG} --libs ${PKGS}`
@@ -148,10 +148,10 @@ $Iwindow.png : $Iwindow.svg
 	inkscape -j --export-area-drawing -w 300 -h 400 --export-png $@ $<
 
 clean: 
-	rm -f **/*.o ailist.h ${EDJE}
+	rm -f *.o */*.o ailist.h ${EDJE}
 
 reallyclean: 
-	rm -f **/*.o ailist.h ${EDJE} ${IMAGES}
+	rm -f *.o */*.o ailist.h ${EDJE} ${IMAGES}
 
 veryclean: clean
 	rm -f  ${IMAGES}
