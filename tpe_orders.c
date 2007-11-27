@@ -890,15 +890,22 @@ arg_string_write(struct order_arg *arg, union order_arg_data *data, char *buf){
 	struct order_arg_string *str;
 	int len;
 	int *ibuf;
+	int slen;
 
 	len = arg_string_size_get(arg, data);
-
 	str = &(data->string);
+
+	if (str->str){
+		slen = strlen(str->str);
+		if (slen % 4) slen += 4 - slen % 4;
+	} else 
+		slen = 0;
+
 
 	ibuf = (void*)buf;
 	*ibuf ++ = 0; /* Maxlen: Read-only */
-	*ibuf ++ = htonl(len);
-	strncpy((char*)ibuf, str->str, len - sizeof(uint32_t) * 2); 
+	*ibuf ++ = htonl(slen);
+	strncpy((char*)ibuf, str->str, slen);
 
 	return len;
 }
