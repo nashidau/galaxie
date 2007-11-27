@@ -706,36 +706,41 @@ gewl_arg_player(struct ewl_order_data *od, struct order_arg *arg,
 static void
 gewl_arg_relcoords(struct ewl_order_data *od, struct order_arg *arg,
 		union order_arg_data *orderinfo){
+	Ewl_Widget **entries;
 	Ewl_Widget *box;
-	Ewl_Widget *entry;
+	struct order_arg_relcoord *coord;
 
 	assert(od);
 	assert(arg);
+
+	entries = calloc(4,sizeof(Ewl_Widget*));
+	coord = &(orderinfo->relcoord);
+	coord->data = entries;
 
 	box = gewl_box_with_label(arg->name, od->argbox);
 
 	/* FIXME: Should use a drop down or similar */
 	box = gewl_box_with_label("To:", od->argbox);
-	entry = ewl_entry_new();
+	entries[0] = ewl_entry_new();
 	//if (arg->max > 0)
 	//	ewl_text_length_maximum_set(EWL_TEXT(entry), arg->max);
-	ewl_container_child_append(EWL_CONTAINER(box), entry);
-	ewl_widget_show(entry);
+	ewl_container_child_append(EWL_CONTAINER(box), entries[0]);
+	ewl_widget_show(entries[0]);
 
 	box = gewl_box_with_label("X:", od->argbox);
-	entry = ewl_entry_new();
-	ewl_container_child_append(EWL_CONTAINER(box), entry);
-	ewl_widget_show(entry);
+	entries[1] = ewl_entry_new();
+	ewl_container_child_append(EWL_CONTAINER(box), entries[1]);
+	ewl_widget_show(entries[1]);
 
 	box = gewl_box_with_label("Y:", od->argbox);
-	entry = ewl_entry_new();
-	ewl_container_child_append(EWL_CONTAINER(box), entry);
-	ewl_widget_show(entry);
+	entries[2] = ewl_entry_new();
+	ewl_container_child_append(EWL_CONTAINER(box), entries[2]);
+	ewl_widget_show(entries[2]);
 
 	box = gewl_box_with_label("Z:", od->argbox);
-	entry = ewl_entry_new();
-	ewl_container_child_append(EWL_CONTAINER(box), entry);
-	ewl_widget_show(entry);
+	entries[3] = ewl_entry_new();
+	ewl_container_child_append(EWL_CONTAINER(box), entries[3]);
+	ewl_widget_show(entries[3]);
 
 }
 static void 
@@ -749,14 +754,15 @@ gewl_arg_range(struct ewl_order_data *od, struct order_arg *arg,
 
 	range = &orderinfo->range;
 
-	/* FIXME: Should use a drop down or similar */
 	entry = ewl_spinner_new();
 	ewl_range_minimum_value_set(EWL_RANGE(entry),range->min);
 	ewl_range_maximum_value_set(EWL_RANGE(entry),range->max);
 	ewl_range_step_set(EWL_RANGE(entry), range->inc);
-	ewl_spinner_digits_set(EWL_SPINNER(entry), log(range->max) / log(10));
+	ewl_spinner_digits_set(EWL_SPINNER(entry), 0);
 	ewl_container_child_append(EWL_CONTAINER(box), entry);
 	ewl_widget_show(entry);
+
+	range->data = entry;
 
 }
 static void
@@ -1008,17 +1014,65 @@ object_save(struct ewl_order_data *id, struct order_arg *arg,
 static int
 player_save(struct ewl_order_data *id, struct order_arg *arg,
 		union order_arg_data *argdata){
+	struct order_arg_player *player;
+	Ewl_Widget *combo;
+	//const char *playername;
+	Ewl_Selection_Idx *index;
+
+	player = &(argdata->player);
+
+	combo = player->data;
+
+	index = ewl_mvc_selected_get(EWL_MVC(combo));
+	if (index == NULL){
+		printf("No selected item\n");
+		return -1;
+	}
+	
+	/* FIXME: This is broken */
+	player->pid = index->row;
+
+
 	return 1;
 }
 static int
 relc_save(struct ewl_order_data *id, struct order_arg *arg,
 		union order_arg_data *argdata){
-	return 1;
+	struct order_arg_relcoord *coords;
+	int i;
+	Ewl_Widget **entries;
+	const char *objid;
+
+	coords = &(argdata->relcoord);
+
+	assert(coords->data);
+	entries = coords->data;
+
+	/* FIXME: Should be a drop down of some sort */
+	objid = ewl_text_text_get(EWL_TEXT(entries[0]));
+	coords->obj = strtol(objid, NULL, 0);
+
+	coords->x = ewl_range_value_get(EWL_RANGE(entries[1]));
+	coords->y = ewl_range_value_get(EWL_RANGE(entries[2]));
+	coords->z = ewl_range_value_get(EWL_RANGE(entries[3]));
+
+	for (i = 0 ; i < 3 ; i ++)
+		ewl_widget_destroy(entries[i]);
+	free(entries);
+	coords->data = NULL;
+
+	return 0;
 }
+
 static int
 range_save(struct ewl_order_data *id, struct order_arg *arg,
 		union order_arg_data *argdata){
-	return 1;
+	struct order_arg_range *range;
+
+	range = &(argdata->range);
+	range->value = ewl_range_value_get(EWL_RANGE(range->data));
+
+	return 0;
 }
 static int
 list_save(struct ewl_order_data *id, struct order_arg *arg,
@@ -1034,7 +1088,6 @@ string_save(struct ewl_order_data *id, struct order_arg *arg,
 
 	if (str->str) free(str->str);
 	str->str = ewl_text_text_get(EWL_TEXT(str->data));
-printf("New name is %s\n",str->str);	
 	ewl_widget_destroy(str->data);
 	
 	return 0;

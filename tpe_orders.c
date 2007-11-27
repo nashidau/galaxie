@@ -49,6 +49,11 @@ static const int argsizesempty[] = {
 };
 
 
+static int arg_coord_write(struct order_arg *, union order_arg_data *, char *);
+static int arg_time_write(struct order_arg *, union order_arg_data *, char *);
+static int arg_player_write(struct order_arg *, union order_arg_data *, char *);
+static int arg_relcoord_write(struct order_arg *, union order_arg_data *, char *);
+static int arg_range_write(struct order_arg *, union order_arg_data *, char *);
 static int arg_list_size_get(struct order_arg *, union order_arg_data *);
 static int arg_string_size_get(struct order_arg *, union order_arg_data *);
 static int arg_string_write(struct order_arg *, union order_arg_data *, char *);
@@ -58,12 +63,13 @@ static const struct argsize {
 	int (*wdata)(struct order_arg *, union order_arg_data *);
 	int (*write)(struct order_arg *, union order_arg_data *, char *buf);
 } argsizes[] = {
-	{ /* ARG_COORD */   sizeof(int64_t) * 3,	NULL,NULL },
-	{ /* ARG_TIME  */   sizeof(int32_t) * 2,	NULL,NULL },
+	{ /* ARG_COORD */   sizeof(int64_t) * 3,	NULL,arg_coord_write },
+	{ /* ARG_TIME  */   sizeof(int32_t) * 2,	NULL,arg_time_write },
 	{ /* ARG_OBJECT */  sizeof(int32_t),		NULL,arg_object_write },
-	{ /* ARG_PLAYER */  sizeof(int32_t) * 2,	NULL,NULL },
-	{ /* ARG_RELCOORD*/ sizeof(int32_t) + sizeof(int64_t) * 3, NULL,NULL },
-	{ /* ARG_RANGE */   sizeof(int32_t) * 4,	NULL,NULL },
+	{ /* ARG_PLAYER */  sizeof(int32_t) * 2,	NULL,arg_player_write },
+	{ /* ARG_RELCOORD*/ sizeof(int32_t) + sizeof(int64_t) * 3, NULL,
+							arg_relcoord_write },
+	{ /* ARG_RANGE */   sizeof(int32_t) * 4,	NULL,arg_range_write },
 	{ /* ARG_LIST */    sizeof(int32_t) * 4,	arg_list_size_get,NULL },
 	{ /* ARG_STRING */  
 	  sizeof(int32_t) * 2,	arg_string_size_get, arg_string_write },
@@ -858,6 +864,77 @@ tpe_orders_order_update(struct tpe *tpe, struct order *order){
 	return 0;
 }
 
+static int 
+arg_coord_write(struct order_arg *orderarg, union order_arg_data *orderdata, 
+		char *buf){
+	struct order_arg_coord *coord;
+	int64_t tmp[3];
+
+	coord = &(orderdata->coord);
+
+	tmp[0] = ntohll(coord->x);
+	tmp[1] = ntohll(coord->y);
+	tmp[2] = ntohll(coord->z);
+
+	memcpy(buf, tmp, 3 * sizeof(uint64_t));
+
+	return  3 * sizeof(uint64_t);
+}
+static int 
+arg_time_write(struct order_arg *orderarg, union order_arg_data *orderdata, 
+		char *buf){
+	struct order_arg_time *tm;
+	uint32_t tmp[2];
+
+	tm = &(orderdata->time);
+	tmp[0] = htonl(tm->turns);
+	tmp[1] = 0;
+	memcpy(buf, tmp, sizeof(uint32_t) * 2);
+	return 2 * sizeof(uint32_t);	
+}
+static int 
+arg_player_write(struct order_arg *orderarg, union order_arg_data *orderdata, 
+		char *buf){
+	struct order_arg_player *play;
+	uint32_t tmp[2];
+
+	play = &(orderdata->player);
+	tmp[0] = htonl(play->pid);
+	tmp[1] = 0;
+	memcpy(buf, tmp, sizeof(uint32_t) * 2);
+	return sizeof(uint32_t) * 2;
+}
+static int 
+arg_relcoord_write(struct order_arg *orderarg, union order_arg_data *orderdata,
+		char *buf){
+	struct order_arg_relcoord *relcoord;
+	int64_t tmp[3];
+	int32_t itmp;
+
+	relcoord = &(orderdata->relcoord);
+	itmp = htonl(relcoord->obj);
+	tmp[0] = htonl(relcoord->x);
+	tmp[1] = htonl(relcoord->y);
+	tmp[2] = htonl(relcoord->z);
+	memcpy(buf, &itmp, sizeof(int32_t));
+	memcpy(buf + sizeof(int32_t), tmp, sizeof(int64_t) * 3);
+
+	return sizeof(int32_t) + 3 * sizeof(int64_t);
+}
+
+static int 
+arg_range_write(struct order_arg *orderarg, union order_arg_data *orderdata, 
+		char *buf){
+	struct order_arg_range *range;
+	int32_t tmp;
+
+	range = &(orderdata->range);
+	tmp = htonl(range->value);
+	memcpy(buf, &tmp, sizeof(int32_t));
+	memset(buf + sizeof(int32_t), 0, sizeof(int32_t) * 3);
+
+	return sizeof(int32_t) * 4;
+}
 
 static int 
 arg_list_size_get(struct order_arg *arg, union order_arg_data *data){
