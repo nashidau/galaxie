@@ -1,5 +1,7 @@
 TPSERVER:
 	- login with an empty password causes a crash.
 		[FIXED I believe]
-	- 
+	- Sending a Rename Fleet order, with a malformed string causes a
+		crash.  In particular if length of string is longer than
+		buffer... All bad.
 
