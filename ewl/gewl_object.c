@@ -781,7 +781,7 @@ gewl_arg_list(struct ewl_order_data *od, struct order_arg *arg,
 	gal = calloc(1,sizeof(struct gewl_arg_list));
 	gal->list = list;
 	gal->box = od->argbox;
-	
+	list->data = gal;
 
 	box = ewl_hbox_new();
 	ewl_container_child_append(EWL_CONTAINER(od->argbox), box);
@@ -824,6 +824,7 @@ gewl_arg_list_add_row_cb(Ewl_Widget *w, void *data, void *galv){
 
 static Ewl_Widget *
 gewl_arg_list_row_add(struct gewl_arg_list *gal){
+	struct gewl_arg_list_selections *sel;
 	Ewl_Widget *combo;
 	Ewl_Widget *spinner;
 	Ewl_Widget *label;
@@ -856,6 +857,12 @@ gewl_arg_list_row_add(struct gewl_arg_list *gal){
 	/* Now we have a spinner, associate it to the combo callback */
 	ewl_callback_append(combo, EWL_CALLBACK_VALUE_CHANGED,
 					gewl_arg_list_value_changed, spinner);
+
+	sel = calloc(1,sizeof(struct gewl_arg_list));
+	sel->spinner = spinner;
+	sel->combo = combo;
+	sel->next = gal->selections;
+	gal->selections = sel;
 
 	return box;
 }
@@ -1077,7 +1084,32 @@ range_save(struct ewl_order_data *id, struct order_arg *arg,
 static int
 list_save(struct ewl_order_data *id, struct order_arg *arg,
 		union order_arg_data *argdata){
-	return 1;
+	struct order_arg_list *list;
+	struct gewl_arg_list *gal;
+	struct gewl_arg_list_selections *sel;
+	struct order_arg_list_selection *argsels;
+	int i,n;
+
+	list = &(argdata->list);
+	gal = list->data;
+
+	for (sel = gal->selections, n = 0 ; sel ; sel =sel->next){
+		n ++;
+	}
+
+	argsels = calloc(n, sizeof(struct order_arg_list_selection));
+	list->nselections = n;
+	list->selections = argsels;
+
+	for (i = 0 , sel = gal->selections ; sel ; sel = sel->next, i ++){
+		Ewl_Selection_Idx *idx;
+	
+		argsels[i].count = ewl_range_value_get(EWL_RANGE(sel->spinner));
+		idx = ewl_mvc_selected_get(EWL_MVC(sel->combo));
+		argsels[i].selection = list->options[idx->row].id;
+	}
+	
+	return 0;
 }
 static int
 string_save(struct ewl_order_data *id, struct order_arg *arg,

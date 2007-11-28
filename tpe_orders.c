@@ -55,6 +55,7 @@ static int arg_player_write(struct order_arg *, union order_arg_data *, char *);
 static int arg_relcoord_write(struct order_arg *, union order_arg_data *, char *);
 static int arg_range_write(struct order_arg *, union order_arg_data *, char *);
 static int arg_list_size_get(struct order_arg *, union order_arg_data *);
+static int arg_list_write(struct order_arg *, union order_arg_data *,char*);
 static int arg_string_size_get(struct order_arg *, union order_arg_data *);
 static int arg_string_write(struct order_arg *, union order_arg_data *, char *);
 static int arg_object_write(struct order_arg *, union order_arg_data *, char *);
@@ -70,7 +71,8 @@ static const struct argsize {
 	{ /* ARG_RELCOORD*/ sizeof(int32_t) + sizeof(int64_t) * 3, NULL,
 							arg_relcoord_write },
 	{ /* ARG_RANGE */   sizeof(int32_t) * 4,	NULL,arg_range_write },
-	{ /* ARG_LIST */    sizeof(int32_t) * 4,	arg_list_size_get,NULL },
+	{ /* ARG_LIST */    sizeof(int32_t) * 4,	arg_list_size_get,
+							arg_list_write },
 	{ /* ARG_STRING */  
 	  sizeof(int32_t) * 2,	arg_string_size_get, arg_string_write },
 	{ /* ARG_REF */     sizeof(int32_t) * 3,	NULL,NULL },
@@ -937,9 +939,35 @@ arg_range_write(struct order_arg *orderarg, union order_arg_data *orderdata,
 }
 
 static int 
-arg_list_size_get(struct order_arg *arg, union order_arg_data *data){
-	printf("Not implemented yet!!\n");
-	return 0;
+arg_list_size_get(struct order_arg *arg, union order_arg_data *orderdata){
+	return orderdata->list.nselections * sizeof(uint32_t) * 2 + 
+			sizeof(uint32_t) * 4;
+}
+
+
+static int 
+arg_list_write(struct order_arg *arg, union order_arg_data *orderdata, char *buf){
+	struct order_arg_list *list;
+	int32_t *tmp;
+	int i;
+
+	list = &(orderdata->list);
+
+	tmp = calloc(sizeof(uint32_t),
+			2 * list->nselections + 4);
+	tmp[3] = htonl(list->nselections);
+	for (i = 0 ; i < list->nselections ; i ++){
+		printf("%d %d\n",
+		(list->selections[i].selection),
+		(list->selections[i].count));
+		tmp[4 + i * 2] = htonl(list->selections[i].selection);
+		tmp[4 + i * 2 + 1] = htonl(list->selections[i].count);
+	}
+
+	memcpy(buf,tmp,(2 * list->nselections + 4) * sizeof(uint32_t));
+	free(tmp);
+
+	return (2 * list->nselections + 4) * sizeof(uint32_t);
 }
 static int 
 arg_string_size_get(struct order_arg *arg, union order_arg_data *data){

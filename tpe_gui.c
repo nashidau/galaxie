@@ -1412,10 +1412,8 @@ reference_object_show(void *idv, Evas *e, Evas_Object *eo, void *event){
 		/* FXME: Warp pointer to window? */
 		evas_object_raise(guiobj->info);
 	} else {
-		o = gui_objectwindow_add(gui);
 
-		gui_objectbox_object_set(gui, o, obj);
-
+		o = tpe_ewl_planet_add(gui, obj);
 		evas_object_show(o);
 
 		if (guiobj == NULL){

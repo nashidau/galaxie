@@ -65,7 +65,6 @@ struct order_arg_list_option {
 	int id;
 	int max;
 	char *option;
-	void *data;
 };
 struct order_arg_list_selection {
 	uint32_t selection;
@@ -76,6 +75,7 @@ struct order_arg_list {
 	struct order_arg_list_option *options;
 	uint32_t nselections;
 	struct order_arg_list_selection *selections;
+	void *data;
 };
 
 
