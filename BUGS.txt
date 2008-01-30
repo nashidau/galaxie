@@ -4,4 +4,6 @@ TPSERVER:
 	- Sending a Rename Fleet order, with a malformed string causes a
 		crash.  In particular if length of string is longer than
 		buffer... All bad.
+	- Un-inhabited worlds... what is the convention.
+		- What is the owner ID?
 

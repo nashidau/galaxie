@@ -162,6 +162,9 @@ printf("orders add\n");
 	ewl_view_widget_fetch_set(view, orders_widget_fetch);
 	ewl_view_header_fetch_set(view, planet_header_widget_fetch);
 
+#warning Tree2
+#if 0
+
         tree = ewl_tree2_new();
 	list->tree = tree;
         ewl_container_child_append(EWL_CONTAINER(scroll), tree);
@@ -171,6 +174,7 @@ printf("orders add\n");
 	ewl_tree2_column_count_set(EWL_TREE2(tree), 1); /* FIXME */
 	ewl_mvc_data_set(EWL_MVC(tree), list); /* FIXME */
 	ewl_widget_show(tree);
+#endif
 	ewl_widget_show(scroll);
 	
 	return scroll;
@@ -244,6 +248,8 @@ void gui_list_planet_add(struct gui *gui){
 	ewl_view_widget_fetch_set(view, planet_widget_fetch);
 	ewl_view_header_fetch_set(view, planet_header_widget_fetch);
 
+#warning Tree 2 2
+#if 0
         tree = ewl_tree2_new();
         ewl_container_child_append(EWL_CONTAINER(wg), tree);
         ewl_object_fill_policy_set(EWL_OBJECT(tree), EWL_FLAG_FILL_ALL);
@@ -252,6 +258,7 @@ void gui_list_planet_add(struct gui *gui){
 	ewl_tree2_column_count_set(EWL_TREE2(tree), 3); /* FIXME */
 	ewl_mvc_data_set(EWL_MVC(tree), list); /* FIXME */
 	ewl_widget_show(tree);
+#endif
 
 	ewl_widget_show(win);
 }

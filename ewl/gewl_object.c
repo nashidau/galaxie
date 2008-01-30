@@ -194,11 +194,13 @@ tpe_ewl_planet_add(struct gui *gui, struct object *planet){
 	ewl_container_child_append(EWL_CONTAINER(box), p->icon);
 	ewl_widget_show(p->icon);
 
-	p->resources = ewl_tree_new(5); /* XXX */
+	p->resources = ewl_tree_new(); /* XXX */
 	ewl_container_child_append(EWL_CONTAINER(box), p->resources);
+#ifdef NEWTREE
 	ewl_tree_headers_set(EWL_TREE(p->resources),(char**)resheaders);
 	ewl_object_fill_policy_set(EWL_OBJECT(p->resources),EWL_FLAG_FILL_FILL);
 	ewl_widget_show(p->resources);
+#endif
 
 	p->children = ewl_grid_new();
 	ewl_container_child_append(EWL_CONTAINER(box), p->children);
@@ -209,13 +211,13 @@ tpe_ewl_planet_add(struct gui *gui, struct object *planet){
 	ewl_grid_row_fixed_h_set(EWL_GRID(p->children), 3, 50);
 	ewl_grid_row_preferred_h_use(EWL_GRID(p->children), 2);
 	ewl_widget_show(p->children);
-
+#if 0
 	p->orders = ewl_tree_new(2); /* XXX */
 	ewl_container_child_append(EWL_CONTAINER(box), p->orders);
 	ewl_tree_headers_set(EWL_TREE(p->orders), (char**)orderheaders);
 	ewl_object_fill_policy_set(EWL_OBJECT(p->orders), EWL_FLAG_FILL_FILL);
 	ewl_widget_show(p->orders);
-
+#endif
 	/* TODO: Align right */
 	p->edit = ewl_button_new();
 	ewl_button_label_set(EWL_BUTTON(p->edit), "Edit Orders");
@@ -338,11 +340,11 @@ tpe_ewl_planet_clear(struct ewl_planet_data *p, int everything){
 	if (everything) 
 		fprintf(stderr, "%s:%s: Everything flag not implemented\n",
 				__FILE__, __FUNCTION__);
-
+#ifdef NEWTREE
 	tpe_ewl_tree_clear(p->resources);
 
 	tpe_ewl_tree_clear(p->orders);
-
+#endif
 	//ewl_grid_init(EWL_GRID(p->children));
 	//ewl_grid_dimensions_set(EWL_GRID(p->children), 3,3);
 	
@@ -351,16 +353,17 @@ tpe_ewl_planet_clear(struct ewl_planet_data *p, int everything){
 
 static void 
 tpe_ewl_tree_clear(Ewl_Widget *tree){
+#ifdef NEWTREE
 	Ewl_Widget *row;
-
 	while ((row = ewl_tree_row_find(EWL_TREE(tree), 0)))
 		ewl_tree_row_destroy(EWL_TREE(tree), EWL_ROW(row));
-
+#endif
 }
 
 static void
 tpe_ewl_resource_append(struct tpe *tpe, Ewl_Widget *tree, 
 		struct planet_resource *res){
+#ifdef NEWTREE
 	struct resourcedescription *rdes;
 	Ewl_Widget *widgets[5];
 	char *labels[4];
@@ -396,7 +399,7 @@ tpe_ewl_resource_append(struct tpe *tpe, Ewl_Widget *tree,
 
 	ewl_tree_row_add(EWL_TREE(tree), NULL, widgets);
 	free(labels[1]); free(labels[2]); free(labels[3]); 
-
+#endif
 }
 
 static void
@@ -438,13 +441,14 @@ tpe_ewl_edit_orders(Ewl_Widget *button, void *ev_data, void *planetv){
 	ewl_widget_show(od->pane1);
 
 	/* List of current orders */
-	od->curorders = ewl_tree_new(2); /* XXX */
+#ifdef NEWTREE
+	od->curorders = ewl_tree_new(); /* XXX */
 	ewl_container_child_append(EWL_CONTAINER(od->pane1), od->curorders);
 	ewl_tree_headers_set(EWL_TREE(od->curorders), (char**)orderheaders);
 	ewl_object_fill_policy_set(EWL_OBJECT(od->curorders), 
 			EWL_FLAG_FILL_FILL);
 	ewl_widget_show(od->curorders);
-
+#endif
 	od->addorders = ewl_vbox_new();
 	ewl_container_child_append(EWL_CONTAINER(od->pane1), od->addorders);
 	ewl_object_fill_policy_set(EWL_OBJECT(od->addorders), 
@@ -452,7 +456,7 @@ tpe_ewl_edit_orders(Ewl_Widget *button, void *ev_data, void *planetv){
 	ewl_widget_show(od->addorders);
 
 	/* List of possible orders */
-
+#ifdef NEWTREE
 	od->posorders = ewl_tree_new(1); /* XXX */
 	ewl_container_child_append(EWL_CONTAINER(od->addorders), od->posorders);
 	ewl_tree_headers_set(EWL_TREE(od->posorders), (char**)orderheaders);
@@ -460,7 +464,7 @@ tpe_ewl_edit_orders(Ewl_Widget *button, void *ev_data, void *planetv){
 			EWL_FLAG_FILL_FILL);
 	ewl_tree_mode_set(EWL_TREE(od->posorders), EWL_SELECTION_MODE_SINGLE);
 	ewl_widget_show(od->posorders);
-
+#endif
 	ewl_widget_show(od->window);
 
 	/* Arguments for orders */
@@ -486,10 +490,11 @@ tpe_ewl_edit_orders(Ewl_Widget *button, void *ev_data, void *planetv){
 		label = ewl_label_new();
 		ewl_label_text_set(EWL_LABEL(label), oname);
 		ewl_widget_show(label);
-
+#ifdef NEWTREE
 		row = ewl_tree_row_add(EWL_TREE(od->posorders), NULL, &label);
 		ewl_callback_append(row, EWL_CALLBACK_CLICKED, 
 				order_type_selected, (void*)otype);
+#endif
 	}
 
 }
