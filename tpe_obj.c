@@ -105,7 +105,7 @@ tpe_obj_init(struct tpe *tpe){
 	tpe_sequence_register(tpe,
 			"MsgGetObjectDescriptionIDs",
 			"MsgListOfObjectDescriptionIDs",
-			"MsgGetObjectDescriptionsByID",
+			"MsgGetObjectDescriptions",
 			tpe_obj_object_description_updated,
 			tpe_obj_object_description_list_begin,
 			tpe_obj_object_description_list_end);
@@ -165,7 +165,6 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		free(o->orders);
 	}
 
-	if (msg->protocol == 4) msg->protocol = 3;
 	if (msg->protocol == 3){
 		/* Save children */
 		oldchildren = o->children;
@@ -187,7 +186,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		/* TP 04 */
 		printf("tp04 message\n");
 		n = tpe_util_parse_packet(msg->data, msg->end, 
-				"iissillp",
+				"iissial----p",
 				&o->oid, &o->type, &o->name, &o->description,
 				&o->parent,  
 				&o->nchildren, &o->children, 

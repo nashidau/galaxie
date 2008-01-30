@@ -247,10 +247,10 @@ server_connect(struct tpe *tpe,
 	server->magic = SERVER_MAGIC;
 	
 	/* Start by assuming TP 4 */
-//	server->header = htonl(('T' << 24) | ('P' << 16) | (4 << 8) | 0);  
-//	server->protocol = 4;
-	server->header = htonl(('T' << 24) | ('P' << 16) | ('0' << 8) | '3');
-	server->protocol = 3;
+	server->header = htonl(('T' << 24) | ('P' << 16) | (4 << 8) | 0);  
+	server->protocol = 4;
+	//server->header = htonl(('T' << 24) | ('P' << 16) | ('0' << 8) | '3');
+	//server->protocol = 3;
 	
 	server->seq = 1;
 	
@@ -347,6 +347,7 @@ server_receive(void *udata, int ecore_event_type, void *edata){
 	while (remaining > 16){
 		header = (uint32_t *)start;
 		magic = header[0];
+		/* FIXME: Handle tp03 or tp04 packets */
 		if (server->header != magic){
 			printf("Invalid magic ;%.4s;\n",(char *)&magic);
 			exit(1);
@@ -404,9 +405,9 @@ server_handle_packet(struct server *server, int seq, int type,
 	msg->data = malloc(len);
 	memcpy(msg->data, (char *)data + 16, len);
 	msg->end = (char*)msg->data + len;
-	msg->protocol = 3; /* FIXME */
+	msg->protocol = 4; /* FIXME */
 
-	//printf("Handling Seq %d [%s]\n",seq,event);
+	printf("Handling Seq %d [%s]\n",seq,event);
 	if (seq){
 		for (cb = server->cbs ; cb ; cb = next){
 			next = cb->next;
