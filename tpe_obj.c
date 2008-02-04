@@ -32,30 +32,90 @@ struct tpe_obj {
 	struct object *home;
 };
 
-struct object otmp;
-#define OFFSET(field) ((char*)&otmp - (char*)&otmp.field)
+struct objectdesc {
+	int id;
 
-struct parseitem objparse[] = {
-	{ PARSETYPE_INT, OFFSET(oid), 0, NULL },
-	{ PARSETYPE_INT, OFFSET(type), 0, NULL },
-	{ PARSETYPE_STRING, OFFSET(name), 0, NULL },
-	{ PARSETYPE_LONG, OFFSET(pos.x), 0, NULL },
-	{ PARSETYPE_LONG, OFFSET(pos.y), 0, NULL },
-	{ PARSETYPE_LONG, OFFSET(pos.z), 0, NULL },
-	{ PARSETYPE_LONG, OFFSET(vel.x), 0, NULL },
-	{ PARSETYPE_LONG, OFFSET(vel.y), 0, NULL },
-	{ PARSETYPE_LONG, OFFSET(vel.z), 0, NULL },
-	{ PARSETYPE_ARRAYOF | PARSETYPE_INT, 
-			OFFSET(children), OFFSET(nchildren), NULL },
-	{ PARSETYPE_ARRAYOF | PARSETYPE_INT, 
-			OFFSET(ordertypes), OFFSET(nordertypes), NULL },
-	{ PARSETYPE_INT, OFFSET(type), 0, NULL },
-	{ PARSETYPE_LONG, OFFSET(updated), 0, NULL },
-	{ PARSETYPE_INT, -1, 0, NULL },
-	{ PARSETYPE_INT, -1, 0, NULL },
-	{ PARSETYPE_END, -1, 0, NULL },
+	const char *name;
+	const char *description;
+
+	uint64_t modtime;
+
+	int nprops;
+	struct objectdescprop *props;
 };
 
+struct objectdescprop {
+	int id;
+
+	const char *name;
+	const char *description;
+
+	int nparams;
+	struct objectdescparam *params;
+};
+
+struct objectdescparam {
+	int id;
+	const char *name;
+	const char *description;
+};
+
+
+struct object otmp;
+#define OFFSET(field) ((char*)&otmp.field - (char*)&otmp)
+
+struct parseitem objparse[] = {
+	{ PARSETYPE_INT, OFFSET(oid), 0, NULL , 0 },
+	{ PARSETYPE_INT, OFFSET(type), 0, NULL , 0 },
+	{ PARSETYPE_STRING, OFFSET(name), 0, NULL , 0 },
+	{ PARSETYPE_LONG, OFFSET(pos.x), 0, NULL , 0 },
+	{ PARSETYPE_LONG, OFFSET(pos.y), 0, NULL , 0 },
+	{ PARSETYPE_LONG, OFFSET(pos.z), 0, NULL , 0 },
+	{ PARSETYPE_LONG, OFFSET(vel.x), 0, NULL , 0 },
+	{ PARSETYPE_LONG, OFFSET(vel.y), 0, NULL , 0 },
+	{ PARSETYPE_LONG, OFFSET(vel.z), 0, NULL , 0 },
+	{ PARSETYPE_ARRAYOF | PARSETYPE_INT, 
+			OFFSET(children), OFFSET(nchildren), NULL , 0 },
+	{ PARSETYPE_ARRAYOF | PARSETYPE_INT, 
+			OFFSET(ordertypes), OFFSET(nordertypes), NULL , 0 },
+	{ PARSETYPE_INT, OFFSET(type), 0, NULL , 0 },
+	{ PARSETYPE_LONG, OFFSET(updated), 0, NULL , 0 },
+	{ PARSETYPE_INT, -1, 0, NULL , 0 },
+	{ PARSETYPE_INT, -1, 0, NULL , 0 },
+	{ PARSETYPE_END, -1, 0, NULL, 0 }
+};
+
+struct objectdescparam odpmtmp;
+#define DPMOFFSET(field) ((char*)&odpmtmp.field - (char*)&odpmtmp)
+struct parseitem objectdescparam[] = {
+	{ PARSETYPE_STRING, DPMOFFSET(name), 0, NULL, 0 },
+	{ PARSETYPE_INT,    DPMOFFSET(id), 0, NULL, 0 },
+	{ PARSETYPE_STRING, DPMOFFSET(description), 0, NULL, 0 },
+	{ PARSETYPE_END, -1, 0, NULL, 0 }
+};
+
+struct objectdescprop odptmp;
+#define DPOFFSET(field) ((char*)&odptmp.field - (char*)&odptmp)
+struct parseitem objectdescprops[] = {
+	{ PARSETYPE_INT,   DPOFFSET(id), 0, NULL , 0 },
+	{ PARSETYPE_STRING,DPOFFSET(name), 0, NULL , 0 },
+	{ PARSETYPE_STRING,DPOFFSET(description), 0, NULL , 0 },
+	{ PARSETYPE_COMPLEX,DPOFFSET(params), DPOFFSET(nparams), 
+			objectdescparam, sizeof(struct objectdescparam)},
+	{ PARSETYPE_END,   -1, 0, NULL, 0 }
+};
+
+
+struct objectdesc objectdesctmp;
+#define DOFFSET(field) ((char*)&objectdesctmp.field - (char*)&objectdesctmp)
+struct parseitem objdescparse[] = {
+	{ PARSETYPE_STRING, DOFFSET(name), 0, NULL , 0 },
+	{ PARSETYPE_STRING, DOFFSET(description), 0, NULL , 0 },
+	{ PARSETYPE_LONG,   DOFFSET(modtime), 0, NULL , 0 },
+	{ PARSETYPE_COMPLEX, DOFFSET(props), DOFFSET(nprops), 
+			objectdescprops , sizeof(struct objectdescprop)},
+	{ PARSETYPE_END,    -1, 0, NULL, 0 }
+};
 
 const char *const object_magic = "ObjectMagic";
 
@@ -67,12 +127,14 @@ static int tpe_obj_object_description_receive(void *data, int eventid, void *eve
 static void tpe_obj_object_description_list_begin(struct tpe *tpe);
 static void tpe_obj_object_description_list_end(struct tpe *tpe);
 static uint64_t tpe_obj_object_description_updated(struct tpe *, uint32_t odid);
+static void tpe_obj_object_description_dump(struct objectdesc *);
 
 static void tpe_obj_cleanup(struct tpe *tpe, struct object *o);
 
 static void tpe_obj_home_check(struct tpe *tpe, struct object *o);
 
 static void tpe_obj_update_children(struct tpe *tpe, struct server *server, struct object *o, int noldchildren, int *oldchildren);
+
 
 
 //static int tpe_obj_hash_compare_data(const void *, const void *);
@@ -184,14 +246,12 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		tpe_obj_update_children(tpe, msg->server, o,noldchildren,oldchildren);
 	} else if (msg->protocol == 4){
 		/* TP 04 */
-		printf("tp04 message\n");
 		n = tpe_util_parse_packet(msg->data, msg->end, 
 				"iissial----p",
 				&o->oid, &o->type, &o->name, &o->description,
 				&o->parent,  
 				&o->nchildren, &o->children, 
 				&o->updated,&end);
-		printf("%s (%s)\n",o->name,o->description);
 	} else {
 		printf("Unknown protocol %d\n",msg->protocol);
 		return 1;
@@ -597,31 +657,77 @@ tpe_obj_update_children(struct tpe *tpe, struct server *server, struct object *o
 }
 
 
-
+/**
+ * Object Descriptions
+ */
 
 static void 
 tpe_obj_object_description_list_begin(struct tpe *tpe){
+	printf("ObjDesc: List Begin\n");
 }
 static void 
 tpe_obj_object_description_list_end(struct tpe *tpe){
+	printf("ObjDesc: List End\n");
 
 }
 static uint64_t 
 tpe_obj_object_description_updated(struct tpe *tpe, uint32_t odid){
-	return 0;
+	printf("ObjDesc: Id Updated %d\n",odid);
+	return UINT64_MAX;
 }
 
 
 static int 
 tpe_obj_object_description_receive(void *data, int eventid, void *event){
 	struct msg *msg;
-	int tmp;
-	char *name;
+	int len;
+	long long modtime;
+	char *name,*description;
+	struct objectdesc *desc;
 
 	msg = event;
 
-	tpe_util_parse_packet(msg->data,msg->end,"is",&tmp,&name);
-	printf("Description of %s [%d]\n",name,tmp);
+	printf("Parsing object desc\n");
+	//tpe_util_parse_packet(msg->data,msg->end,"is",&tmp,&name);
+	tpe_util_parse_packet(msg->data,msg->end, 
+			"ssli",&name,&description,&modtime, &len);
+	printf("Description of %s %s [%llx] %x\n",name,description, modtime,len);
+	desc = parse_block(msg->data, objdescparse, NULL, 
+			sizeof(struct objectdesc), (void *)&msg->end);
+
+	tpe_obj_object_description_dump(desc);
+
 	
 	return 1;
+}
+
+
+static void
+tpe_obj_object_description_dump(struct objectdesc *desc){
+	int i,j;
+	struct objectdescprop *prop;
+	struct objectdescparam *param;
+
+	if (!desc) {
+		printf("No object description given\n");
+		return;
+	}
+
+	printf("Object Description %d:\n",desc->id);
+	printf(" Name: %s\n",desc->name);
+	printf(" Description: %s\n", desc->description);
+	printf(" %d Properties:\n", desc->nprops);
+	for (i = 0 ; i < desc->nprops ; i ++){
+		prop = desc->props + i;
+		printf(" Property:\n");
+		printf("\tName: %s\n",prop->name);
+		printf("\tDescription: %s\n",prop->description);
+		printf("\t%d Params\n",prop->nparams);
+		for (j = 0 ; j < prop->nparams ; j ++){
+			param = prop->params + j;
+			printf("\tParam: %s\n",param->name);
+			printf("\t\t%s\n",param->description);
+			printf("\t\tType: %d\n",param->id);
+		}
+	}
 }
