@@ -387,6 +387,11 @@ server_handle_packet(struct server *server, int seq, int type,
 	const char *event = "Unknown";
 	int i;
 
+	assert(type >= 0);
+	assert(len >= 0);
+	assert(seq >= 0);
+	assert((len > 0 && data) || (len == 0 && data == NULL));
+
 	for (i = 0 ; i < N_MESSAGETYPES ; i ++){ 
 		if (msgnames[i].tp03 == type || msgnames[i].tp04 == type){
 			event = msgnames[i].name;
