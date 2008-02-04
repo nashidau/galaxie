@@ -21,6 +21,9 @@ static int parse_header(void **data, void **end, va_list *ap);
 
 static int extract_int(const char **src);
 static char *extract_string(const char **src, int *len);
+static int64_t extract_long(const char **src);
+static void * extract_struct(const char *buf, struct parseitem *item, int count);
+
 
 /**
  * tpe_util_string_extract
@@ -745,9 +748,15 @@ tpe_util_test(void){
 	return 0;
 }
 
+/**
+ * @param buf Buffer to parse
+ * @param Description of the structures
+ * @param Size of dest structure
+ * @param End pointer of buffer to parse
+ */
 void *
 parse_block(const char *buf, struct parseitem *items, 
-		void *data, /* Where to put it of NULL */
+		void *data, /* Where to put it or NULL */
 		size_t size,
 		char **end){
 	int i, j, count;
@@ -767,21 +776,56 @@ parse_block(const char *buf, struct parseitem *items,
 		else
 			count = 1;
 		for (j = 0 ; j < count ; j ++){
+			void *addr = (char*)data + items[i].off;
 			switch (items[i].type & ~PARSETYPE_ARRAYOF){
 			case PARSETYPE_INT:
-				extract_int(&buf);
+				*(int*)addr = extract_int(&buf);
 				break;
 			case PARSETYPE_LONG:
-				extract_int(&buf);
+				*(int64_t*)addr = extract_long(&buf);
 				break;
 			case PARSETYPE_STRING:
-				extract_string(&buf, NULL);
+				*(char**)addr = extract_string(&buf, NULL);
+				break;
+			case PARSETYPE_STRUCT:
+				*(int *)(data + items[i].lenoff) = count;
+				*(void**)addr = extract_struct(buf,
+						items + i,
+						count);
+				count = 1;
 				break;
 			}
 		}
 	}
 
-	return NULL;
+	if (end) *end = (char *)buf;
+
+	return data;
+}
+
+static void *
+extract_struct(const char *buf, struct parseitem *item, int count){
+	void *data;
+	int i;
+
+	data = calloc(item->subsize, count);
+	if (!data) return data;
+
+	for (i = 0 ; i < count ; i ++){
+		printf("%p %p %p %d\n",
+				buf,
+				item->sub,
+				(char*)data + item->subsize * i,
+				item->subsize);
+		parse_block(buf,
+				item->sub,
+				(char*)data + item->subsize * i,
+				item->subsize, 
+				&buf);
+
+	}
+
+	return data;
 }
 
 static int 
@@ -789,8 +833,16 @@ extract_int(const char **src){
 	int val;
 	memcpy(&val,*src,sizeof(int32_t));
 	*src += 4;
-	return val;
+	return ntohl(val);
 }
+
+static int64_t
+extract_long(const char **src){
+	int64_t val;
+	memcpy(&val,*src,sizeof(int64_t));
+	*src += 8;
+	return ntohll(val);
+};
 
 static char *
 extract_string(const char **src, int *lenp){
@@ -801,8 +853,10 @@ extract_string(const char **src, int *lenp){
 	if (lenp) *lenp = len;
 	if (len == 0) return NULL;
 	/* FIXME: Sanity check len */
+	printf("Len: %d\n",len);
+	assert(len < 100);
 	buf = calloc(1,len + 1);
-	memcpy(buf, src, len);
+	memcpy(buf, *src, len);
 	*src += len;	
 
 	return buf;	

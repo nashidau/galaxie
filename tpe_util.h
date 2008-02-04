@@ -17,7 +17,9 @@ enum parsetype {
 	PARSETYPE_LONG,
 	PARSETYPE_LIST,
 	PARSETYPE_STRING,
+	PARSETYPE_STRUCT,
 	PARSETYPE_ARRAYOF = 0x1000,
+	PARSETYPE_COMPLEX = PARSETYPE_ARRAYOF | PARSETYPE_STRUCT,
 };
 
 struct parseitem {
@@ -25,6 +27,7 @@ struct parseitem {
 	intptr_t off; 		/* FIXME: Should be ptrdiff_t */
 	intptr_t lenoff;
 	struct parseitem *sub;
+	size_t subsize;
 };
 
  
