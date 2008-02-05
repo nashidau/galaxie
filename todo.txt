@@ -16,6 +16,8 @@ Major Tasks:
  * Scheme integration
 
 Important:
+ * TPE UTIL:
+ 	Use talloc for the parse routines
  * Popups for everything
  * MEDIA
  * Lists -> Hashes in Object list
