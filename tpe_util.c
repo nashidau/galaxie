@@ -853,8 +853,12 @@ extract_string(const char **src, int *lenp){
 	if (lenp) *lenp = len;
 	if (len == 0) return NULL;
 	/* FIXME: Sanity check len */
-	printf("Len: %d\n",len);
-	assert(len < 100);
+	if (len >= 5000) {
+		printf("Extract string: Len: %d/%x/%c%c%c%c\n",len,len,
+				len >> 24,len >> 16, len >> 8, len);
+		return NULL;
+	}
+	assert(len < 5000);
 	buf = calloc(1,len + 1);
 	memcpy(buf, *src, len);
 	*src += len;	
