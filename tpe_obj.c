@@ -266,53 +266,55 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 
 	/* Handle extra data for different types */
 	/* FIXME: Tp 03 only */
-	switch (o->type){
-	case OBJTYPE_UNIVERSE:{
-		uint32_t turn;
-		tpe_util_parse_packet(end, msg->end, "i", &turn);
+	if (msg->protocol == 3){
+		switch (o->type){
+		case OBJTYPE_UNIVERSE:{
+			uint32_t turn;
+			tpe_util_parse_packet(end, msg->end, "i", &turn);
 
-		obj->tpe->turn = turn;
-		printf("Updated universe: Turn %d\n",turn);	
-		
-		break;
-	}
-	case OBJTYPE_GALAXY:
-		break;
-	case OBJTYPE_SYSTEM:
-		break;
-	case OBJTYPE_PLANET:
-		if (o->planet == NULL){
-			o->planet = calloc(1,sizeof(struct object_planet));
-			o->owner = -1;
-		} 
-		oldowner = o->owner;
+			obj->tpe->turn = turn;
+			printf("Updated universe: Turn %d\n",turn);	
+			
+			break;
+		}
+		case OBJTYPE_GALAXY:
+			break;
+		case OBJTYPE_SYSTEM:
+			break;
+		case OBJTYPE_PLANET:
+			if (o->planet == NULL){
+				o->planet = calloc(1,sizeof(struct object_planet));
+				o->owner = -1;
+			} 
+			oldowner = o->owner;
 
-		tpe_util_parse_packet(end, msg->end, "iR",
-				&o->owner, 
-				&o->planet->nresources, &o->planet->resources);
+			tpe_util_parse_packet(end, msg->end, "iR",
+					&o->owner, 
+					&o->planet->nresources, &o->planet->resources);
 
-		if (o->owner != oldowner && o->owner != obj->tpe->player)
-			tpe_event_send(obj->tpe->event, "PlanetColonised", o,
-					tpe_event_nofree, NULL);
+			if (o->owner != oldowner && o->owner != obj->tpe->player)
+				tpe_event_send(obj->tpe->event, "PlanetColonised", o,
+						tpe_event_nofree, NULL);
 
-		if (obj->home == NULL)
-			tpe_obj_home_check(tpe, o);
+			if (obj->home == NULL)
+				tpe_obj_home_check(tpe, o);
 
-		break;
-	case OBJTYPE_FLEET:
-		if (o->fleet == NULL)
-			o->fleet = calloc(1,sizeof(struct object_fleet));
-		/* FIXME: XXX: TODO: this is mithro's bug about bad messages */
-		/* This is one of the places triggering overflow in 
-		 * tpe_util */
-		tpe_util_parse_packet(end, msg->end, "iSi",
-				&o->owner, 
-				&o->fleet->nships, &o->fleet->ships,
-				&o->fleet->damage);
-		break;
-	default:
-		printf("Unknown object type: %d\n",o->type);
-		exit(1);
+			break;
+		case OBJTYPE_FLEET:
+			if (o->fleet == NULL)
+				o->fleet = calloc(1,sizeof(struct object_fleet));
+			/* FIXME: XXX: TODO: this is mithro's bug about bad messages */
+			/* This is one of the places triggering overflow in 
+			 * tpe_util */
+			tpe_util_parse_packet(end, msg->end, "iSi",
+					&o->owner, 
+					&o->fleet->nships, &o->fleet->ships,
+					&o->fleet->damage);
+			break;
+		default:
+			printf("Unknown object type: %d\n",o->type);
+			exit(1);
+		}
 	}
 
 	tpe_event_send(obj->tpe->event, isnew ? "ObjectNew" : "ObjectChanged",
@@ -687,11 +689,6 @@ tpe_obj_object_description_receive(void *data, int eventid, void *event){
 
 	msg = event;
 
-	printf("Parsing object desc\n");
-	//tpe_util_parse_packet(msg->data,msg->end,"is",&tmp,&name);
-	tpe_util_parse_packet(msg->data,msg->end, 
-			"ssli",&name,&description,&modtime, &len);
-	printf("Description of %s %s [%llx] %x\n",name,description, modtime,len);
 	desc = parse_block(msg->data, objdescparse, NULL, 
 			sizeof(struct objectdesc), (void *)&msg->end);
 
