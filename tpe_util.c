@@ -22,7 +22,7 @@ static int parse_header(void **data, void **end, va_list *ap);
 static int extract_int(const char **src);
 static char *extract_string(const char **src, int *len);
 static int64_t extract_long(const char **src);
-static void * extract_struct(const char *buf, struct parseitem *item, int count);
+static void * extract_struct(const char **buf, struct parseitem *item, int count);
 
 
 /**
@@ -788,8 +788,8 @@ parse_block(const char *buf, struct parseitem *items,
 				*(char**)addr = extract_string(&buf, NULL);
 				break;
 			case PARSETYPE_STRUCT:
-				*(int *)(data + items[i].lenoff) = count;
-				*(void**)addr = extract_struct(buf,
+				*(int *)((char*)data + items[i].lenoff) = count;
+				*(void**)addr = extract_struct(&buf,
 						items + i,
 						count);
 				count = 1;
@@ -804,24 +804,29 @@ parse_block(const char *buf, struct parseitem *items,
 }
 
 static void *
-extract_struct(const char *buf, struct parseitem *item, int count){
+extract_struct(const char **buf, struct parseitem *item, int count){
 	void *data;
 	int i;
 
 	data = calloc(item->subsize, count);
 	if (!data) return data;
-
 	for (i = 0 ; i < count ; i ++){
 		printf("%p %p %p %d\n",
 				buf,
 				item->sub,
 				(char*)data + item->subsize * i,
 				item->subsize);
-		parse_block(buf,
+		{ int j;
+			for (j = 0 ; j < 12 ; j ++){
+				printf("%02x",(unsigned int)buf[j] & 0xff);
+			}
+			printf("\n");
+		}
+		parse_block(*buf,
 				item->sub,
 				(char*)data + item->subsize * i,
 				item->subsize, 
-				&buf);
+				(char**)buf);
 
 	}
 
