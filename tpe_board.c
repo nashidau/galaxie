@@ -30,6 +30,30 @@ struct board {
 	int received;
 };
 
+struct reference reftmp;
+#define REFOFF(field) ((char*)&reftmp.field - (char*)&reftmp)
+struct parseitem parserefs[] = {
+	{ PARSETYPE_INT, REFOFF(type), 0, NULL, 0 },
+	{ PARSETYPE_INT, REFOFF(value), 0, NULL, 0 },
+	{ PARSETYPE_END, 0, 0, NULL, 0 },
+};
+
+struct message messagetmp; 
+#define MSGOFF(field) ((char*)&messagetmp.field - (char*)&messagetmp)
+struct parseitem parsemessage[] = {
+	{ PARSETYPE_INT,  MSGOFF(board), 0, NULL, 0 },
+	{ PARSETYPE_INT,  MSGOFF(slot), 0, NULL, 0 },
+	/* Ignored array */
+			/* FIXME */
+	{ PARSETYPE_INT,  MSGOFF(unread), 0, NULL, 0 },
+	{ PARSETYPE_STRING, MSGOFF(title), 0, NULL, 0 },
+	{ PARSETYPE_STRING, MSGOFF(body), 0, NULL, 0 },
+	{ PARSETYPE_INT, MSGOFF(turn), 0, NULL, 0 },
+	{ PARSETYPE_ARRAYOF | PARSETYPE_STRUCT, MSGOFF(references),
+			MSGOFF(nrefs), parserefs, sizeof(struct reference) },
+	{ PARSETYPE_END,  0, 0, NULL, 0 },
+};
+
 /* Event handlers for messages */
 static int tpe_board_msg_board_receive(void *data, int type, void *event);
 static int tpe_board_msg_message_receive(void *data, int type, void *event);
@@ -176,15 +200,9 @@ tpe_board_msg_message_receive(void *data, int type, void *event){
 	tpe = data;
 	msg = event;
 
-	message = calloc(1,sizeof(struct message));
+	message = parse_block(msg->data, parsemessage, NULL, 
+		sizeof(struct message), NULL);
 	message->unread = 1;
-
-	tpe_util_parse_packet(msg->data, msg->end, "iiassir", &message->board,
-			&message->slot, NULL, NULL,
-			&message->title,
-			&message->body,
-			&message->turn,
-			&message->nrefs, &message->references);
 
 	board = tpe_board_board_get_by_id(tpe, message->board);
 	if (board == NULL){
