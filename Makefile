@@ -18,6 +18,7 @@ OBJECTS=		\
 	tpe_board.o	\
 	tpe_event.o	\
 	tpe_obj.o	\
+	object_param.o	\
 	tpe_orders.o	\
 	tpe_resources.o	\
 	tpe_sequence.o	\
