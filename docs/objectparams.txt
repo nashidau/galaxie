@@ -1,0 +1,52 @@
+
+
+0: Vector
+	int64_t 	x,y,z;
+	objtype_t	relative_to
+
+1: Velocity
+	int64_t		dx,dy,dz;
+	objtype_t	relative_to
+
+2: Acceleration
+	int64_t		dx,dy,dz;
+	objtype_t	relative_to
+
+3: Bound Position
+	?? Should there be a object?
+	int32_t		slot
+
+4: Order Queue:
+	uint32_t	maxslots
+	uint32_t	queueid
+	uint32_t	nordersinqueue
+	list
+		int32_t	ordertypes
+
+5: Resource List
+	list
+		uint32_t	resourceid
+		uint32_t	stored
+		uint32_t 	minable
+		uint32_t 	unavailable	
+
+6: Reference
+	int32_t		type
+	uint32_t	id
+
+7: Reference Quantity List
+	list
+		int32_t 	type
+		uint32_t	id
+		uint32_t 	number
+
+8: Integer
+	int32_t		value
+
+9: Size
+	int64_t		diameter
+
+10: Media URI
+	(readonly) char *url
+
+
