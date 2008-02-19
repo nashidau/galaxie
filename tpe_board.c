@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <talloc.h>
+
 #include <Ecore_Data.h>
 
 #include "tpe.h"
@@ -68,8 +70,9 @@ tpe_board_init(struct tpe *tpe){
 
 	if (tpe->board != NULL) return tpe->board;
 
-	board = calloc(1,sizeof(struct tpe_board));
+	board = talloc_zero(tpe,struct tpe_board);
 
+	/* FIXME: Need to be talloc safe somehow */
 	board->boards = ecore_list_new();
 
 	/* Events we send */
@@ -119,7 +122,13 @@ tpe_board_board_updated_get(struct tpe *tpe, uint32_t oid){
 struct board *
 tpe_board_board_add(struct tpe *tpe, uint32_t oid){
         struct board *board;
-        board = calloc(1,sizeof(struct board));
+	
+	if (tpe == NULL) return NULL;
+	if (tpe->board == NULL) tpe_board_init(tpe);
+	if (tpe->board == NULL) return NULL;
+
+        board = talloc_zero(tpe->board,struct board);
+	/* FIXME: Talloc friendly list */
         if (ecore_list_append(tpe->board->boards, board) == 0)
 		printf("Error appending list\n");
 	board->oid = oid;
@@ -153,20 +162,21 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
 			&board->description, &board->nmessages,
 			&board->updated);
 
+	/* Assumes messages are never deleted */
 	if (board->nmessages == board->nalloced)
 		return 1;
 
 
-	nm = realloc(board->messages, 
-			sizeof(struct message) * board->nmessages);
+	nm = talloc_realloc(board, board->messages, 
+			struct message *,board->nmessages);
 	if (nm == NULL){
-		/* XXX: Need an error reporting system */
-		return 1; 
+		/* FIXME: Need an error reporting system */
+		return -1; 
 	}
 	board->messages = nm;
 
 	ntoget = board->nmessages - board->nalloced;
-	toget = malloc(sizeof(int32_t) * (ntoget + 2));
+	toget = talloc_array(NULL, int32_t,ntoget + 2);
 	toget[0] = htonl(id);
 	toget[1] = htonl(ntoget);
 
@@ -203,25 +213,27 @@ tpe_board_msg_message_receive(void *data, int type, void *event){
 
 	message = parse_block(msg->data, parsemessage, NULL, 
 		"struct message", sizeof(struct message), NULL);
+	if (!message) return -1;
+
 	message->unread = 1;
 
 	board = tpe_board_board_get_by_id(tpe, message->board);
-	if (board == NULL){
-		printf("Weird - No board %d\n", message->board);
-		free(message->title); 
-		free(message->body);
-		free(message);
+	if (board == NULL || board->messages[message->slot]){
+		if (!board)
+			printf("Weird - No board %d\n", message->board);
+		else
+			printf("Strange - I have this message Bord %d"
+					" Slot %d\n",
+					message->board, message->slot);
+		talloc_free(message);
 		return 1;
 	}
 
 	if (board->messages[message->slot]){
-		printf("Strange - I have this message Bord %d Slot %d\n",
-			message->board, message->slot);
-		free(message->title); 
-		free(message->body);
-		free(message);
+		talloc_free(message);
 		return 1;
 	}
+	talloc_steal(board, message);
 
 	board->messages[message->slot] = message;
 
