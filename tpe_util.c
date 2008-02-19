@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <talloc.h>
+
 #include <Ecore_Data.h>
 
 #include "tpe_util.h"
@@ -749,6 +751,10 @@ tpe_util_test(void){
 }
 
 /**
+ * 
+ * The memory is allocted without a parent if necessary.  It is recommended
+ * you save a pointer to the parent.
+ *
  * @param buf Buffer to parse
  * @param Description of the structures
  * @param Size of dest structure
@@ -757,6 +763,7 @@ tpe_util_test(void){
 void *
 parse_block(const char *buf, struct parseitem *items, 
 		void *data, /* Where to put it or NULL */
+		const char *type,
 		size_t size,
 		char **end){
 	int i, j, count;
@@ -764,8 +771,13 @@ parse_block(const char *buf, struct parseitem *items,
 	assert(buf); assert(items);
 	assert(data || size);
 
+	if (buf == NULL) return NULL;
+	if (data == NULL || size < 1) return NULL;
+
+	/* FIXME: Should check that size > largest offset in items */
+
 	if (data == NULL)
-		data = calloc(1,size);
+		data = talloc_named_const(NULL,size,type);
 
 	for (i = 0 ; items[i].type != PARSETYPE_END ; i ++){
 		/* FIXME: Should calculate the dest here -
@@ -786,12 +798,16 @@ parse_block(const char *buf, struct parseitem *items,
 				break;
 			case PARSETYPE_STRING:
 				*(char**)addr = extract_string(&buf, NULL);
+				if (*(char**)addr)
+					talloc_steal(data, *(char**)addr);
 				break;
 			case PARSETYPE_STRUCT:
 				*(int *)((char*)data + items[i].lenoff) = count;
 				*(void**)addr = extract_struct(&buf,
 						items + i,
 						count);
+				if (*(void**)addr)
+					talloc_steal(data, *(void**)addr);
 				count = 1;
 				break;
 			}
@@ -803,28 +819,29 @@ parse_block(const char *buf, struct parseitem *items,
 	return data;
 }
 
+/** 
+ * Uses parse_item to recursively parse a structure
+ */
 static void *
 extract_struct(const char **buf, struct parseitem *item, int count){
 	void *data;
 	int i;
 
-	data = calloc(item->subsize, count);
-	if (!data) return data;
+	assert(*buf); assert(item); assert(count> 0);
+
+	if (count == 0) return NULL;
+	if (item == NULL) return NULL;
+	if (*buf == NULL) return NULL;
+
+	data = talloc_array_size(NULL, item->subsize, count);
+	if (!data) return NULL;
+	memset(data, 0, item->subsize * count);
+
 	for (i = 0 ; i < count ; i ++){
-		printf("%p %p %p %d\n",
-				buf,
-				item->sub,
-				(char*)data + item->subsize * i,
-				item->subsize);
-		{ int j;
-			for (j = 0 ; j < 12 ; j ++){
-				printf("%02x",(unsigned int)buf[j] & 0xff);
-			}
-			printf("\n");
-		}
 		parse_block(*buf,
 				item->sub,
 				(char*)data + item->subsize * i,
+				item->subtype,
 				item->subsize, 
 				(char**)buf);
 
@@ -864,8 +881,8 @@ extract_string(const char **src, int *lenp){
 		return NULL;
 	}
 	assert(len < 5000);
-	buf = calloc(1,len + 1);
-	memcpy(buf, *src, len);
+	/* FIXME: Souce */
+	buf = talloc_strndup(NULL, *src, len);
 	*src += len;	
 
 	return buf;	

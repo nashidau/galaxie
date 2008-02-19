@@ -27,6 +27,7 @@ struct parseitem {
 	intptr_t off; 		/* FIXME: Should be ptrdiff_t */
 	intptr_t lenoff;
 	struct parseitem *sub;
+	const char *subtype;
 	size_t subsize;
 };
 
@@ -42,6 +43,7 @@ void * tpe_util_parse_array(void *buf, void *end, size_t size, char *format, ...
 void *parse_block(const char *buf,
 		struct parseitem *items, 
 		void *data, /* Where to put it of NULL */
+		const char *type,
 		size_t size,
 		char **end);	
 

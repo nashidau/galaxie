@@ -65,56 +65,61 @@ struct object otmp;
 #define OFFSET(field) ((char*)&otmp.field - (char*)&otmp)
 
 struct parseitem objparse[] = {
-	{ PARSETYPE_INT, OFFSET(oid), 0, NULL , 0 },
-	{ PARSETYPE_INT, OFFSET(type), 0, NULL , 0 },
-	{ PARSETYPE_STRING, OFFSET(name), 0, NULL , 0 },
-	{ PARSETYPE_LONG, OFFSET(pos.x), 0, NULL , 0 },
-	{ PARSETYPE_LONG, OFFSET(pos.y), 0, NULL , 0 },
-	{ PARSETYPE_LONG, OFFSET(pos.z), 0, NULL , 0 },
-	{ PARSETYPE_LONG, OFFSET(vel.x), 0, NULL , 0 },
-	{ PARSETYPE_LONG, OFFSET(vel.y), 0, NULL , 0 },
-	{ PARSETYPE_LONG, OFFSET(vel.z), 0, NULL , 0 },
+	{ PARSETYPE_INT, OFFSET(oid), 0, NULL , NULL, 0 },
+	{ PARSETYPE_INT, OFFSET(type), 0, NULL , NULL, 0 },
+	{ PARSETYPE_STRING, OFFSET(name), 0, NULL , NULL, 0 },
+	{ PARSETYPE_LONG, OFFSET(pos.x), 0, NULL , NULL, 0 },
+	{ PARSETYPE_LONG, OFFSET(pos.y), 0, NULL , NULL, 0 },
+	{ PARSETYPE_LONG, OFFSET(pos.z), 0, NULL , NULL, 0 },
+	{ PARSETYPE_LONG, OFFSET(vel.x), 0, NULL , NULL, 0 },
+	{ PARSETYPE_LONG, OFFSET(vel.y), 0, NULL , NULL, 0 },
+	{ PARSETYPE_LONG, OFFSET(vel.z), 0, NULL , NULL, 0 },
 	{ PARSETYPE_ARRAYOF | PARSETYPE_INT, 
-			OFFSET(children), OFFSET(nchildren), NULL , 0 },
+			OFFSET(children), OFFSET(nchildren), NULL , NULL, 0 },
 	{ PARSETYPE_ARRAYOF | PARSETYPE_INT, 
-			OFFSET(ordertypes), OFFSET(nordertypes), NULL , 0 },
-	{ PARSETYPE_INT, OFFSET(type), 0, NULL , 0 },
-	{ PARSETYPE_LONG, OFFSET(updated), 0, NULL , 0 },
-	{ PARSETYPE_INT, -1, 0, NULL , 0 },
-	{ PARSETYPE_INT, -1, 0, NULL , 0 },
-	{ PARSETYPE_END, -1, 0, NULL, 0 }
+			OFFSET(ordertypes), OFFSET(nordertypes), NULL , NULL, 0 },
+	{ PARSETYPE_INT, OFFSET(type), 0, NULL , NULL, 0 },
+	{ PARSETYPE_LONG, OFFSET(updated), 0, NULL , NULL, 0 },
+	{ PARSETYPE_INT, -1, 0, NULL , NULL, 0 },
+	{ PARSETYPE_INT, -1, 0, NULL , NULL, 0 },
+	{ PARSETYPE_END, -1, 0, NULL, NULL, 0 }
 };
 
 struct objectdescparam odpmtmp;
 #define DPMOFFSET(field) ((char*)&odpmtmp.field - (char*)&odpmtmp)
 struct parseitem objectdescparam[] = {
-	{ PARSETYPE_STRING, DPMOFFSET(name), 0, NULL, 0 },
-	{ PARSETYPE_INT,    DPMOFFSET(id), 0, NULL, 0 },
-	{ PARSETYPE_STRING, DPMOFFSET(description), 0, NULL, 0 },
-	{ PARSETYPE_END, -1, 0, NULL, 0 }
+	{ PARSETYPE_STRING, DPMOFFSET(name), 0, NULL, NULL, 0 },
+	{ PARSETYPE_INT,    DPMOFFSET(id), 0, NULL, NULL, 0 },
+	{ PARSETYPE_STRING, DPMOFFSET(description), 0, NULL, NULL, 0 },
+	{ PARSETYPE_END, -1, 0, NULL, NULL, 0 }
 };
 
 struct objectdescprop odptmp;
 #define DPOFFSET(field) ((char*)&odptmp.field - (char*)&odptmp)
 struct parseitem objectdescprops[] = {
-	{ PARSETYPE_INT,   DPOFFSET(id), 0, NULL , 0 },
-	{ PARSETYPE_STRING,DPOFFSET(name), 0, NULL , 0 },
-	{ PARSETYPE_STRING,DPOFFSET(description), 0, NULL , 0 },
+	{ PARSETYPE_INT,   DPOFFSET(id), 0, NULL , NULL, 0 },
+	{ PARSETYPE_STRING,DPOFFSET(name), 0, NULL , NULL, 0 },
+	{ PARSETYPE_STRING,DPOFFSET(description), 0, NULL , NULL, 0 },
 	{ PARSETYPE_COMPLEX,DPOFFSET(params), DPOFFSET(nparams), 
-			objectdescparam, sizeof(struct objectdescparam)},
-	{ PARSETYPE_END,   -1, 0, NULL, 0 }
+			objectdescparam, 
+			"struct objectdescparam",
+			sizeof(struct objectdescparam)},
+	{ PARSETYPE_END,   -1, 0, NULL, NULL, 0 }
 };
 
 
 struct objectdesc objectdesctmp;
 #define DOFFSET(field) ((char*)&objectdesctmp.field - (char*)&objectdesctmp)
 struct parseitem objdescparse[] = {
-	{ PARSETYPE_STRING, DOFFSET(name), 0, NULL , 0 },
-	{ PARSETYPE_STRING, DOFFSET(description), 0, NULL , 0 },
-	{ PARSETYPE_LONG,   DOFFSET(modtime), 0, NULL , 0 },
+  	{ PARSETYPE_INT, DOFFSET(id), 0, NULL, NULL, 0 },
+	{ PARSETYPE_STRING, DOFFSET(name), 0, NULL , NULL, 0 },
+	{ PARSETYPE_STRING, DOFFSET(description), 0, NULL , NULL, 0 },
+	{ PARSETYPE_LONG,   DOFFSET(modtime), 0, NULL , NULL, 0 },
 	{ PARSETYPE_COMPLEX, DOFFSET(props), DOFFSET(nprops), 
-			objectdescprops , sizeof(struct objectdescprop)},
-	{ PARSETYPE_END,    -1, 0, NULL, 0 }
+			objectdescprops ,
+			"struct objectdescprops", 
+			sizeof(struct objectdescprop)},
+	{ PARSETYPE_END,    -1, 0, NULL, NULL, 0 }
 };
 
 const char *const object_magic = "ObjectMagic";
@@ -682,15 +687,18 @@ tpe_obj_object_description_updated(struct tpe *tpe, uint32_t odid){
 static int 
 tpe_obj_object_description_receive(void *data, int eventid, void *event){
 	struct msg *msg;
-	int len;
-	long long modtime;
-	char *name,*description;
 	struct objectdesc *desc;
-
+	int *x;
 	msg = event;
+	
+	x = msg->data;
+	printf("msg->data: %08x %08x %08x\n",ntohl(x[0]), 
+			ntohl(x[1]),
+			ntohl(x[2]));
 
 	desc = parse_block(msg->data, objdescparse, NULL, 
-			sizeof(struct objectdesc), (void *)&msg->end);
+			"struct objdesc", sizeof(struct objectdesc), 
+			(void *)&msg->end);
 
 	tpe_obj_object_description_dump(desc);
 

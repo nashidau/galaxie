@@ -1,4 +1,7 @@
 Major Tasks:
+ * objectparametergroupdesc.cpp
+ 	- Line 73 : This looks like garbage
+ * Why the hell does every object description have ID = 0
  * TP04:
  	Game Browser
  	Game info

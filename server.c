@@ -346,7 +346,7 @@ server_receive(void *udata, int ecore_event_type, void *edata){
 
 	while (remaining > 16){
 		header = (uint32_t *)start;
-		magic = header[0];
+		magic = header[0]; //ntohl(header[0]);
 		/* FIXME: Handle tp03 or tp04 packets */
 		if (server->header != magic){
 			printf("Invalid magic ;%.4s;\n",(char *)&magic);
