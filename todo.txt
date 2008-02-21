@@ -1,7 +1,4 @@
 Major Tasks:
- * objectparametergroupdesc.cpp
- 	- Line 73 : This looks like garbage
- * Why the hell does every object description have ID = 0
  * TP04:
  	Game Browser
  	Game info
@@ -19,8 +16,6 @@ Major Tasks:
  * Scheme integration
 
 Important:
- * TPE UTIL:
- 	Use talloc for the parse routines
  * Popups for everything
  * MEDIA
  * Lists -> Hashes in Object list
@@ -37,6 +32,7 @@ Important:
  	- For fleets show other details.
  * Map centering for new objects.
  * battles
+ * TPE Board needs to be server/game specific
 
 Minor Tasks 
  * New art for:
