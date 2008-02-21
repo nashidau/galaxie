@@ -148,6 +148,9 @@ $Iclose.png : $IObjectViewer.svg
 $Iwindow.png : $Iwindow.svg
 	inkscape -j --export-area-drawing -w 300 -h 400 --export-png $@ $<
 
+fixme: 
+	egrep \(FIXME\|XXX\) *.c **/*.c
+
 clean: 
 	rm -f *.o */*.o ailist.h ${EDJE}
 
