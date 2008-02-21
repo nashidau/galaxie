@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <talloc.h>
 
 #include <Ecore_Data.h>
 
@@ -336,8 +337,16 @@ tpe_order_parse_args(struct tpe *tpe, struct order *order,
 	int i,j;
 	union order_arg_data *data;
 
-	/* FIXME: Leak?? */
+	if (order->args){
+		free(order->args);
+		order->args = NULL;
+	}
+
 	order->args = calloc(desc->nargs, sizeof(union order_arg_data));
+	if (order->args == NULL){
+		perror(__FILE__ "calloc");
+		return;
+	}
 
 	/* FIXME: Should do a little more checking here */
 	for (i = 0 ; i < desc->nargs ; i ++){
