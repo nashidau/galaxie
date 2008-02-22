@@ -190,7 +190,7 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
 
 	board->nalloced = board->nmessages;
 
-	free(toget);
+	talloc_free(toget);
 
 	return 1;
 }

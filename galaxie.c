@@ -5,6 +5,8 @@
 #include <sys/types.h>
 #include <regex.h>
 
+#include <talloc.h>
+
 #include <Evas.h>
 #include <Ecore.h>
 #include <Ecore_Evas.h>
@@ -178,7 +180,7 @@ main(int argc, char **argv){
 	ecore_init();
 	ewl_init(&argc, argv);
 
-	tpe = calloc(1,sizeof(struct tpe));
+	tpe = talloc_zero(NULL,struct tpe);
 	if (tpe == NULL) exit(1);
 
 	opt = parse_args(argc, argv);
