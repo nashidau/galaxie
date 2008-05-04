@@ -22,10 +22,10 @@ extern struct rvector _rvector;
 	objtype_t	relative_to
 */
 struct parseitem rvector[] =  {
-	{ PARSETYPE_LONG, OFFSET(_rvector, x), 0, NULL, 0 },
-	{ PARSETYPE_LONG, OFFSET(_rvector, y), 0, NULL, 0 },
-	{ PARSETYPE_LONG, OFFSET(_rvector, z), 0, NULL, 0 },
-	{ PARSETYPE_INT,  OFFSET(_rvector, id), 0, NULL, 0 },
+	{ PARSETYPE_LONG, OFFSET(_rvector, x), 0, NULL, NULL, 0},
+	{ PARSETYPE_LONG, OFFSET(_rvector, y), 0, NULL, NULL, 0},
+	{ PARSETYPE_LONG, OFFSET(_rvector, z), 0, NULL, NULL, 0},
+	{ PARSETYPE_INT,  OFFSET(_rvector, id), 0, NULL, NULL, 0},
 };
 
 /*
@@ -46,7 +46,7 @@ struct parseitem rvector[] =  {
 	int32_t		slot
 */
 struct parseitem boundposition[] = {
-	{ PARSETYPE_INT, 0, 0, NULL, 0 },
+	{ PARSETYPE_INT, 0, 0, NULL, NULL, 0},
 };
 
 
@@ -59,13 +59,13 @@ struct parseitem boundposition[] = {
 		int32_t	ordertypes
 */
 struct parseitem orderqueue[] = {
-	{ PARSETYPE_INT, OFFSET(_orderqueue, max), 0, NULL, 0 },
-	{ PARSETYPE_INT, OFFSET(_orderqueue, id), 0, NULL, 0 },
-	{ PARSETYPE_INT, OFFSET(_orderqueue, norders), 0, NULL, 0 },
+	{ PARSETYPE_INT, OFFSET(_orderqueue, max), 0, NULL, NULL, 0},
+	{ PARSETYPE_INT, OFFSET(_orderqueue, id), 0, NULL, NULL, 0},
+	{ PARSETYPE_INT, OFFSET(_orderqueue, norders), 0, NULL, NULL, 0},
 	{ PARSETYPE_ARRAYOF | PARSETYPE_INT, 
 			OFFSET(_orderqueue, ordertypes), 
 			OFFSET(_orderqueue, nordertypes),
-			NULL, 0 },
+			NULL, NULL, 0 },
 };
 
 
@@ -78,16 +78,17 @@ struct parseitem orderqueue[] = {
 		uint32_t 	unavailable	
 */
 struct parseitem pl_resources[] = {
-	{ PARSETYPE_INT, OFFSET(_resource, id), 0, NULL, 0 },
-	{ PARSETYPE_INT, OFFSET(_resource, stored), 0, NULL, 0 },
-	{ PARSETYPE_INT, OFFSET(_resource, minable), 0, NULL, 0 },
-	{ PARSETYPE_INT, OFFSET(_resource, unavail), 0, NULL, 0 },
+	{ PARSETYPE_INT, OFFSET(_resource, id), 0, NULL, NULL, 0},
+	{ PARSETYPE_INT, OFFSET(_resource, stored), 0, NULL, NULL, 0},
+	{ PARSETYPE_INT, OFFSET(_resource, minable), 0, NULL, NULL, 0},
+	{ PARSETYPE_INT, OFFSET(_resource, unavail), 0, NULL, NULL, 0},
 };
 
 struct parseitem reslist[] = {
 	{ PARSETYPE_COMPLEX, OFFSET(_reslist, resources), 
 			OFFSET(_reslist, nresources),
-			pl_resources, sizeof(struct resource) },
+			pl_resources, "struct resource", 
+			sizeof(struct resource) },
 };
 
 
@@ -97,8 +98,8 @@ struct parseitem reslist[] = {
 	uint32_t	id
 */
 struct parseitem pl_reference[] = {
-	{ PARSETYPE_INT, OFFSET(_reference, type), 0, NULL, 0 },
-	{ PARSETYPE_INT, OFFSET(_reference, value), 0, NULL, 0 },
+	{ PARSETYPE_INT, OFFSET(_reference, type), 0, NULL, NULL, 0},
+	{ PARSETYPE_INT, OFFSET(_reference, value), 0, NULL, NULL, 0},
 };
 
 /*
@@ -109,9 +110,9 @@ struct parseitem pl_reference[] = {
 		uint32_t 	number
 */
 struct parseitem pl_refquantity[] = {
-	{ PARSETYPE_INT, OFFSET(_refquantity, type), 0, NULL, 0 },
-	{ PARSETYPE_INT, OFFSET(_refquantity, value), 0, NULL, 0 },
-	{ PARSETYPE_INT, OFFSET(_refquantity, quantity), 0, NULL, 0 },
+	{ PARSETYPE_INT, OFFSET(_refquantity, type), 0, NULL, NULL, 0},
+	{ PARSETYPE_INT, OFFSET(_refquantity, value), 0, NULL, NULL, 0},
+	{ PARSETYPE_INT, OFFSET(_refquantity, quantity), 0, NULL, NULL, 0},
 };
 
 
@@ -119,7 +120,8 @@ struct parseitem pl_refquantity[] = {
 struct parseitem pl_referencequantitylist[] = {
 	{ PARSETYPE_COMPLEX, OFFSET(_refqlist, refquantities), 
 			OFFSET(_refqlist, nrefquantities),
-			pl_refquantity, sizeof(struct refquantity) },
+			pl_refquantity, "struct refquanty", 
+			sizeof(struct refquantity) },
 };
 
 
@@ -129,7 +131,7 @@ struct parseitem pl_referencequantitylist[] = {
 	int32_t		value
 */
 struct parseitem pl_int32[] = {
-	{ PARSETYPE_INT, 0, 0, NULL, 0 },
+	{ PARSETYPE_INT, 0, 0, NULL, NULL, 0},
 };
 
 /*
@@ -137,7 +139,7 @@ struct parseitem pl_int32[] = {
 	int64_t		diameter
 */
 struct parseitem pl_int64[] = {
-	{ PARSETYPE_LONG, 0, 0, NULL, 0 },
+	{ PARSETYPE_LONG, 0, 0, NULL, NULL, 0},
 };
 
 /*
@@ -145,7 +147,7 @@ struct parseitem pl_int64[] = {
 	(readonly) char *url
 */
 struct parseitem pl_string[] = {
-	{ PARSETYPE_STRING, 0, 0, NULL, 0 },
+	{ PARSETYPE_STRING, 0, 0, NULL, NULL, 0},
 };
 
 
