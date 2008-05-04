@@ -316,7 +316,7 @@ tpe_board_board_message_turn_get(struct tpe *tpe, uint32_t id){
  * Gets the next message in the board.
  *
  * @param tpe Tpe structure
- * @param message A valid message
+ * @param msg A valid message
  * @return Next message, or the same message if last.  NULL on error.
  */
 struct message *
@@ -339,10 +339,9 @@ tpe_board_board_message_next(struct tpe *tpe, struct message *msg){
  * Gets the previous message in the board.
  *
  * @param tpe Tpe structure
- * @param message A valid message
- * @return Previous message, or the same message if last.  NULL on error.
+ * @param msg A valid message
+ * @return Previous message, or the same message if first.  NULL on error.
  */
-
 struct message *
 tpe_board_board_message_prev(struct tpe *tpe, struct message *msg){
 	struct board *board;
@@ -357,8 +356,6 @@ tpe_board_board_message_prev(struct tpe *tpe, struct message *msg){
 		return board->messages[msg->slot - 1];
 	else 
 		return msg;
-
-
 }
 
 /**

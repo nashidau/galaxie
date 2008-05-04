@@ -1438,7 +1438,7 @@ reference_object_show(void *idv, Evas *e, Evas_Object *eo, void *event){
  *
  * @param gui Gui system. 
  * @param obj Object to get gui data for.
- * @reutrn Gui data for object, or NULL if not displayed.
+ * @return Gui data for object, or NULL if not displayed.
  */
 struct gui_obj *
 gui_object_data_get(struct gui *gui, struct object *obj){
