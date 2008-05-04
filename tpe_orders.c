@@ -978,6 +978,15 @@ arg_list_write(struct order_arg *arg, union order_arg_data *orderdata, char *buf
 
 	return (2 * list->nselections + 4) * sizeof(uint32_t);
 }
+
+/**
+ * Calculates teh length of data required by a string
+ *
+ * @param arg The data describing the object
+ * @param data The data to write
+ *
+ * @return The number of bytes required.
+ */
 static int 
 arg_string_size_get(struct order_arg *arg, union order_arg_data *data){
 	struct order_arg_string *str;
@@ -999,11 +1008,24 @@ arg_string_size_get(struct order_arg *arg, union order_arg_data *data){
 	return sizeof(uint32_t) * 2 + len;
 }
 
+/**
+ * Order argument writer for strings.  
+ *
+ * The written format is:
+ *    - int32_t  Maximum length (Always 0 here)
+ *    - int32_t  This length
+ *    - character array
+ * Note that if the string will be padded to a multiple of 4.
+ *
+ * @param arg The argument description
+ * @param data The argument data
+ * @param buf The buffer to write too
+ */
 static int 
 arg_string_write(struct order_arg *arg, union order_arg_data *data, char *buf){
 	struct order_arg_string *str;
 	int len;
-	int *ibuf;
+	int32_t *ibuf;
 	int slen;
 
 	len = arg_string_size_get(arg, data);
@@ -1021,13 +1043,22 @@ arg_string_write(struct order_arg *arg, union order_arg_data *data, char *buf){
 	*ibuf ++ = htonl(slen);
 	strncpy((char*)ibuf, str->str, slen);
 
+	assert(slen + 2 * sizeof(int32_t) == len);
+
 	return len;
 }
 
-
+/**
+ * Order Argument writer for a 'object' type.  Writes a single object
+ *
+ * @param arg The argument description
+ * @param data The argument data
+ * @param buf The buffer to write the data too.
+ * @return Bytes written, 4.
+ */
 static int 
 arg_object_write(struct order_arg *arg, union order_arg_data *data, char *buf){
-	int *ibuf;
+	int32_t *ibuf;
 
 	ibuf = (void*)buf;
 	*ibuf = htonl(data->object.oid);
