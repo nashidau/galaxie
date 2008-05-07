@@ -95,8 +95,6 @@ static int parse_debug_messages(struct startopt *opt, int i, char **args);
 static const char *parse_option(char **args, int *i);
 static void dump_options(struct startopt *);
 
-char *substringdup(const char *str, int start, int end);
-
 static int tpe_regerror(int errcode, const regex_t *regex);
 
 static struct args {
@@ -168,8 +166,9 @@ enum {
 
 #define MATCH(match,offset) 	(match[offset].rm_so != match[offset].rm_eo &&\
 				match[offset].rm_so != -1)
-#define EXTRACT(str,match,offset) 	\
-		substringdup(str,match[offset].rm_so,match[offset].rm_eo)
+#define EXTRACT(parent,str,match,offset) 	\
+		talloc_strndup(parent, str + match[offset].rm_so,	\
+				match[offset].rm_eo - match[offset].rm_so)
 
 int
 main(int argc, char **argv){
@@ -229,7 +228,7 @@ parse_args(int argc, char **argv){
 	int i,j;
 	int rv;
 
-	opt = calloc(1,sizeof(struct startopt));
+	opt = talloc_zero(NULL, struct startopt);
 	if (opt == NULL) return NULL;
 
 	/* Set some defaults */
@@ -470,18 +469,18 @@ parse_url(struct startopt *opt, int i, char **args){
 	/* 3: Username */
 	if (MATCH(matches,REGEX_USERNAME)){
 		if (opt->username) free(opt->username);
-		opt->username = EXTRACT(str,matches,REGEX_USERNAME);
+		opt->username = EXTRACT(opt,str,matches,REGEX_USERNAME);
 	}
 	/* 4: Password */
 	if (MATCH(matches,REGEX_PASSWORD)){
 		if (opt->password) free(opt->password);
-		opt->password = EXTRACT(str,matches,REGEX_PASSWORD);
+		opt->password = EXTRACT(opt,str,matches,REGEX_PASSWORD);
 	}
 
 	/* 5: Server */
 	if (MATCH(matches,REGEX_SERVER)){
 		if (opt->server) free(opt->server);
-		opt->server = EXTRACT(str,matches,REGEX_SERVER);
+		opt->server = EXTRACT(opt,str,matches,REGEX_SERVER);
 	}	
 
 	/* 6: Port */
@@ -492,7 +491,7 @@ parse_url(struct startopt *opt, int i, char **args){
 	/* 10: Game name */
 	if (MATCH(matches,REGEX_GAME)){
 		if (opt->game) free(opt->game);
-		opt->game = EXTRACT(str,matches,REGEX_GAME);
+		opt->game = EXTRACT(opt,str,matches,REGEX_GAME);
 	}
 
 	free(matches);
@@ -551,18 +550,13 @@ parse_option(char **args, int *i){
 }
 
 
-char *
-substringdup(const char *str, int start, int end){
-	char *buf;
-
-	if (str == NULL || end <= start) return NULL;
-
-	buf = calloc(end - start + 1,sizeof(char));
-	strncpy(buf,str + start,end - start);
-	return buf;
-}
-
-
+/**
+ * Error handler for regex expression parser.
+ *
+ * @param errcode Error code from regex library
+ * @param regex The regular expression that caused the error
+ * @return 0 
+ */
 static int
 tpe_regerror(int errcode, const regex_t *regex){
 	char buf[BUFSIZ];
