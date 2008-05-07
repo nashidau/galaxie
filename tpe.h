@@ -1,3 +1,8 @@
+
+#ifndef USE_GUI
+#define USE_GUI 1
+#endif
+
 struct tpe {
 	int player; /* My player ID */
 	char *playername;
