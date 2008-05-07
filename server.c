@@ -183,14 +183,17 @@ static int server_cb_add(struct server *server, int seq, msgcb cb, void *userdat
 //static int server_register_events(struct server *server);
 //static void connect_accept(void *server, const char * type, int len,
 //		void *mdata);
-static void server_handle_packet(struct server *server, int seq, int type, 
-			int len, void *data);
+static void server_handle_packet(struct server *server, int proto, int seq, 
+			int type, int len, void *data);
 
 static int format_server(int32_t *buf, const char *format, va_list ap);
 static void msg_free(void *udata, void *msg);
 
-//static const uint32_t headerv4 = htonl(('T' << 24) | ('P' << 16) | (4 << 8) | 0);  
-//static const uint32_t headerv3 = htonl(('T' << 24) | ('P' << 16) | ('0' << 8) | ('3'));  
+enum {
+	HEADER_PROTO_3 = ('T' << 24) | ('P' << 16) | ('0' << 8) | ('3'), 
+	HEADER_PROTO_4 = ('T' << 24) | ('P' << 16) | (4 << 8) | 0,
+};
+
 struct servers *
 server_init(struct tpe *tpe){
 	struct servers *servers;
@@ -204,10 +207,6 @@ server_init(struct tpe *tpe){
 	tpe->servers = servers;
 	servers->tpe = tpe;
 
-	/* FIXME */
-	//server->header = htonl(('T' << 24) | ('P' << 16) | (4 << 8) | 0);  
-	//server->header = htonl(('T' << 24) | ('P' << 16) | ('0' << 8) | '3');  
-	
 	//server->seq = 1;
 	
 	/* Register events */
@@ -322,6 +321,7 @@ server_receive(void *udata, int ecore_event_type, void *edata){
 	char *start;
 	unsigned int len, type, seq, remaining;
 	int magic;
+	int proto; /* The protocol level - 3 or 4 */
 
 	servers = udata;
 	data = edata;
@@ -348,7 +348,11 @@ server_receive(void *udata, int ecore_event_type, void *edata){
 		header = (uint32_t *)start;
 		magic = header[0]; //ntohl(header[0]);
 		/* FIXME: Handle tp03 or tp04 packets */
-		if (server->header != magic){
+		if (magic == HEADER_PROTO_3)
+			proto = 3;
+		else if (magic == HEADER_PROTO_4)
+			proto = 4;
+		else {
 			printf("Invalid magic ;%.4s;\n",(char *)&magic);
 			exit(1);
 		}
@@ -357,7 +361,7 @@ server_receive(void *udata, int ecore_event_type, void *edata){
 		len = ntohl(header[3]);
 		if (len + 16 > remaining)
 			break;
-		server_handle_packet(server, seq, type, len, start);
+		server_handle_packet(server, proto, seq, type, len, start);
 		start += len + 16;
 		remaining -= len + 16;
 	}
@@ -380,7 +384,7 @@ server_receive(void *udata, int ecore_event_type, void *edata){
 }
 
 static void
-server_handle_packet(struct server *server, int seq, int type, 
+server_handle_packet(struct server *server, int proto, int seq, int type, 
 			int len, void *data){
 	struct msg *msg;
 	struct server_cb *cb,*next;
@@ -410,7 +414,7 @@ server_handle_packet(struct server *server, int seq, int type,
 	msg->data = malloc(len);
 	memcpy(msg->data, (char *)data + 16, len);
 	msg->end = (char*)msg->data + len;
-	msg->protocol = 4; /* FIXME */
+	msg->protocol = proto;
 
 	printf("Handling Seq %d [%s]\n",seq,event);
 	if (seq){
