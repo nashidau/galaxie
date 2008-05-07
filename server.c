@@ -346,8 +346,7 @@ server_receive(void *udata, int ecore_event_type, void *edata){
 
 	while (remaining > 16){
 		header = (uint32_t *)start;
-		magic = header[0]; //ntohl(header[0]);
-		/* FIXME: Handle tp03 or tp04 packets */
+		magic = ntohl(header[0]);
 		if (magic == HEADER_PROTO_3)
 			proto = 3;
 		else if (magic == HEADER_PROTO_4)

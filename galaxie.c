@@ -239,7 +239,7 @@ parse_args(int argc, char **argv){
 		p ++;
 		
 	/* Use defaults */
-	opt->usegui = USE_GUI; /* Default */ /* FIXME: Compile constant */
+	opt->usegui = USE_GUI; /* Default */
 	opt->ai = ai_info; /* FIXME: Compile constant */
 	opt->username = strdup("nash");
 	opt->password = strdup("password");
