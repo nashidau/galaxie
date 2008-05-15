@@ -12,6 +12,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <talloc.h>
+
 #include <Ecore.h>
 #include <Ecore_Con.h>
 
@@ -202,7 +204,7 @@ server_init(struct tpe *tpe){
 
 	ecore_con_init();
 
-	servers = calloc(1,sizeof(struct servers));
+	servers = talloc_zero(tpe, struct servers);
 	if (servers == NULL) return NULL;
 	tpe->servers = servers;
 	servers->tpe = tpe;
@@ -242,7 +244,7 @@ server_connect(struct tpe *tpe,
 		conncb cb, void *userdata){
 	struct server *server;
 
-	server = calloc(1,sizeof(struct server));
+	server = talloc_zero(tpe,struct server);
 	server->magic = SERVER_MAGIC;
 	
 	/* Start by assuming TP 4 */
@@ -334,7 +336,9 @@ server_receive(void *udata, int ecore_event_type, void *edata){
 	assert(server != NULL);
 
 	if (server->buf.size){
+		/* These allocations use realloc for performance */
 		start = realloc(server->buf.data, server->buf.size + data->size);
+		/* FIXME: Check realloc */
 		remaining = server->buf.size + data->size;
 		memcpy(start + server->buf.size, data->data, data->size);
 		server->buf.data = start; /* Save it to free later */

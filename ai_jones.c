@@ -16,6 +16,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <talloc.h>
+
 #include <Evas.h>
 #include <Ecore.h>
 #include <Ecore_Data.h>
@@ -49,7 +51,7 @@ struct ai *
 ai_jones_init(struct tpe *tpe){
 	struct ai *ai;
 	
-	ai = calloc(1,sizeof(struct ai));
+	ai = talloc_zero(NULL,struct ai);
 	ai->tpe = tpe;
 
 	tpe_event_handler_add(tpe->event, "PlanetNoOrders",
