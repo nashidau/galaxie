@@ -12,7 +12,6 @@
 #include <Ecore_Evas.h>
 #include <Ecore_Con.h>
 #include <Edje.h>
-#include <Ewl.h>
 
 #include "tpe.h"
 #include "browser.h"
@@ -177,7 +176,6 @@ main(int argc, char **argv){
 
 	evas_init();
 	ecore_init();
-	ewl_init(&argc, argv);
 
 	tpe = talloc_zero(NULL,struct tpe);
 	if (tpe == NULL) exit(1);
@@ -203,8 +201,8 @@ main(int argc, char **argv){
 	tpe->board 	= tpe_board_init(tpe);
 	tpe->ship	= tpe_ship_init(tpe);
 
-	if (opt->usegui)
-		tpe->gui = gui_init(tpe, opt->theme, opt->fullscreen);
+//	if (opt->usegui)
+//		tpe->gui = gui_init(tpe, opt->theme, opt->fullscreen);
 	if (opt->ai && opt->ai->init)	
 		tpe->ai = opt->ai->init(tpe);
 

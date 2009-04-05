@@ -1,5 +1,5 @@
 PKGCONFIG=pkg-config
-PKGS='evas ecore ecore-con ecore-job edje ewl imlib2 lua5.1 talloc'
+PKGS='evas ecore ecore-con ecore-job edje imlib2 lua5.1 talloc'
 
 CFLAGS+=`${PKGCONFIG} --cflags ${PKGS}`
 LDFLAGS+=`${PKGCONFIG} --libs ${PKGS}`
@@ -27,7 +27,7 @@ OBJECTS=		\
 	tpe_comm.o	\
 	ai_util.o
 
-GUI=			\
+GUI=#			\
 	tpe_gui.o	\
 	tpe_gui_orders.o	\
 	gui_window.o	\
