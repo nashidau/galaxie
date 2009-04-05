@@ -80,6 +80,7 @@ ailist.h:  ${AI_SRCS}
 	grep -h TPE_AI ${AI_SRCS} > ailist.h
 
 galaxie: ${OBJECTS} ${GUI} ${AIS} 
+	${CC} -o galaxie ${OBJECTS} ${GUI} ${AIS} ${LDFLAGS}
 
 doc:
 	doxygen Doxygen.conf
