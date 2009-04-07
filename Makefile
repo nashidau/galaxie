@@ -35,8 +35,9 @@ GUI=	#		\
 	gui_window.o	\
 	gui_list.o	
 
-NEWGUI=	gui/map.o	\
+NEWGUI=			\
 	gui/star.o
+	#gui/map.o	\
 
 AIS=			\
 	ai_smith.o	\
@@ -44,16 +45,16 @@ AIS=			\
 
 AI_SRCS=${subst .o,.c,${AIS}}
 
-BASICTHEME=			\
-	edje/basic.edc		\
-	edje/basic-info.edc	\
-	edje/basic-menu.edc	\
-	edje/basic-message.edc	\
-	edje/basic-orders.edc	\
-	edje/basic-refs.edc	\
-	edje/basic-ships.edc	\
-	edje/basic-stars.edc	\
-	edje/basic-window.edc
+#BASICTHEME=			\
+#	edje/basic.edc		\
+#	edje/basic-info.edc	\
+#	edje/basic-menu.edc	\
+#	edje/basic-message.edc	\
+#	edje/basic-orders.edc	\
+#	edje/basic-refs.edc	\
+#	edje/basic-ships.edc	\
+#	edje/basic-stars.edc	\
+#	edje/basic-window.edc
 
 IMAGES=				\
 	$Iarrowright.png	\
@@ -71,10 +72,10 @@ EDJE=edje/basic.edj
 EDJE_FLAGS=-id edje/images
 
 
-TARGETS: galaxie ${EDJE}
+TARGETS: galaxie  
 
-%.edj : %.edc
-	edje_cc ${EDJE_FLAGS} $<
+#%.edj : %.edc
+#	edje_cc ${EDJE_FLAGS} $<
 
 # Big FIXME: install edje data, and make sure binaries can find it
 install:
@@ -83,7 +84,7 @@ install:
 ailist.h:  ${AI_SRCS}
 	grep -h TPE_AI ${AI_SRCS} > ailist.h
 
-galaxie: ${OBJECTS} ${GUI} ${AIS} 
+galaxie: ${OBJECTS} ${GUI} ${AIS}  ${NEWGUI}
 	${CC} -o galaxie ${OBJECTS} ${GUI} ${AIS} ${LDFLAGS}
 
 doc:
@@ -95,7 +96,7 @@ sparse:
 testedje: ${EDJE}
 	edje ${EDJE}
 
-edje/basic.edj: ${BASICTHEME} ${IMAGES} Makefile
+#edje/basic.edj: ${BASICTHEME} ${IMAGES} Makefile
 
 tags:
 	cscope -R -b -I/usr/local/include 			\
