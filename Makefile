@@ -8,6 +8,8 @@ ifeq "${PREFIX}" ""
 	PREFIX=/usr/local
 endif
 
+DATADIR=${PREFIX}/share/galaxie/
+
 # Image path
 I=edje/images/
 
@@ -27,12 +29,14 @@ OBJECTS=		\
 	tpe_comm.o	\
 	ai_util.o
 
-GUI=#			\
+GUI=	#		\
 	tpe_gui.o	\
 	tpe_gui_orders.o	\
 	gui_window.o	\
-	gui_list.o	\
-	ewl/gewl_object.o
+	gui_list.o	
+
+NEWGUI=	gui/map.o	\
+	gui/star.o
 
 AIS=			\
 	ai_smith.o	\

@@ -12,7 +12,7 @@
 #include <Evas.h>
 #include <Edje.h>
 
-#include <Imlib2.h>	/* For screenshots */
+//#include <Imlib2.h>	/* For screenshots */
 
 #include "tpe.h"
 #include "tpe_board.h"
@@ -632,7 +632,7 @@ star_mouse_down(void *data, Evas *e, Evas_Object *obj, void *event){
 
 		evas_object_show(o);
 */
-		o = tpe_ewl_planet_add(go->gui, go->object);
+//		o = tpe_ewl_planet_add(go->gui, go->object);
 		go->info = o;
 	}
 
@@ -1494,7 +1494,7 @@ gui_screengrab(struct gui *gui){
 	static int count = 0;
 	int w,h,x,y;
 	char buf[BUFSIZ];
-	Imlib_Image im;
+	//Imlib_Image im;
 	const char *path;
 	void *ecore_x_display_get(void);
 
@@ -1505,7 +1505,7 @@ gui_screengrab(struct gui *gui){
 	count ++;
 
 	ecore_evas_geometry_get(gui->ee,&x,&y,&w,&h);
-
+/*
 	imlib_context_set_display(ecore_x_display_get());
 	imlib_context_set_visual(
 			DefaultVisual(ecore_x_display_get(), 
@@ -1520,7 +1520,7 @@ gui_screengrab(struct gui *gui){
 	imlib_image_set_format("png");
 	imlib_save_image(buf);
 	imlib_free_image_and_decache();
-
+*/
 	return 0;
 }
 
