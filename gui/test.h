@@ -7,6 +7,8 @@
 	FIXME: galaxie/types.h or smilar */
 #include "../object_param.h"
 
+#include "../tpe_event.h"
+
 enum {
 	TEST_W	= 640,
 	TEST_H  = 480

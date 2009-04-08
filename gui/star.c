@@ -4,7 +4,12 @@
  * @todo: Asynchronous media loading
  * @todo: TP Media support
  * @todo: Event handling
+ * @todo: Event generation
+ * @todo: Label toggle
  */
+#include <inttypes.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <Evas.h>
@@ -19,8 +24,12 @@
 
 #ifndef DATAPATH
 #warning No datapath - using default
-#define DATAPATH "/usr/local/share/galaxie"
+#define DATAPATH "/usr/local/share/galaxie/"
 #endif
+
+enum {
+	DEFAULT_SIZE = 32
+};
 
 /* FIXME: This should be in globals somewhere */
 static const objid_t INVALIDID = 0xffffffff;
@@ -183,14 +192,20 @@ smart_add(Evas_Object *star){
 	sd->clip = evas_object_rectangle_add(sd->e);
 
 	sd->star = evas_object_image_add(sd->e);
-	evas_object_image_file_set(sd->star, DATAPATH"widgets/star.png",NULL);
+	evas_object_image_file_set(sd->star, DATAPATH"/widgets/star.png",NULL);
 	err = evas_object_image_load_error_get(sd->star);
-	if (err != 0)
+	if (err != 0){
 		fprintf(stderr, "Unable to load star image (%d)\n",err);
+		fprintf(stderr,"Was loading: %s\n",DATAPATH"widgets/star.png");
+	}
 	evas_object_show(sd->star);
+	evas_object_resize(sd->star,DEFAULT_SIZE,DEFAULT_SIZE);
+	evas_object_image_fill_set(sd->star,0,0,DEFAULT_SIZE,DEFAULT_SIZE);
 	evas_object_smart_member_add(sd->star,star);
 
 	sd->name = evas_object_text_add(sd->e);
+	evas_object_text_style_set(sd->name, EVAS_TEXT_STYLE_SHADOW);
+	evas_object_text_shadow_color_set(sd->name, 50,128,60,128);
 	/* FIXME: Style */
 	evas_object_text_font_set(sd->name, "Vera", 12);
 	evas_object_show(sd->name);
@@ -210,6 +225,7 @@ smart_del(Evas_Object *star){
 
 static void 
 smart_member_add(Evas_Object *star, Evas_Object *child){
+	
 
 }
 static void 
@@ -220,6 +236,7 @@ smart_member_del(Evas_Object *star, Evas_Object *child){
 static void
 smart_move(Evas_Object *star, Evas_Coord x, Evas_Coord y){
 	Smart_Data *sd;
+	int sw,sh,tw;
 
 	sd = CHECK_TYPE(star, classname);
 	
@@ -227,7 +244,10 @@ smart_move(Evas_Object *star, Evas_Coord x, Evas_Coord y){
 
 	evas_object_move(sd->clip,x,y);
 	evas_object_move(sd->star,x,y);
-	evas_object_move(sd->name,x,y);
+	
+	evas_object_geometry_get(sd->star,NULL,NULL,&sh,&sw);
+	evas_object_geometry_get(sd->name,NULL,NULL,&tw,NULL);
+	evas_object_move(sd->name,x + sw / 2 - tw / 2, y + sh);
 
 	sd->x = x;
 	sd->y = y;

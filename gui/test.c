@@ -19,6 +19,8 @@ testinit(int *argc, char **argv){
 	ecore_init();
 	ecore_evas_init();
 
+	tpe_event_init();
+
 	test->ee = NULL;
 	//test->ee = ecore_evas_gl_x11_new(NULL,0,0,0,TEST_W,TEST_H);
 	//if (!test->ee)
@@ -44,6 +46,8 @@ testinit(int *argc, char **argv){
 	evas_object_color_set(test->bg, 0,0,30,255);
 	evas_object_move(test->bg,0,0);
 	evas_object_resize(test->bg,TEST_W,TEST_H);
+	evas_object_layer_set(test->bg, -1000);
+	evas_object_show(test->bg);
 
 	return test;	
 }

@@ -6,12 +6,13 @@ PKGS='evas ecore ecore-evas ecore-con ecore-job edje imlib2 lua5.1 talloc ecore-
 XLIBS=-lX11 -lXp -lXext -lXss -lXrandr -lXfixes -lXdamage -lXcursor \
 		-lXcomposite
 
-DATAPATH=/usr/local/share/galaxie
+
+DATAPATH=${PREFIX}/share/galaxie
 
 CFLAGS+=`${PKGCONFIG} --cflags ${PKGS}` -DDATAPATH=\"${DATAPATH}\"
 LDFLAGS+=${XLIBS} `${PKGCONFIG} --libs ${PKGS}`
 
-teststar:teststar.o test.o star.o
+teststar:teststar.o test.o star.o ../tpe_event.o
 	${CC} -o $@ $^ ${LDFLAGS}
 
 tags:
@@ -20,7 +21,7 @@ tags:
 
 
 clean:
-	rm *.o teststar
+	rm -f *.o teststar
 
 #---- Dependancies ----#
 star.o: star.h widgetsupport.h
