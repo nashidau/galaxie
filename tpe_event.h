@@ -1,7 +1,7 @@
 struct tpe_event;
 struct tpe;
 
-struct tpe_event *tpe_event_init(struct tpe *tpe);
+struct tpe_event *tpe_event_init(void);
 int tpe_event_type_add(struct tpe_event *tpeev, const char *name);
 
 int tpe_event_handler_add(struct tpe_event *tpeev, const char *event,

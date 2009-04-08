@@ -27,12 +27,11 @@ unsigned int hash_pjw(const char *s);
  * Initialise the event system 
  */
 struct tpe_event *
-tpe_event_init(struct tpe *tpe){
+tpe_event_init(void){
 	struct tpe_event *tpe_ev;
 
 	tpe_ev = calloc(1,sizeof(struct tpe_event));
 	if (!tpe_ev) return NULL;
-
 
 	tpe_ev->hash = ecore_hash_new((unsigned int(*)(const void*))hash_pjw, 
 			(int(*)(const void*,const void*))strcmp);

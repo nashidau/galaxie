@@ -187,7 +187,7 @@ main(int argc, char **argv){
 	if (opt->showoptions)
 		dump_options(opt);
 
-	tpe->event 	= tpe_event_init(tpe);
+	tpe->event 	= tpe_event_init();
 	tpe->servers 	= server_init(tpe);
 	//tpe->msg   	= tpe_msg_init(tpe);
 	tpe_comm_init(tpe);
