@@ -11,7 +11,6 @@
 #include <Ecore.h>
 #include <Ecore_Evas.h>
 #include <Ecore_Con.h>
-#include <Edje.h>
 
 #include "tpe.h"
 #include "browser.h"

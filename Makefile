@@ -1,5 +1,5 @@
 PKGCONFIG=pkg-config
-PKGS='evas ecore ecore-con ecore-job edje imlib2 lua5.1 talloc'
+PKGS='evas ecore ecore-con ecore-job imlib2 lua5.1 talloc'
 
 CFLAGS+=`${PKGCONFIG} --cflags ${PKGS}`
 LDFLAGS+=`${PKGCONFIG} --libs ${PKGS}`
@@ -80,6 +80,8 @@ TARGETS: galaxie
 # Big FIXME: install edje data, and make sure binaries can find it
 install:
 	cp galaxie ${PREFIX}/bin
+	mkdir -p ${PREFIX}/share/galaxie/widgets/
+	cp gui/data/star.png ${PREFIX}/share/galaxie/widgets/
 
 ailist.h:  ${AI_SRCS}
 	grep -h TPE_AI ${AI_SRCS} > ailist.h
