@@ -1,4 +1,11 @@
 /**
+ * @brief Basic Star Widget.
+ *
+ * The star widget is a single system on the map.  In some games it is the
+ * basic item for navigation, in others it will contain planets, asteroids and
+ * other things. 
+ *
+ * It can also act as a container to hold splanets, ships and other widgets.
  *
  * Mouse/Cursor behaviour (default):
  *  - Mouse in:
