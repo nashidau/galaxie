@@ -1,3 +1,7 @@
+
+#define INTTOPTR(x) 	((void*)(intptr_t)(x))
+#define PTRTOINT(x)	((int)(intptr_t)(x))
+
 #define CHECK_TYPE(obj, typename)                        		\
         ({                                                              \
                 Smart_Data *CT_sd;                                      \

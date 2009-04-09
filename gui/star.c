@@ -1,5 +1,15 @@
 /**
  *
+ * Mouse/Cursor behaviour (default):
+ *  - Mouse in:
+ *		Generate GUIObjectHighlight
+ *	Wait 1s:
+ *		Generate GUIObjectSelect
+ *  - Mouse out 
+ *		Nothing (cancel possible GUIObjectSelect event)
+ *  - Mouse up:
+ *		Generate GUIObjectSelect
+ *
  * @todo: Doxygen Documentation
  * @todo: Asynchronous media loading
  * @todo: TP Media support
@@ -293,8 +303,8 @@ smart_mouse_in(void *starv, Evas *e, Evas_Object *obj, void *ev){
 	}
 	sd->intimer = ecore_timer_add(INSELECT, smart_mouse_hover, starv);
 
-	/* FIXME: No object info */
-	tpe_event_send("GUIObjectHighlight", NULL, NULL, NULL);
+	/* FIXME: Hard coded string for event type */
+	tpe_event_send("GUIObjectHover",INTTOPTR(sd->id),tpe_event_nofree,NULL);
 
 }
 static void

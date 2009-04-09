@@ -1,5 +1,6 @@
 
 #include "test.h"
+#include "widgetsupport.h"
 
 static void register_events(void);
 
@@ -77,18 +78,27 @@ register_events(void){
 	for (i = 0 ; i < N_EVENTTYPES ; i ++){
 		tpe_event_type_add(events[i].name);
 		if (events[i].handler)
-			tpe_event_handler_add(events[i].name,events[i].handler);
+			tpe_event_handler_add(events[i].name,
+					events[i].handler,NULL);
 	}
 }
 
 static int
 event_guiobjecthover(void *data, int type, void *event){
-	printf("GUIObjectHover generated\n");
+	uint32_t id;
+
+	id = PTRTOINT(event);
+
+	printf("GUIObjectHover generated: Star %d\n",id);
 	return 0;
 }
 
 static int
 event_guiobjectselect(void *data,int type,void *event){
-	printf("GUIObjectSelect generated\n");
+	uint32_t id;
+
+	id = PTRTOINT(event);
+
+	printf("GUIObjectSelect generated: Star %d\n",id);
 	return 0;
 }
