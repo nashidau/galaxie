@@ -77,12 +77,9 @@ ai_smith_init(struct tpe *tpe){
 	ai->tpe = tpe;
 	ai->shipid = 0;
 
-	tpe_event_handler_add(tpe->event, "PlanetNoOrders", 
-			smith_order_planet, ai);
-	tpe_event_handler_add(tpe->event, "FleetNoOrders",
-			smith_order_fleet, ai);
-	tpe_event_handler_add(tpe->event, "PlanetColonised", 
-			smith_planet_colonised, ai);
+	tpe_event_handler_add("PlanetNoOrders", smith_order_planet, ai);
+	tpe_event_handler_add("FleetNoOrders", smith_order_fleet, ai);
+	tpe_event_handler_add("PlanetColonised", smith_planet_colonised, ai);
 
 	return ai;
 }

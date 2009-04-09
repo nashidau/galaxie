@@ -54,10 +54,8 @@ ai_jones_init(struct tpe *tpe){
 	ai = talloc_zero(NULL,struct ai);
 	ai->tpe = tpe;
 
-	tpe_event_handler_add(tpe->event, "PlanetNoOrders",
-			jones_order_planet, ai);
-	tpe_event_handler_add(tpe->event, "FleetNoOrders",
-			jones_order_fleet, ai);
+	tpe_event_handler_add("PlanetNoOrders", jones_order_planet, ai);
+	tpe_event_handler_add("FleetNoOrders", jones_order_fleet, ai);
 
 	return ai;
 }

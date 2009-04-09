@@ -187,7 +187,10 @@ main(int argc, char **argv){
 	if (opt->showoptions)
 		dump_options(opt);
 
-	tpe->event 	= tpe_event_init();
+	if (tpe_event_init()){
+		fprintf(stderr,"Error initing event system!\n");
+		exit(1);
+	}
 	tpe->servers 	= server_init(tpe);
 	//tpe->msg   	= tpe_msg_init(tpe);
 	tpe_comm_init(tpe);

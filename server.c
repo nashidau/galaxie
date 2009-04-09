@@ -232,7 +232,7 @@ server_event_register(struct tpe *tpe){
 	n = sizeof(msgnames)/sizeof(msgnames[0]);
 
 	for (i = 0 ; i < n ; i ++){
-		tpe_event_type_add(tpe->event, msgnames[i].name);
+		tpe_event_type_add(msgnames[i].name);
 	}
 }
 
@@ -453,8 +453,7 @@ server_handle_packet(struct server *server, int proto, int seq, int type,
 	assert(server->servers->tpe);
 	assert(server->servers->tpe->event);
 
-	tpe_event_send(server->servers->tpe->event, event, 
-			msg, msg_free, NULL);
+	tpe_event_send(event, msg, msg_free, NULL);
 }	
 
 static void

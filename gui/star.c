@@ -18,6 +18,7 @@
 
 /* FIXME: Generic types */
 #include "../object_param.h"
+#include "../tpe_event.h"
 
 #include "star.h"
 #include "widgetsupport.h"
@@ -30,6 +31,8 @@
 enum {
 	DEFAULT_SIZE = 32
 };
+
+#define INSELECT 1.0
 
 /* FIXME: This should be in globals somewhere */
 static const objid_t INVALIDID = 0xffffffff;
@@ -46,6 +49,8 @@ typedef struct Smart_Data {
 	Evas_Object *star;
 	Evas_Object *name;
 
+	Ecore_Timer *intimer;
+
 	unsigned int defaultname : 1;
 } Smart_Data;
 
@@ -58,6 +63,13 @@ static void smart_del(Evas_Object *);
 static void smart_move(Evas_Object *, Evas_Coord x, Evas_Coord y);
 static void smart_member_add(Evas_Object *, Evas_Object *);
 static void smart_member_del(Evas_Object *, Evas_Object *);
+
+static void smart_mouse_up(void *data, Evas *, Evas_Object *, void *ev);
+static void smart_mouse_down(void *data, Evas *, Evas_Object *, void *ev);
+static void smart_mouse_in(void *data, Evas *, Evas_Object *, void *ev);
+static void smart_mouse_out(void *data, Evas *, Evas_Object *, void *ev);
+
+static int smart_mouse_hover(void *starv);
 
 static const Evas_Smart_Class starclass = {
 	.name = classname,
@@ -202,6 +214,14 @@ smart_add(Evas_Object *star){
 	evas_object_resize(sd->star,DEFAULT_SIZE,DEFAULT_SIZE);
 	evas_object_image_fill_set(sd->star,0,0,DEFAULT_SIZE,DEFAULT_SIZE);
 	evas_object_smart_member_add(sd->star,star);
+	evas_object_event_callback_add(sd->star, EVAS_CALLBACK_MOUSE_DOWN,
+				smart_mouse_down, star);
+	evas_object_event_callback_add(sd->star, EVAS_CALLBACK_MOUSE_UP,
+				smart_mouse_up, star);
+	evas_object_event_callback_add(sd->star, EVAS_CALLBACK_MOUSE_IN,
+				smart_mouse_in, star);
+	evas_object_event_callback_add(sd->star, EVAS_CALLBACK_MOUSE_OUT,
+				smart_mouse_out, star);
 
 	sd->name = evas_object_text_add(sd->e);
 	evas_object_text_style_set(sd->name, EVAS_TEXT_STYLE_SHADOW);
@@ -252,6 +272,55 @@ smart_move(Evas_Object *star, Evas_Coord x, Evas_Coord y){
 	sd->x = x;
 	sd->y = y;
 }
+
+
+static void 
+smart_mouse_up(void *data, Evas *e, Evas_Object *obj, void *ev){
+
+}
+static void 
+smart_mouse_down(void *data, Evas *e, Evas_Object *obj, void *ev){
+}
+static void 
+smart_mouse_in(void *starv, Evas *e, Evas_Object *obj, void *ev){
+	Smart_Data *sd;
+
+	sd = CHECK_TYPE(starv, classname);
+
+	if (sd->intimer){
+		fprintf(stderr,"%s:%d: In on in?\n",__FILE__,__LINE__);
+		ecore_timer_del(sd->intimer);
+	}
+	sd->intimer = ecore_timer_add(INSELECT, smart_mouse_hover, starv);
+
+	/* FIXME: No object info */
+	tpe_event_send("GUIObjectHighlight", NULL, NULL, NULL);
+
+}
+static void
+smart_mouse_out(void *starv, Evas *e, Evas_Object *obj, void *ev){
+	Smart_Data *sd;
+
+	sd = CHECK_TYPE(starv, classname);
+
+	if (sd->intimer){
+		ecore_timer_del(sd->intimer);
+		sd->intimer = NULL;
+	}
+
+}
+
+
+static int 
+smart_mouse_hover(void *starv){
+	Smart_Data *sd;
+
+	sd = CHECK_TYPE_RETURN(starv, classname, 0);
+
+	sd->intimer = NULL;
+	return 0;
+}
+
 
 /**
  * Generate a default name for a star.

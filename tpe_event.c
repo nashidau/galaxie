@@ -11,9 +11,7 @@
 
 /*
  * Globacl generic TPE event structure */
-struct tpe_event {
-	Ecore_Hash *hash;
-};
+static Ecore_Hash *hash;
 
 struct event_info {
 	const char *name;
@@ -26,24 +24,19 @@ unsigned int hash_pjw(const char *s);
 /**
  * Initialise the event system 
  */
-struct tpe_event *
+int
 tpe_event_init(void){
-	struct tpe_event *tpe_ev;
-
-	tpe_ev = calloc(1,sizeof(struct tpe_event));
-	if (!tpe_ev) return NULL;
-
-	tpe_ev->hash = ecore_hash_new((unsigned int(*)(const void*))hash_pjw, 
+	hash = ecore_hash_new((unsigned int(*)(const void*))hash_pjw, 
 			(int(*)(const void*,const void*))strcmp);
-
+	
 	/* Init lazily */
 
-	return tpe_ev;
+	return !hash;
 }
 
 
 int 
-tpe_event_type_add(struct tpe_event *tpeev, const char *name){
+tpe_event_type_add(const char *name){
 	struct event_info *einfo;
 
 	/* Register a new event by this name */
@@ -53,7 +46,7 @@ tpe_event_type_add(struct tpe_event *tpeev, const char *name){
 	einfo->handlers = 0;
 	
 	/* XXX: This cast needs to go: Needs a fix in ecore however */
-	ecore_hash_set(tpeev->hash, (void*)name, einfo);	
+	ecore_hash_set(hash, (void*)name, einfo);	
 	return 0;
 }
 
@@ -63,13 +56,11 @@ tpe_event_type_add(struct tpe_event *tpeev, const char *name){
  * Checks to make sure the event type has been registered first 
  */
 int 
-tpe_event_handler_add(struct tpe_event *tpeev, const char *event,
-		int (*handler)(void *data, int typeid, void *event), void *data){
+tpe_event_handler_add(const char *event,
+		int (*handler)(void *data, int id, void *event), void *data){
 	struct event_info *einfo;
 
-	assert(tpeev);
-
-	einfo = ecore_hash_get(tpeev->hash, event);
+	einfo = ecore_hash_get(hash, event);
 	if (einfo == NULL){
 		printf("Unable to find event '%s'\n",event);
 		return -1;
@@ -121,13 +112,11 @@ hash_pjw(const char *s)
  * The event must have been registered for the vent to be sent.
  */
 int
-tpe_event_send(struct tpe_event *tpeev, const char *event, void *edata,	
+tpe_event_send(const char *event, void *edata,	
 		void (*freefn)(void *data, void *event), void *freedata){
 	struct event_info *einfo;
 
-	assert(tpeev);
-
-	einfo = ecore_hash_get(tpeev->hash, event);
+	einfo = ecore_hash_get(hash, event);
 	if (einfo == NULL){
 		printf("Warning: Unregisted event '%s'\n",event);
 		return -1;

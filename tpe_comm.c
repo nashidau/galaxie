@@ -90,18 +90,16 @@ static int tpe_comm_available_features_msg(void *udata, int type, void *event);
 void
 tpe_comm_init(struct tpe *tpe){
 	/* FIXME: Need to check for multi start here */
-	tpe_event_handler_add(tpe->event, "MsgAvailableFeatures", 
+	tpe_event_handler_add("MsgAvailableFeatures", 
 			tpe_comm_available_features_msg, tpe);
-	tpe_event_handler_add(tpe->event, "MsgFail",
-			tpe_comm_msg_fail, tpe);
-	tpe_event_handler_add(tpe->event, "MsgTimeRemaining",
-			tpe_comm_time_remaining, tpe);
+	tpe_event_handler_add("MsgFail", tpe_comm_msg_fail, tpe);
+	tpe_event_handler_add("MsgTimeRemaining",tpe_comm_time_remaining, tpe);
 
-	tpe_event_type_add(tpe->event, "NewTurn");
-	tpe_event_type_add(tpe->event, "ConnectStart");
-	tpe_event_type_add(tpe->event, "ConnectUpdate");
-	tpe_event_type_add(tpe->event, "Connected");
-	tpe_event_type_add(tpe->event, "HaveServerFeatures");
+	tpe_event_type_add("NewTurn");
+	tpe_event_type_add("ConnectStart");
+	tpe_event_type_add("ConnectUpdate");
+	tpe_event_type_add("Connected");
+	tpe_event_type_add("HaveServerFeatures");
 }
 
 
@@ -125,8 +123,7 @@ tpe_comm_connect(struct tpe *tpe,
 	connect->server = server_connect(tpe, server, port, 0,
 			tpe_comm_socket_connect, connect);
 
-	tpe_event_send(tpe->event, "ConnectStart", connect, 
-			tpe_event_nofree, NULL);
+	tpe_event_send("ConnectStart", connect, tpe_event_nofree, NULL);
 
 	return 1;
 }
@@ -204,8 +201,7 @@ tpe_comm_logged_in(void *data, struct msg *msg){
 
 	ecore_timer_add(5, tpe_comm_get_time, msg->server);
 	/* The rest of the system know */
-	tpe_event_send(msg->tpe->event, "Connected", connect, 
-			tpe_event_nofree, NULL);
+	tpe_event_send("Connected", connect, tpe_event_nofree, NULL);
 
 	return 0;
 }
@@ -350,8 +346,7 @@ tpe_comm_time_remaining(void *udata, int type, void *event){
 
 	if (msg->seq == 0 && remain == 0){
 		tpe->turn ++;
-		tpe_event_send(tpe->event, "NewTurn", msg->server, 
-				tpe_event_nofree, NULL);
+		tpe_event_send("NewTurn", msg->server, tpe_event_nofree, NULL);
 	}
 
 	return 1;

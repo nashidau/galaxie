@@ -56,7 +56,7 @@ tpe_resources_init(struct tpe *tpe){
 	resources->magic = RESOURCE_MAGIC;
 	resources->resources = ecore_list_new();
 
-	tpe_event_type_add(tpe->event, "ResourceNew");
+	tpe_event_type_add("ResourceNew");
 
 	tpe_sequence_register(tpe, "MsgGetResourceDescriptionIDs",
                         "MsgListOfResourceDescriptionsIDs",
@@ -64,7 +64,7 @@ tpe_resources_init(struct tpe *tpe){
                         tpe_resources_resourcedescription_updated,
                         NULL, NULL);
 
-        tpe_event_handler_add(tpe->event, "MsgResourceDescription",
+        tpe_event_handler_add("MsgResourceDescription",
                         tpe_resources_resourcedescription_msg, tpe);
 
 
@@ -148,8 +148,7 @@ tpe_resources_resourcedescription_msg(void *data,int etype,void *event){
 		rd->id = id;
 		ecore_list_append(tpe->resources->resources,rd);
 		/* Can queue now... not sent until we return... */
-		tpe_event_send(tpe->event, "ResourceNew", rd, 
-				tpe_event_nofree, NULL);
+		tpe_event_send("ResourceNew", rd, tpe_event_nofree, NULL);
 	}
 
 	/* FIXME: Check we got it all */

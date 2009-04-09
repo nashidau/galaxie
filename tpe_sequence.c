@@ -41,8 +41,8 @@ tpe_sequence_init(struct tpe *tpe){
 	tpeseq = calloc(1,sizeof(struct tpe_sequence));
 	tpeseq->seqs = ecore_list_new();
 
-	tpe_event_handler_add(tpe->event,"NewTurn", tpe_sequence_new_turn, tpe);
-	tpe_event_handler_add(tpe->event,"Connected",tpe_sequence_coneect, tpe);
+	tpe_event_handler_add("NewTurn", tpe_sequence_new_turn, tpe);
+	tpe_event_handler_add("Connected",tpe_sequence_coneect, tpe);
 
 	return tpeseq;
 }
@@ -78,7 +78,7 @@ tpe_sequence_register(struct tpe *tpe,
 
 	ecore_list_append(tpe->sequence->seqs, seq);
 
-	tpe_event_handler_add(tpe->event, oidlist, tpe_sequence_handle_oids, seq);
+	tpe_event_handler_add(oidlist, tpe_sequence_handle_oids, seq);
 
 	return 0; 
 }

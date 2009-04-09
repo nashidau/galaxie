@@ -1,6 +1,22 @@
 
 #include "test.h"
 
+static void register_events(void);
+
+static int event_guiobjecthover(void*,int,void*);
+static int event_guiobjectselect(void*,int,void*);
+
+static const struct events {
+	const char *name;
+	int (*handler)(void *, int, void *);
+} events[] = {
+	{ "GUIObjectHover", event_guiobjecthover },
+	{ "GUIObjectSelect",event_guiobjectselect },
+};
+#define N_EVENTTYPES ((int)(sizeof(events)/sizeof(events[0])))
+
+
+
 /**
  * Generic test support
  *
@@ -20,6 +36,7 @@ testinit(int *argc, char **argv){
 	ecore_evas_init();
 
 	tpe_event_init();
+	register_events();
 
 	test->ee = NULL;
 	//test->ee = ecore_evas_gl_x11_new(NULL,0,0,0,TEST_W,TEST_H);
@@ -50,4 +67,28 @@ testinit(int *argc, char **argv){
 	evas_object_show(test->bg);
 
 	return test;	
+}
+
+
+static void
+register_events(void){
+	int i;
+
+	for (i = 0 ; i < N_EVENTTYPES ; i ++){
+		tpe_event_type_add(events[i].name);
+		if (events[i].handler)
+			tpe_event_handler_add(events[i].name,events[i].handler);
+	}
+}
+
+static int
+event_guiobjecthover(void *data, int type, void *event){
+	printf("GUIObjectHover generated\n");
+	return 0;
+}
+
+static int
+event_guiobjectselect(void *data,int type,void *event){
+	printf("GUIObjectSelect generated\n");
+	return 0;
 }

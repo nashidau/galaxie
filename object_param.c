@@ -21,7 +21,7 @@ extern struct rvector _rvector;
 	int64_t 	x,y,z;
 	objtype_t	relative_to
 */
-struct parseitem rvector[] =  {
+static struct parseitem rvector[] =  {
 	{ PARSETYPE_LONG, OFFSET(_rvector, x), 0, NULL, NULL, 0},
 	{ PARSETYPE_LONG, OFFSET(_rvector, y), 0, NULL, NULL, 0},
 	{ PARSETYPE_LONG, OFFSET(_rvector, z), 0, NULL, NULL, 0},
@@ -45,7 +45,7 @@ struct parseitem rvector[] =  {
 	?? Should there be a object?
 	int32_t		slot
 */
-struct parseitem boundposition[] = {
+static struct parseitem boundposition[] = {
 	{ PARSETYPE_INT, 0, 0, NULL, NULL, 0},
 };
 
@@ -58,7 +58,7 @@ struct parseitem boundposition[] = {
 	list
 		int32_t	ordertypes
 */
-struct parseitem orderqueue[] = {
+static struct parseitem orderqueue[] = {
 	{ PARSETYPE_INT, OFFSET(_orderqueue, max), 0, NULL, NULL, 0},
 	{ PARSETYPE_INT, OFFSET(_orderqueue, id), 0, NULL, NULL, 0},
 	{ PARSETYPE_INT, OFFSET(_orderqueue, norders), 0, NULL, NULL, 0},
@@ -77,14 +77,14 @@ struct parseitem orderqueue[] = {
 		uint32_t 	minable
 		uint32_t 	unavailable	
 */
-struct parseitem pl_resources[] = {
+static struct parseitem pl_resources[] = {
 	{ PARSETYPE_INT, OFFSET(_resource, id), 0, NULL, NULL, 0},
 	{ PARSETYPE_INT, OFFSET(_resource, stored), 0, NULL, NULL, 0},
 	{ PARSETYPE_INT, OFFSET(_resource, minable), 0, NULL, NULL, 0},
 	{ PARSETYPE_INT, OFFSET(_resource, unavail), 0, NULL, NULL, 0},
 };
 
-struct parseitem reslist[] = {
+static struct parseitem reslist[] = {
 	{ PARSETYPE_COMPLEX, OFFSET(_reslist, resources), 
 			OFFSET(_reslist, nresources),
 			pl_resources, "struct resource", 
@@ -97,7 +97,7 @@ struct parseitem reslist[] = {
 	int32_t		type
 	uint32_t	id
 */
-struct parseitem pl_reference[] = {
+static struct parseitem pl_reference[] = {
 	{ PARSETYPE_INT, OFFSET(_reference, type), 0, NULL, NULL, 0},
 	{ PARSETYPE_INT, OFFSET(_reference, value), 0, NULL, NULL, 0},
 };
@@ -109,7 +109,7 @@ struct parseitem pl_reference[] = {
 		uint32_t	id
 		uint32_t 	number
 */
-struct parseitem pl_refquantity[] = {
+static struct parseitem pl_refquantity[] = {
 	{ PARSETYPE_INT, OFFSET(_refquantity, type), 0, NULL, NULL, 0},
 	{ PARSETYPE_INT, OFFSET(_refquantity, value), 0, NULL, NULL, 0},
 	{ PARSETYPE_INT, OFFSET(_refquantity, quantity), 0, NULL, NULL, 0},
@@ -117,7 +117,7 @@ struct parseitem pl_refquantity[] = {
 
 
 
-struct parseitem pl_referencequantitylist[] = {
+static struct parseitem pl_referencequantitylist[] = {
 	{ PARSETYPE_COMPLEX, OFFSET(_refqlist, refquantities), 
 			OFFSET(_refqlist, nrefquantities),
 			pl_refquantity, "struct refquanty", 
@@ -130,7 +130,7 @@ struct parseitem pl_referencequantitylist[] = {
 8: Integer
 	int32_t		value
 */
-struct parseitem pl_int32[] = {
+static struct parseitem pl_int32[] = {
 	{ PARSETYPE_INT, 0, 0, NULL, NULL, 0},
 };
 
@@ -138,7 +138,7 @@ struct parseitem pl_int32[] = {
 9: Size
 	int64_t		diameter
 */
-struct parseitem pl_int64[] = {
+static struct parseitem pl_int64[] = {
 	{ PARSETYPE_LONG, 0, 0, NULL, NULL, 0},
 };
 
@@ -146,7 +146,7 @@ struct parseitem pl_int64[] = {
 10: Media URI
 	(readonly) char *url
 */
-struct parseitem pl_string[] = {
+static struct parseitem pl_string[] = {
 	{ PARSETYPE_STRING, 0, 0, NULL, NULL, 0},
 };
 

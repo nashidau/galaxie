@@ -1,14 +1,11 @@
-struct tpe_event;
-struct tpe;
+int tpe_event_init(void);
+int tpe_event_type_add(const char *name);
 
-struct tpe_event *tpe_event_init(void);
-int tpe_event_type_add(struct tpe_event *tpeev, const char *name);
-
-int tpe_event_handler_add(struct tpe_event *tpeev, const char *event,
+int tpe_event_handler_add(const char *event,
 		int (*handler)(void *data, int type, void *event), void *data);
 
 
-int tpe_event_send(struct tpe_event *tpe_ev, const char *name , void *event,
+int tpe_event_send(const char *name , void *event,
 			void (*freefn)(void *data, void *event), void *data);
 
 void tpe_event_nofree(void *,void *);

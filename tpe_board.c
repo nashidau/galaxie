@@ -32,17 +32,17 @@ struct board {
 	int received;
 };
 
-struct reference reftmp;
+static struct reference reftmp;
 #define REFOFF(field) ((char*)&reftmp.field - (char*)&reftmp)
-struct parseitem parserefs[] = {
+static struct parseitem parserefs[] = {
 	{ PARSETYPE_INT, REFOFF(type), 0, NULL, NULL, 0 },
 	{ PARSETYPE_INT, REFOFF(value), 0, NULL, NULL, 0 },
 	{ PARSETYPE_END, 0, 0, NULL, NULL, 0 },
 };
 
-struct message messagetmp; 
+static struct message messagetmp; 
 #define MSGOFF(field) ((char*)&messagetmp.field - (char*)&messagetmp)
-struct parseitem parsemessage[] = {
+static struct parseitem parsemessage[] = {
 	{ PARSETYPE_INT,  MSGOFF(board), 0, NULL, NULL, 0 },
 	{ PARSETYPE_INT,  MSGOFF(slot), 0, NULL, NULL, 0 },
 	/* Ignored array */
@@ -76,13 +76,11 @@ tpe_board_init(struct tpe *tpe){
 	board->boards = ecore_list_new();
 
 	/* Events we send */
-	tpe_event_type_add(tpe->event, "BoardUpdate");
+	tpe_event_type_add("BoardUpdate");
 
 	/* What messages we handle */
-	tpe_event_handler_add(tpe->event, "MsgBoard",
-                        tpe_board_msg_board_receive, tpe);
-	tpe_event_handler_add(tpe->event, "MsgMessage",
-                        tpe_board_msg_message_receive, tpe);
+	tpe_event_handler_add("MsgBoard", tpe_board_msg_board_receive, tpe);
+	tpe_event_handler_add("MsgMessage", tpe_board_msg_message_receive, tpe);
 
 	/* Sequence system can handle... */
 	tpe_sequence_register(tpe, "MsgGetBoardIDs",
@@ -463,7 +461,7 @@ tpe_board_board_changed_notify(struct tpe *tpe, struct board *board){
 	update->messages = board->received;
 	update->unread = board->unread;
 
-	tpe_event_send(tpe->event, "BoardUpdate", update, update_free, NULL);
+	tpe_event_send("BoardUpdate", update, update_free, NULL);
 
 	return 0;
 }

@@ -61,10 +61,10 @@ struct objectdescparam {
 };
 
 
-struct object otmp;
+static struct object otmp;
 #define OFFSET(field) ((char*)&otmp.field - (char*)&otmp)
 
-struct parseitem objparse[] = {
+static struct parseitem objparse[] = {
 	{ PARSETYPE_INT, OFFSET(oid), 0, NULL , NULL, 0 },
 	{ PARSETYPE_INT, OFFSET(type), 0, NULL , NULL, 0 },
 	{ PARSETYPE_STRING, OFFSET(name), 0, NULL , NULL, 0 },
@@ -85,18 +85,18 @@ struct parseitem objparse[] = {
 	{ PARSETYPE_END, -1, 0, NULL, NULL, 0 }
 };
 
-struct objectdescparam odpmtmp;
+static struct objectdescparam odpmtmp;
 #define DPMOFFSET(field) ((char*)&odpmtmp.field - (char*)&odpmtmp)
-struct parseitem objectdescparam[] = {
+static struct parseitem objectdescparam[] = {
 	{ PARSETYPE_STRING, DPMOFFSET(name), 0, NULL, NULL, 0 },
 	{ PARSETYPE_INT,    DPMOFFSET(id), 0, NULL, NULL, 0 },
 	{ PARSETYPE_STRING, DPMOFFSET(description), 0, NULL, NULL, 0 },
 	{ PARSETYPE_END, -1, 0, NULL, NULL, 0 }
 };
 
-struct objectdescprop odptmp;
+static struct objectdescprop odptmp;
 #define DPOFFSET(field) ((char*)&odptmp.field - (char*)&odptmp)
-struct parseitem objectdescprops[] = {
+static struct parseitem objectdescprops[] = {
 	{ PARSETYPE_INT,   DPOFFSET(id), 0, NULL , NULL, 0 },
 	{ PARSETYPE_STRING,DPOFFSET(name), 0, NULL , NULL, 0 },
 	{ PARSETYPE_STRING,DPOFFSET(description), 0, NULL , NULL, 0 },
@@ -108,9 +108,9 @@ struct parseitem objectdescprops[] = {
 };
 
 
-struct objectdesc objectdesctmp;
+static struct objectdesc objectdesctmp;
 #define DOFFSET(field) ((char*)&objectdesctmp.field - (char*)&objectdesctmp)
-struct parseitem objdescparse[] = {
+static struct parseitem objdescparse[] = {
   	{ PARSETYPE_INT, DOFFSET(id), 0, NULL, NULL, 0 },
 	{ PARSETYPE_STRING, DOFFSET(name), 0, NULL , NULL, 0 },
 	{ PARSETYPE_STRING, DOFFSET(description), 0, NULL , NULL, 0 },
@@ -156,18 +156,17 @@ tpe_obj_init(struct tpe *tpe){
 	obj = calloc(1,sizeof(struct tpe_obj));
 	obj->tpe = tpe;
 
-	tpe_event_handler_add(event, "MsgObject",
-			tpe_obj_data_receive, tpe);
+	tpe_event_handler_add("MsgObject", tpe_obj_data_receive, tpe);
 
-	tpe_event_handler_add(event, "MsgObjectDescription",
+	tpe_event_handler_add("MsgObjectDescription",
 			tpe_obj_object_description_receive, tpe);
 
-	tpe_event_type_add(event, "ObjectNew");
-	tpe_event_type_add(event, "ObjectChanged");
-	tpe_event_type_add(event, "ObjectDelete");
-	tpe_event_type_add(event, "PlanetNoOrders");
-	tpe_event_type_add(event, "PlanetColonised");
-	tpe_event_type_add(event, "FleetNoOrders");
+	tpe_event_type_add("ObjectNew");
+	tpe_event_type_add("ObjectChanged");
+	tpe_event_type_add("ObjectDelete");
+	tpe_event_type_add("PlanetNoOrders");
+	tpe_event_type_add("PlanetColonised");
+	tpe_event_type_add("FleetNoOrders");
 
 	tpe_sequence_register(tpe,
 			"MsgGetObjectDescriptionIDs",
@@ -298,7 +297,7 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 					&o->planet->nresources, &o->planet->resources);
 
 			if (o->owner != oldowner && o->owner != obj->tpe->player)
-				tpe_event_send(obj->tpe->event, "PlanetColonised", o,
+				tpe_event_send("PlanetColonised", o,
 						tpe_event_nofree, NULL);
 
 			if (obj->home == NULL)
@@ -322,18 +321,17 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		}
 	}
 
-	tpe_event_send(obj->tpe->event, isnew ? "ObjectNew" : "ObjectChanged",
+	tpe_event_send(isnew ? "ObjectNew" : "ObjectChanged",
 				o, tpe_event_nofree, NULL);
 
 	/* Check to see if we need to emit a planet or fleet 'no orders'
 	 * message */
 	if (o->nordertypes != 0 && o->norders == 0){
 		if (o->type == OBJTYPE_PLANET)
-			tpe_event_send(obj->tpe->event, "PlanetNoOrders", o,
+			tpe_event_send("PlanetNoOrders", o,
 					tpe_event_nofree, NULL);
 		else if (o->type == OBJTYPE_FLEET)
-			tpe_event_send(obj->tpe->event, "FleetNoOrders", o,
-					tpe_event_nofree, NULL);
+			tpe_event_send("FleetNoOrders",o,tpe_event_nofree,NULL);
 		else 
 			printf("A %d can take orders???\n", o->type);
 	}
@@ -527,12 +525,12 @@ tpe_obj_list_cleanup_cb(void *nodev, void *checkdata){
 	cbdata = checkdata;
 
 	if (cbdata->check != o->ref)
-		tpe_event_send(cbdata->tpe->event, "ObjectDelete", o,
+		/* FIXME: Put in a wrapper to the obj_cleanup call */
+		tpe_event_send("ObjectDelete", o,
 				(void(*)(void*,void*))tpe_obj_cleanup, 
 				cbdata->tpe);
 	else if (o->changed){
-		tpe_event_send(cbdata->tpe->event, 
-				o->isnew ? "ObjectNew" : "ObjectChanged",
+		tpe_event_send(o->isnew ? "ObjectNew" : "ObjectChanged",
 				o, tpe_event_nofree, NULL);
 		o->changed = 0;
 		o->isnew = 0;

@@ -48,8 +48,7 @@ tpe_ship_init(struct tpe *tpe){
 			tpe_ship_design_updated_get,
 			NULL, NULL);
 
-	tpe_event_handler_add(event, "MsgDesign",
-			tpe_ship_msg_design, tpe);
+	tpe_event_handler_add("MsgDesign", tpe_ship_msg_design, tpe);
 
 	return ships;
 }

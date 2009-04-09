@@ -119,10 +119,9 @@ tpe_orders_init(struct tpe *tpe){
 	orders->ordertypes = ecore_list_new();
 	orders->tpe = tpe;
 
-	tpe_event_handler_add(tpe->event, "MsgOrderDescription", /* 9 */
+	tpe_event_handler_add("MsgOrderDescription", /* 9 */
 			tpe_orders_msg_order_description, tpe);
-	tpe_event_handler_add(tpe->event, "MsgOrder", 
-			tpe_orders_msg_order, tpe);
+	tpe_event_handler_add("MsgOrder", tpe_orders_msg_order, tpe);
 
 	tpe_sequence_register(tpe, 
 				"MsgGetOrderDescriptionIDs",
@@ -133,11 +132,8 @@ tpe_orders_init(struct tpe *tpe){
 
 	/* Register some events?? */
 
-
-	tpe_event_handler_add(tpe->event, "ObjectChanged", 
-			tpe_orders_object_update, tpe);
-	tpe_event_handler_add(tpe->event, "ObjectNew", 
-			tpe_orders_object_update, tpe);
+	tpe_event_handler_add("ObjectChanged", tpe_orders_object_update, tpe);
+	tpe_event_handler_add("ObjectNew", tpe_orders_object_update, tpe);
 	
 
 	return orders;
