@@ -14,6 +14,7 @@
 #include "test.h"
 
 #include "star.h"
+#include "widgetsupport.h"
 
 static struct teststars {
 	objid_t id;
@@ -31,6 +32,9 @@ static struct teststars {
 };
 #define N_TESTSTARS ((int)(sizeof(teststars)/sizeof(teststars[0])))
 
+static int create_star(void *data);
+static int delete_star(void *data);
+
 int
 main(int argc, char **argv){
 	Evas_Object *star;
@@ -46,7 +50,7 @@ main(int argc, char **argv){
 	}
 
 	for (i = 0 ; i < N_TESTSTARS ; i ++){
-		star = gui_star_add(test->e, teststars[i].id, teststars[i].name);
+		star = gui_star_add(test->e,teststars[i].id, teststars[i].name);
 		evas_object_move(star,teststars[i].x,teststars[i].y);
 		evas_object_show(star);
 
@@ -78,7 +82,55 @@ main(int argc, char **argv){
 			printf("Should id %d be '%d'\n", id, teststars[i].id);
 	}
 
+	ecore_timer_add(1.0,delete_star,test);
+
 	ecore_main_loop_begin();
 
 	return 0;
 }
+
+
+static int
+delete_star(void *data){
+	struct test *test = data;
+	int i;
+
+	/* Pick a victim */
+	i = rand() % N_TESTSTARS;
+
+	if (teststars[i].star){
+		evas_object_del(teststars[i].star);
+		teststars[i].star = NULL;
+		ecore_timer_add(1.0,create_star, test);
+	}
+
+
+	return 1;
+}
+
+static int
+create_star(void *data){
+	struct test *test;
+	Evas_Object *star;
+	int i;
+	
+	test = data;
+
+	for (i = 0 ; i < N_TESTSTARS ; i ++){
+		if (teststars[i].star == NULL)
+			break;
+	}
+	if (i == N_TESTSTARS){
+		printf("Unable to find deleted star");
+		return 0;
+	}
+
+	star = gui_star_add(test->e, teststars[i].id, teststars[i].name);
+	evas_object_move(star,teststars[i].x,teststars[i].y);
+	evas_object_show(star);
+	teststars[i].star = star;
+
+	return 0;
+}
+
+

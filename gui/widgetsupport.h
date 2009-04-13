@@ -1,4 +1,15 @@
 
+
+
+
+
+#ifndef DATAPATH
+#warning No datapath - using default
+#define DATAPATH "/usr/local/share/galaxie/"
+#endif
+
+
+
 #define INTTOPTR(x) 	((void*)(intptr_t)(x))
 #define PTRTOINT(x)	((int)(intptr_t)(x))
 

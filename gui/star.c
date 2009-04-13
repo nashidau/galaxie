@@ -40,11 +40,6 @@
 #include "star.h"
 #include "widgetsupport.h"
 
-#ifndef DATAPATH
-#warning No datapath - using default
-#define DATAPATH "/usr/local/share/galaxie/"
-#endif
-
 enum {
 	DEFAULT_SIZE = 32
 };
