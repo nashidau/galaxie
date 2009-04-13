@@ -12,7 +12,13 @@ DATAPATH=${PREFIX}/share/galaxie
 CFLAGS+=`${PKGCONFIG} --cflags ${PKGS}` -DDATAPATH=\"${DATAPATH}\"
 LDFLAGS+=${XLIBS} `${PKGCONFIG} --libs ${PKGS}`
 
+
+targets: teststar testmap
+
 teststar:teststar.o test.o star.o ../tpe_event.o
+	${CC} -o $@ $^ ${LDFLAGS}
+
+testmap:testmap.o test.o map.o star.o ../tpe_event.o
 	${CC} -o $@ $^ ${LDFLAGS}
 
 tags:
@@ -26,3 +32,5 @@ clean:
 #---- Dependancies ----#
 star.o: star.h widgetsupport.h
 teststar.o: star.h test.h
+map.o: star.h map.h widgetsupport.h
+testmap.o: map.h star.h test.h map.o
