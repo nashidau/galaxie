@@ -40,7 +40,7 @@ testinit(int *argc, char **argv){
 	register_events();
 
 	test->ee = NULL;
-	//test->ee = ecore_evas_gl_x11_new(NULL,0,0,0,TEST_W,TEST_H);
+	test->ee = ecore_evas_gl_x11_new(NULL,0,0,0,TEST_W,TEST_H);
 	//if (!test->ee)
 	//	test->ee = ecore_evas_xrender_xll_new(NULL,0,0,0,TEST_W,TEST_H);
 	if (!test->ee)

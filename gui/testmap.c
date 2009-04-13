@@ -21,7 +21,11 @@ main(int argc, char **argv){
 		exit(1);
 	}
 
-	map = gui_map_add(test->e);
+	map = gui_map_add(test->e, -1);
+	if (!map){
+		fprintf(stderr,"Unable to allocate map widget\n");
+		exit(1);
+	}
 
 	evas_object_move(map,0,0);
 	evas_object_resize(map,test->w,test->h);
