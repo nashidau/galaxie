@@ -20,6 +20,8 @@ struct test {
 	
 	/* Elementary ?? */
 
+	int w,h;
+
 	Evas_Object *bg; 
 };
 

@@ -67,6 +67,9 @@ testinit(int *argc, char **argv){
 	evas_object_layer_set(test->bg, -1000);
 	evas_object_show(test->bg);
 
+	test->w = TEST_W;
+	test->h = TEST_H;
+
 	return test;	
 }
 
