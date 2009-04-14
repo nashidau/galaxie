@@ -335,20 +335,31 @@ tpe_comm_time_remaining(void *udata, int type, void *event){
 	struct msg *msg = event;
 	struct tpe *tpe;
 	int remain,rv;
+	int turn;
+	const char *turnname;
 
 	tpe = udata;
 
-	rv = tpe_util_parse_packet(msg->data, msg->end, "i", &remain);
-	if (rv != 1) {
+	/* FIXME: Only get the turn name when the turn != tpe->turn */
+	rv = tpe_util_parse_packet(msg->data, msg->end, "iis", &remain,
+			&turn, &turnname);
+	if (rv < 1) {
 		printf("Failed to parse time remaining packet\n");
 		return 0;
+	}
+
+	if (rv > 1 && tpe->turn != turn){
+		/* Turn just ticked over */
+		tpe->turn = turn;
 	}
 
 	if (msg->seq == 0 && remain == 0){
 		tpe->turn ++;
 		tpe_event_send("NewTurn", msg->server, tpe_event_nofree, NULL);
 	}
+	printf("Time: %4d\tTurn %2d (%s)\n", remain,turn, turnname);
 
+	free(turnname);
 	return 1;
 }
 

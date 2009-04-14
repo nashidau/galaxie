@@ -124,3 +124,12 @@ Ecore_List *tpe_obj_obj_list(struct tpe_obj *obj);
 Ecore_List *tpe_obj_obj_list_by_type(struct tpe *tpe, enum objtype type);
 
 struct object *tpe_obj_home_get(struct tpe *tpe);
+
+
+/* Watchers */
+int objects_watcher_add(struct tpe_obj *objs, 
+	int (*update)(void *data, struct server *server, struct object *),
+	int (*create)(void *data, struct server *server, struct object *),
+	void *data);
+
+

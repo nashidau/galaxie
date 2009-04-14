@@ -15,7 +15,7 @@
 #include "server.h"
 #include "tpe_event.h"
 #include "tpe_orders.h"
-#include "tpe_obj.h"
+#include "objects.h"
 #include "tpe_ship.h"
 #include "tpe_util.h"
 

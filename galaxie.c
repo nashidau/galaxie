@@ -20,7 +20,7 @@
 #include "tpe_event.h"
 #include "tpe_gui.h"
 #include "server.h"
-#include "tpe_obj.h"
+#include "objects.h"
 #include "tpe_orders.h"
 #include "tpe_resources.h"
 #include "tpe_sequence.h"

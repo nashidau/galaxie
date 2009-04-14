@@ -1,4 +1,5 @@
 #include <inttypes.h>
+#include <stddef.h> /* ptrdiff_t */
 
 struct object;
 struct ObjectSeqID {
@@ -24,7 +25,7 @@ enum parsetype {
 
 struct parseitem {
 	enum parsetype type;
-	intptr_t off; 		/* FIXME: Should be ptrdiff_t */
+	ptrdiff_t off;
 	intptr_t lenoff;
 	struct parseitem *sub;
 	const char *subtype;

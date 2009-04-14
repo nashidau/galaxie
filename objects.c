@@ -4,6 +4,15 @@
  * Objects are inserted into two data structures -
  * 	a linked list
  * 	a hash table
+ *
+ * Upon receiving a new object:
+ *  - For each 'objwatcher'
+ *	Set outstanding ++
+ * 	Call objwatcher
+ * When done, a watcher should call
+ *	object_updated(objs, watcherid)
+ * If outstanding == 0
+ *	generate appropriate new/updated event
  */
 #include <arpa/inet.h>
 #include <assert.h>
@@ -16,7 +25,7 @@
 
 #include "tpe.h"
 #include "galaxietypes.h"
-#include "tpe_obj.h"
+#include "objects.h"
 #include "tpe_orders.h"
 #include "tpe_event.h"
 #include "server.h"
@@ -29,9 +38,19 @@ struct tpe_obj {
 	Ecore_Hash *objhash;
 	int check;
 
+	struct watcher *watchers;
+
 	/* Special objects */
 	struct object *home;
 };
+
+struct watcher 	{
+	struct watcher *next;
+	int id;
+	int (*update)(struct server *, struct object *);
+	int (*create)(struct server *, struct object *);
+};
+
 
 struct objectdesc {
 	int id;
