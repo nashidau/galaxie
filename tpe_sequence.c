@@ -29,7 +29,7 @@ struct tpe_sequence {
 };
 
 static int tpe_sequence_new_turn(void *data, int eventid, void *event);
-static int tpe_sequence_coneect(void *data, int eventid, void *event);
+static int tpe_sequence_connect(void *data, int eventid, void *event);
 static int tpe_sequence_handle_oids(void *udata, int type, void *event);
 static int tpe_sequence_start(struct tpe *, struct server *);
 
@@ -42,7 +42,7 @@ tpe_sequence_init(struct tpe *tpe){
 	tpeseq->seqs = ecore_list_new();
 
 	tpe_event_handler_add("NewTurn", tpe_sequence_new_turn, tpe);
-	tpe_event_handler_add("Connected",tpe_sequence_coneect, tpe);
+	tpe_event_handler_add("Connected",tpe_sequence_connect, tpe);
 
 	return tpeseq;
 }
@@ -102,7 +102,7 @@ tpe_sequence_new_turn(void *data, int eventid, void *event){
 
 /* Callback for connecting */
 static int
-tpe_sequence_coneect(void *data, int eventid, void *event){
+tpe_sequence_connect(void *data, int eventid, void *event){
 	struct connect *connect;
 	struct tpe *tpe;
 
