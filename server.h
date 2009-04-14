@@ -32,6 +32,8 @@ struct server *
 server_connect(struct tpe *tpe, const char *server, int port, int usessl,
 		conncb cb, void *userdata);
 
+int server_protocol_get(struct server *);
+
 #ifndef ntohll
 #define ntohll(x) (((int64_t)(ntohl((int)((x << 32) >> 32))) << 32) | 	\
                      (unsigned int)ntohl(((int)(x >> 32)))) //By Runner

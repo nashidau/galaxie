@@ -726,5 +726,15 @@ server_cb_add(struct server *server, int seq, msgcb cb, void *userdata){
 }
 
 
+/**
+ * Get the protocol version supported by the server.
+ *
+ * @param server 
+ * @return Protocol level or -1 on error
+ */
+int 
+server_protocol_get(struct server *server){
+	if (server) return server->protocol;
+	return -1;
 
-
+}

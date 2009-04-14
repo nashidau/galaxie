@@ -128,16 +128,16 @@ tpe_sequence_start(struct tpe *tpe, struct server *server){
 	seq = ecore_list_first_goto(seqs);
 	while ((seq = ecore_list_next(seqs))){
 		seq->position = 0;
-		//if (server->protocol == 4){
+		if (server_protocol_get(server) == 4){
 			/* FIXME: Shoudl track last time stamp */
-		//	rv = server_send_format(server,seq->updatemsg,
-		//			NULL, NULL,
-		//			"i0il", -1, -1, 0);
-		//} else { 
+			rv = server_send_format(server,seq->updatemsg,
+					NULL, NULL,
+					"i0il", -1, -1, 0);
+		} else { 
 			rv = server_send_format(server, seq->updatemsg,
 					NULL, NULL,
 					"i0i", -1,-1);
-		//}
+		}
 		if (rv == TPE_ERR_MSG_NOT_SUPPORTED){
 			printf("Sequence '%s' not supported in this server",
 				seq->updatemsg);
