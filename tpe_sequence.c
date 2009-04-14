@@ -129,7 +129,7 @@ tpe_sequence_start(struct tpe *tpe, struct server *server){
 	while ((seq = ecore_list_next(seqs))){
 		seq->position = 0;
 		if (server_protocol_get(server) == 4){
-			/* FIXME: Shoudl track last time stamp */
+			/* FIXME: Should track last time stamp */
 			rv = server_send_format(server,seq->updatemsg,
 					NULL, NULL,
 					"i0il", -1, -1, 0);

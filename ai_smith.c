@@ -10,6 +10,7 @@
 #include <Ecore_Data.h>
 
 #include "tpe.h"
+#include "galaxietypes.h"
 #include "ai_util.h"
 #include "server.h"
 #include "tpe_event.h"

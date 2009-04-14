@@ -34,7 +34,7 @@
 #include <Ecore_Evas.h>
 
 /* FIXME: Generic types */
-#include "../object_param.h"
+#include "../galaxie.h"
 #include "../tpe_event.h"
 
 #include "star.h"

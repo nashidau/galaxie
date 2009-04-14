@@ -3,7 +3,7 @@
 
 #include "tpe_util.h"
 
-#include "object_param.h"
+#include "galaxietypes.h"
 
 extern struct orderqueue _orderqueue;
 extern struct reference _reference;

@@ -13,6 +13,7 @@
 #include <Ecore_Data.h>
 
 #include "tpe.h"
+#include "galaxie.h"
 #include "tpe_event.h"
 #include "server.h"
 #include "tpe_util.h"

@@ -49,7 +49,7 @@ struct object {
 	struct tpe *tpe;
 	struct server *server;
 
-	uint32_t oid;	/* Unique ID */
+	objid_t oid;	/* Unique ID */
 	enum objtype type;
 	char *name;
 	char *description;
@@ -60,9 +60,9 @@ struct object {
 	struct vector pos;
 	struct vector vel;
 
-	int parent; 
+	objid_t parent; 
 	int nchildren;
-	int *children;
+	objid_t *children;
 
 	int nordertypes;
 	int *ordertypes;

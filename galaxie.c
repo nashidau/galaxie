@@ -13,6 +13,7 @@
 #include <Ecore_Con.h>
 
 #include "tpe.h"
+#include "galaxietypes.h"
 #include "browser.h"
 #include "tpe_board.h"
 #include "tpe_comm.h"

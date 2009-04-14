@@ -15,6 +15,7 @@
 #include <Ecore_Data.h>
 
 #include "tpe.h"
+#include "galaxietypes.h"
 #include "tpe_obj.h"
 #include "tpe_orders.h"
 #include "tpe_event.h"
@@ -138,7 +139,8 @@ static void tpe_obj_cleanup(struct tpe *tpe, struct object *o);
 
 static void tpe_obj_home_check(struct tpe *tpe, struct object *o);
 
-static void tpe_obj_update_children(struct tpe *tpe, struct server *server, struct object *o, int noldchildren, int *oldchildren);
+static void tpe_obj_update_children(struct tpe *tpe, struct server *server,
+struct object *o, int noldchildren, objid_t *oldchildren);
 
 
 
@@ -228,95 +230,26 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 		free(o->orders);
 	}
 
-	if (msg->protocol == 3){
-		/* Save children */
-		oldchildren = o->children;
-		o->children = NULL;
-		noldchildren = o->nchildren;
 
-		n = tpe_util_parse_packet(msg->data, msg->end, 
-				"iislllllllaail--p",
-				&o->oid, &o->type, &o->name,
-				&o->size, 
-				&o->pos.x,&o->pos.y,&o->pos.z,
-				&o->vel.x,&o->vel.y,&o->vel.z,
-				&o->nchildren, &o->children, 
-				&o->nordertypes, &o->ordertypes,
-				&o->norders,
-				&o->updated,&end);
-		tpe_obj_update_children(tpe, msg->server, o,noldchildren,oldchildren);
-	} else if (msg->protocol == 4){
-		/* TP 04 */
-		n = tpe_util_parse_packet(msg->data, msg->end, 
-				"iissial----p",
-				&o->oid, &o->type, &o->name, &o->description,
-				&o->parent,  
-				&o->nchildren, &o->children, 
-				&o->updated,&end);
-	} else {
-		printf("Unknown protocol %d\n",msg->protocol);
+	if (msg->protocol == 3){
+		printf("No longer handle TP03.  Update the server");
+		return 1;
+	} else if (msg->protocol != 4){
+		printf("Only support TP04 at the moment.");
 		return 1;
 	}
-			
+	n = tpe_util_parse_packet(msg->data, msg->end, 
+			"iissial----p",
+			&o->oid, &o->type, &o->name, &o->description,
+			&o->parent,  
+			&o->nchildren, &o->children, 
+			&o->updated,&end);
 
-		/* Add slots for the orders */
+	/* Add slots for the orders */
 	if (o->norders)
 		o->orders = calloc(o->norders, sizeof(struct order *));
 	else
 		o->orders = NULL;
-
-	/* Handle extra data for different types */
-	/* FIXME: Tp 03 only */
-	if (msg->protocol == 3){
-		switch (o->type){
-		case OBJTYPE_UNIVERSE:{
-			uint32_t turn;
-			tpe_util_parse_packet(end, msg->end, "i", &turn);
-
-			obj->tpe->turn = turn;
-			printf("Updated universe: Turn %d\n",turn);	
-			
-			break;
-		}
-		case OBJTYPE_GALAXY:
-			break;
-		case OBJTYPE_SYSTEM:
-			break;
-		case OBJTYPE_PLANET:
-			if (o->planet == NULL){
-				o->planet = calloc(1,sizeof(struct object_planet));
-				o->owner = -1;
-			} 
-			oldowner = o->owner;
-
-			tpe_util_parse_packet(end, msg->end, "iR",
-					&o->owner, 
-					&o->planet->nresources, &o->planet->resources);
-
-			if (o->owner != oldowner && o->owner != obj->tpe->player)
-				tpe_event_send("PlanetColonised", o,
-						tpe_event_nofree, NULL);
-
-			if (obj->home == NULL)
-				tpe_obj_home_check(tpe, o);
-
-			break;
-		case OBJTYPE_FLEET:
-			if (o->fleet == NULL)
-				o->fleet = calloc(1,sizeof(struct object_fleet));
-			/* FIXME: XXX: TODO: this is mithro's bug about bad messages */
-			/* This is one of the places triggering overflow in 
-			 * tpe_util */
-			tpe_util_parse_packet(end, msg->end, "iSi",
-					&o->owner, 
-					&o->fleet->nships, &o->fleet->ships,
-					&o->fleet->damage);
-			break;
-		default:
-			printf("Unknown object type: %d\n",o->type);
-			exit(1);
-		}
-	}
 
 	tpe_event_send(isnew ? "ObjectNew" : "ObjectChanged",
 				o, tpe_event_nofree, NULL);
@@ -612,7 +545,8 @@ tpe_obj_home_get(struct tpe *tpe){
 }
 
 static void
-tpe_obj_update_children(struct tpe *tpe, struct server *server, struct object *o, int noldchildren, int *oldchildren){
+tpe_obj_update_children(struct tpe *tpe, struct server *server, struct object
+*o, int noldchildren, objid_t *oldchildren){
 	struct object *child;
 	struct tpe_obj *obj;
 	int i,j;

@@ -4,6 +4,7 @@
 #include <Ecore_Data.h>
 
 #include "tpe.h"
+#include "galaxie.h"
 #include "tpe_obj.h"
 #include "tpe_util.h"
 #include "ai_util.h"

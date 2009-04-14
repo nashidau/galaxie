@@ -14,6 +14,7 @@
 
 #include "tpe_util.h"
 
+#include "galaxie.h"
 #include "server.h" /* for the htonll */
 #include "tpe_obj.h" /* Only for types */
 #include "tpe_orders.h" /* Only for types */
