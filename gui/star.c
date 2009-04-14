@@ -94,6 +94,17 @@ static const Evas_Smart_Class starclass = {
 };
 static Evas_Smart *smartclass;
 
+/**
+ * Add a star object.
+ *
+ * Creates a new star object.  It's name is optional.  If ID is not required
+ * or known use -1.
+ *
+ * @param e Evas instance
+ * @param id Object ID
+ * @param name Name of the object
+ * @return New star object or NULL on error.
+ */
 Evas_Object *
 gui_star_add(Evas *e, objid_t id, const char *name){
 	Evas_Object *star;

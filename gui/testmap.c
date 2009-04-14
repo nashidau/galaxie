@@ -30,6 +30,11 @@ main(int argc, char **argv){
 	evas_object_move(map,0,0);
 	evas_object_resize(map,test->w,test->h);
 
+	/* Start adding stars by event */
+
+	
+
+
 	ecore_main_loop_begin();
 
 	return 0;
