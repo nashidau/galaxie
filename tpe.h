@@ -9,7 +9,6 @@ struct tpe {
 	char *racename;
 	int turn;
 
-	struct tpe_event *event;
 	struct servers *servers;
 	struct tpe_orders *orders;
 	struct tpe_obj *obj;

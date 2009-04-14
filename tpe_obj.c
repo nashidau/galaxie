@@ -148,10 +148,7 @@ static void tpe_obj_update_children(struct tpe *tpe, struct server *server, stru
 
 struct tpe_obj *
 tpe_obj_init(struct tpe *tpe){
-	struct tpe_event *event;
 	struct tpe_obj *obj;
-
-	event = tpe->event;
 
 	obj = calloc(1,sizeof(struct tpe_obj));
 	obj->tpe = tpe;

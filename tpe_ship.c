@@ -35,9 +35,6 @@ static int tpe_ship_msg_design(void *data, int eventid, void *event);
 struct tpe_ship *
 tpe_ship_init(struct tpe *tpe){
 	struct tpe_ship *ships;
-	struct tpe_event *event;
-
-	event = tpe->event;
 
 	ships = calloc(1,sizeof(struct tpe_ship));
 	ships->designs = ecore_list_new();

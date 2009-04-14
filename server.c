@@ -451,7 +451,6 @@ server_handle_packet(struct server *server, int proto, int seq, int type,
 	assert(server->magic == SERVER_MAGIC);
 	assert(server->servers);
 	assert(server->servers->tpe);
-	assert(server->servers->tpe->event);
 
 	tpe_event_send(event, msg, msg_free, NULL);
 }	
