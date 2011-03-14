@@ -81,46 +81,39 @@ struct objectdescparam {
 };
 
 
-static struct object otmp;
-#define OFFSET(field) ((char*)&otmp.field - (char*)&otmp)
-
 static struct parseitem objparse[] = {
-	{ PARSETYPE_INT, OFFSET(oid), 0, NULL , NULL, 0 },
-	{ PARSETYPE_INT, OFFSET(type), 0, NULL , NULL, 0 },
-	{ PARSETYPE_STRING, OFFSET(name), 0, NULL , NULL, 0 },
-	{ PARSETYPE_LONG, OFFSET(pos.x), 0, NULL , NULL, 0 },
-	{ PARSETYPE_LONG, OFFSET(pos.y), 0, NULL , NULL, 0 },
-	{ PARSETYPE_LONG, OFFSET(pos.z), 0, NULL , NULL, 0 },
-	{ PARSETYPE_LONG, OFFSET(vel.x), 0, NULL , NULL, 0 },
-	{ PARSETYPE_LONG, OFFSET(vel.y), 0, NULL , NULL, 0 },
-	{ PARSETYPE_LONG, OFFSET(vel.z), 0, NULL , NULL, 0 },
+	{ PARSETYPE_INT, offsetof(struct object,oid), 0, NULL , NULL, 0 },
+	{ PARSETYPE_INT, offsetof(struct object,type), 0, NULL , NULL, 0 },
+	{ PARSETYPE_STRING, offsetof(struct object,name), 0, NULL , NULL, 0 },
+	{ PARSETYPE_LONG, offsetof(struct object,pos.x), 0, NULL , NULL, 0 },
+	{ PARSETYPE_LONG, offsetof(struct object,pos.y), 0, NULL , NULL, 0 },
+	{ PARSETYPE_LONG, offsetof(struct object,pos.z), 0, NULL , NULL, 0 },
+	{ PARSETYPE_LONG, offsetof(struct object,vel.x), 0, NULL , NULL, 0 },
+	{ PARSETYPE_LONG, offsetof(struct object,vel.y), 0, NULL , NULL, 0 },
+	{ PARSETYPE_LONG, offsetof(struct object,vel.z), 0, NULL , NULL, 0 },
 	{ PARSETYPE_ARRAYOF | PARSETYPE_INT, 
-			OFFSET(children), OFFSET(nchildren), NULL , NULL, 0 },
+			offsetof(struct object,children), offsetof(struct object,nchildren), NULL , NULL, 0 },
 	{ PARSETYPE_ARRAYOF | PARSETYPE_INT, 
-			OFFSET(ordertypes), OFFSET(nordertypes), NULL , NULL, 0 },
-	{ PARSETYPE_INT, OFFSET(type), 0, NULL , NULL, 0 },
-	{ PARSETYPE_LONG, OFFSET(updated), 0, NULL , NULL, 0 },
+			offsetof(struct object,ordertypes), offsetof(struct object,nordertypes), NULL , NULL, 0 },
+	{ PARSETYPE_INT, offsetof(struct object,type), 0, NULL , NULL, 0 },
+	{ PARSETYPE_LONG, offsetof(struct object,updated), 0, NULL , NULL, 0 },
 	{ PARSETYPE_INT, -1, 0, NULL , NULL, 0 },
 	{ PARSETYPE_INT, -1, 0, NULL , NULL, 0 },
 	{ PARSETYPE_END, -1, 0, NULL, NULL, 0 }
 };
 
-static struct objectdescparam odpmtmp;
-#define DPMOFFSET(field) ((char*)&odpmtmp.field - (char*)&odpmtmp)
 static struct parseitem objectdescparam[] = {
-	{ PARSETYPE_STRING, DPMOFFSET(name), 0, NULL, NULL, 0 },
-	{ PARSETYPE_INT,    DPMOFFSET(id), 0, NULL, NULL, 0 },
-	{ PARSETYPE_STRING, DPMOFFSET(description), 0, NULL, NULL, 0 },
+	{ PARSETYPE_STRING, offsetof(struct objectdescparam, name), 0, NULL, NULL, 0 },
+	{ PARSETYPE_INT,    offsetof(struct objectdescparam, id), 0, NULL, NULL, 0 },
+	{ PARSETYPE_STRING, offsetof(struct objectdescparam, description), 0, NULL, NULL, 0 },
 	{ PARSETYPE_END, -1, 0, NULL, NULL, 0 }
 };
 
-static struct objectdescprop odptmp;
-#define DPOFFSET(field) ((char*)&odptmp.field - (char*)&odptmp)
 static struct parseitem objectdescprops[] = {
-	{ PARSETYPE_INT,   DPOFFSET(id), 0, NULL , NULL, 0 },
-	{ PARSETYPE_STRING,DPOFFSET(name), 0, NULL , NULL, 0 },
-	{ PARSETYPE_STRING,DPOFFSET(description), 0, NULL , NULL, 0 },
-	{ PARSETYPE_COMPLEX,DPOFFSET(params), DPOFFSET(nparams), 
+	{ PARSETYPE_INT,   offsetof(struct objectdescprop, id), 0, NULL , NULL, 0 },
+	{ PARSETYPE_STRING,offsetof(struct objectdescprop, name), 0, NULL , NULL, 0 },
+	{ PARSETYPE_STRING,offsetof(struct objectdescprop, description), 0, NULL , NULL, 0 },
+	{ PARSETYPE_COMPLEX,offsetof(struct objectdescprop, params), offsetof(struct objectdescprop, nparams), 
 			objectdescparam, 
 			"struct objectdescparam",
 			sizeof(struct objectdescparam)},
@@ -128,16 +121,14 @@ static struct parseitem objectdescprops[] = {
 };
 
 
-static struct objectdesc objectdesctmp;
-#define DOFFSET(field) ((char*)&objectdesctmp.field - (char*)&objectdesctmp)
 static struct parseitem objdescparse[] = {
-  	{ PARSETYPE_INT, DOFFSET(id), 0, NULL, NULL, 0 },
-	{ PARSETYPE_STRING, DOFFSET(name), 0, NULL , NULL, 0 },
-	{ PARSETYPE_STRING, DOFFSET(description), 0, NULL , NULL, 0 },
-	{ PARSETYPE_LONG,   DOFFSET(modtime), 0, NULL , NULL, 0 },
-	{ PARSETYPE_COMPLEX, DOFFSET(props), DOFFSET(nprops), 
-			objectdescprops ,
-			"struct objectdescprops", 
+  	{ PARSETYPE_INT, offsetof(struct objectdesc,id), 0, NULL, NULL, 0 },
+	{ PARSETYPE_STRING, offsetof(struct objectdesc,name), 0, NULL , NULL, 0 },
+	{ PARSETYPE_STRING, offsetof(struct objectdesc,description), 0, NULL , NULL, 0 },
+	{ PARSETYPE_LONG,   offsetof(struct objectdesc,modtime), 0, NULL , NULL, 0 },
+	{ PARSETYPE_COMPLEX, offsetof(struct objectdesc,props),
+		offsetof(struct objectdesc,nprops), objectdescprops,
+		"struct objectdescprops",
 			sizeof(struct objectdescprop)},
 	{ PARSETYPE_END,    -1, 0, NULL, NULL, 0 }
 };

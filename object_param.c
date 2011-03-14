@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include <stdio.h>
 #include <stdint.h>
 
@@ -5,20 +6,16 @@
 
 #include "galaxietypes.h"
 
-#define OFFSET(type,field) \
-		(((char *)&(((type *)0)->field)) - (char *)0)
-
-
 /*
 0: Vector
 	int64_t 	x,y,z;
 	objtype_t	relative_to
 */
 static struct parseitem rvector[] =  {
-	{ PARSETYPE_LONG, OFFSET(struct rvector, x), 0, NULL, NULL, 0},
-	{ PARSETYPE_LONG, OFFSET(struct rvector, y), 0, NULL, NULL, 0},
-	{ PARSETYPE_LONG, OFFSET(struct rvector, z), 0, NULL, NULL, 0},
-	{ PARSETYPE_INT,  OFFSET(struct rvector, id), 0, NULL, NULL, 0},
+	{ PARSETYPE_LONG, offsetof(struct rvector, x), 0, NULL, NULL, 0},
+	{ PARSETYPE_LONG, offsetof(struct rvector, y), 0, NULL, NULL, 0},
+	{ PARSETYPE_LONG, offsetof(struct rvector, z), 0, NULL, NULL, 0},
+	{ PARSETYPE_INT,  offsetof(struct rvector, id), 0, NULL, NULL, 0},
 };
 
 /*
@@ -52,12 +49,12 @@ static struct parseitem boundposition[] = {
 		int32_t	ordertypes
 */
 static struct parseitem orderqueue[] = {
-	{ PARSETYPE_INT, OFFSET(struct orderqueue, max), 0, NULL, NULL, 0},
-	{ PARSETYPE_INT, OFFSET(struct orderqueue, id), 0, NULL, NULL, 0},
-	{ PARSETYPE_INT, OFFSET(struct orderqueue, norders), 0, NULL, NULL, 0},
+	{ PARSETYPE_INT, offsetof(struct orderqueue, max), 0, NULL, NULL, 0},
+	{ PARSETYPE_INT, offsetof(struct orderqueue, id), 0, NULL, NULL, 0},
+	{ PARSETYPE_INT, offsetof(struct orderqueue, norders), 0, NULL, NULL, 0},
 	{ PARSETYPE_ARRAYOF | PARSETYPE_INT, 
-			OFFSET(struct orderqueue, ordertypes), 
-			OFFSET(struct orderqueue, nordertypes),
+			offsetof(struct orderqueue, ordertypes), 
+			offsetof(struct orderqueue, nordertypes),
 			NULL, NULL, 0 },
 };
 
@@ -71,10 +68,10 @@ static struct parseitem orderqueue[] = {
 		uint32_t 	unavailable	
 */
 static struct parseitem pl_resources[] = {
-	{ PARSETYPE_INT, OFFSET(struct resource, id), 0, NULL, NULL, 0},
-	{ PARSETYPE_INT, OFFSET(struct resource, stored), 0, NULL, NULL, 0},
-	{ PARSETYPE_INT, OFFSET(struct resource, minable), 0, NULL, NULL, 0},
-	{ PARSETYPE_INT, OFFSET(struct resource, unavail), 0, NULL, NULL, 0},
+	{ PARSETYPE_INT, offsetof(struct resource, id), 0, NULL, NULL, 0},
+	{ PARSETYPE_INT, offsetof(struct resource, stored), 0, NULL, NULL, 0},
+	{ PARSETYPE_INT, offsetof(struct resource, minable), 0, NULL, NULL, 0},
+	{ PARSETYPE_INT, offsetof(struct resource, unavail), 0, NULL, NULL, 0},
 };
 
 /* FIXME: This doesn't belong here */
@@ -84,8 +81,8 @@ struct reslist {
 };
 
 static struct parseitem reslist[] = {
-	{ PARSETYPE_COMPLEX, OFFSET(struct reslist, resources), 
-			OFFSET(struct reslist, nresources),
+	{ PARSETYPE_COMPLEX, offsetof(struct reslist, resources), 
+			offsetof(struct reslist, nresources),
 			pl_resources, "struct resource", 
 			sizeof(struct resource) },
 };
@@ -97,8 +94,8 @@ static struct parseitem reslist[] = {
 	uint32_t	id
 */
 static struct parseitem pl_reference[] = {
-	{ PARSETYPE_INT, OFFSET(struct reference, type), 0, NULL, NULL, 0},
-	{ PARSETYPE_INT, OFFSET(struct reference, value), 0, NULL, NULL, 0},
+	{ PARSETYPE_INT, offsetof(struct reference, type), 0, NULL, NULL, 0},
+	{ PARSETYPE_INT, offsetof(struct reference, value), 0, NULL, NULL, 0},
 };
 
 /*
@@ -109,9 +106,9 @@ static struct parseitem pl_reference[] = {
 		uint32_t 	number
 */
 static struct parseitem pl_refquantity[] = {
-	{ PARSETYPE_INT, OFFSET(struct refquantity, type), 0, NULL, NULL, 0},
-	{ PARSETYPE_INT, OFFSET(struct refquantity, value), 0, NULL, NULL, 0},
-	{ PARSETYPE_INT, OFFSET(struct refquantity, quantity), 0, NULL, NULL, 0},
+	{ PARSETYPE_INT, offsetof(struct refquantity, type), 0, NULL, NULL, 0},
+	{ PARSETYPE_INT, offsetof(struct refquantity, value), 0, NULL, NULL, 0},
+	{ PARSETYPE_INT, offsetof(struct refquantity, quantity), 0, NULL, NULL, 0},
 };
 
 /* FIXME: This doesn't belong here either */
@@ -121,8 +118,8 @@ struct refqlist {
 };
 
 static struct parseitem pl_referencequantitylist[] = {
-	{ PARSETYPE_COMPLEX, OFFSET(struct refqlist, refquantities), 
-			OFFSET(struct refqlist, nrefquantities),
+	{ PARSETYPE_COMPLEX, offsetof(struct refqlist, refquantities), 
+			offsetof(struct refqlist, nrefquantities),
 			pl_refquantity, "struct refquanty", 
 			sizeof(struct refquantity) },
 };
