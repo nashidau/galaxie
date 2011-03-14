@@ -119,9 +119,9 @@ struct object *tpe_obj_obj_parent_get(struct tpe *tpe, struct object *);
 uint64_t tpe_obj_object_updated(struct tpe *, uint32_t oid);
 
 /* Really for the AI use only... */
-Ecore_List *tpe_obj_obj_list(struct tpe_obj *obj);
+Eina_List *tpe_obj_obj_list(struct tpe_obj *obj);
 
-Ecore_List *tpe_obj_obj_list_by_type(struct tpe *tpe, enum objtype type);
+Eina_List *tpe_obj_obj_list_by_type(struct tpe *tpe, enum objtype type);
 
 struct object *tpe_obj_home_get(struct tpe *tpe);
 

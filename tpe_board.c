@@ -5,7 +5,7 @@
 
 #include <talloc.h>
 
-#include <Ecore_Data.h>
+#include <Eina.h>
 
 #include "tpe.h"
 #include "tpe_board.h"
@@ -15,7 +15,7 @@
 #include "tpe_util.h"
 
 struct tpe_board {
-	Ecore_List *boards;
+	Eina_List *boards;
 };
 
 struct board {
@@ -73,7 +73,7 @@ tpe_board_init(struct tpe *tpe){
 	board = talloc_zero(tpe,struct tpe_board);
 
 	/* FIXME: Need to be talloc safe somehow */
-	board->boards = ecore_list_new();
+	board->boards = NULL;
 
 	/* Events we send */
 	tpe_event_type_add("BoardUpdate");
@@ -95,9 +95,9 @@ tpe_board_init(struct tpe *tpe){
 struct board *
 tpe_board_board_get_by_id(struct tpe *tpe, uint32_t oid){
         struct board *board;
+	Eina_List *l;
 
-        ecore_list_first_goto(tpe->board->boards);
-        while ((board = ecore_list_next(tpe->board->boards))){
+	EINA_LIST_FOREACH(tpe->board->boards, l, board){
                 if (board->oid == oid)
                         return board;
 	}
@@ -126,8 +126,7 @@ tpe_board_board_add(struct tpe *tpe, uint32_t oid){
 	if (tpe->board == NULL) return NULL;
 
         board = talloc_zero(tpe->board,struct board);
-	/* FIXME: Talloc friendly list */
-        if (ecore_list_append(tpe->board->boards, board) == 0)
+        if (eina_list_append(tpe->board->boards, board) == 0)
 		printf("Error appending list\n");
 	board->oid = oid;
         return board;

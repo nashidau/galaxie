@@ -7,7 +7,7 @@
 
 #include <Evas.h>
 #include <Ecore.h>
-#include <Ecore_Data.h>
+#include <Eina.h>
 
 #include "tpe.h"
 #include "galaxietypes.h"
@@ -191,7 +191,7 @@ smith_order_insert_cb(void *userdata, struct msg *msg){
 
 static int 
 smith_order_fleet(void *data, int type, void *event){
-	Ecore_List *all;
+	Eina_List *all;
 	struct object *o = event;
 	struct object *parent;
 	struct object *dest,*cur;

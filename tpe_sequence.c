@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <Ecore_Data.h>
+#include <Eina.h>
 
 #include "tpe.h"
 #include "tpe_event.h"
@@ -25,7 +25,7 @@ struct sequence {
 };
 
 struct tpe_sequence {
-	Ecore_List *seqs;
+	Eina_List *seqs;
 };
 
 static int tpe_sequence_new_turn(void *data, int eventid, void *event);
@@ -39,7 +39,7 @@ tpe_sequence_init(struct tpe *tpe){
 	if (tpe->sequence) return tpe->sequence;
 
 	tpeseq = calloc(1,sizeof(struct tpe_sequence));
-	tpeseq->seqs = ecore_list_new();
+	tpeseq->seqs = NULL;
 
 	tpe_event_handler_add("NewTurn", tpe_sequence_new_turn, tpe);
 	tpe_event_handler_add("Connected",tpe_sequence_connect, tpe);
@@ -76,7 +76,7 @@ tpe_sequence_register(struct tpe *tpe,
 	seq->list_end = list_end;
 	seq->tpe = tpe;
 
-	ecore_list_append(tpe->sequence->seqs, seq);
+	tpe->sequence->seqs = eina_list_append(tpe->sequence->seqs, seq);
 
 	tpe_event_handler_add(oidlist, tpe_sequence_handle_oids, seq);
 
@@ -115,25 +115,25 @@ tpe_sequence_connect(void *data, int eventid, void *event){
 
 
 
-static int 
+static int
 tpe_sequence_start(struct tpe *tpe, struct server *server){
 	struct tpe_sequence *tsequence;
 	struct sequence *seq;
-	Ecore_List *seqs;
+	Eina_List *seqs;
+	Eina_List *l;
 	int rv;
 
 	tsequence = tpe->sequence;
 	seqs = tsequence->seqs;
-	
-	seq = ecore_list_first_goto(seqs);
-	while ((seq = ecore_list_next(seqs))){
+
+	EINA_LIST_FOREACH(seqs, l, seq){
 		seq->position = 0;
 		if (server_protocol_get(server) == 4){
 			/* FIXME: Should track last time stamp */
 			rv = server_send_format(server,seq->updatemsg,
 					NULL, NULL,
 					"i0il", -1, -1, 0);
-		} else { 
+		} else {
 			rv = server_send_format(server, seq->updatemsg,
 					NULL, NULL,
 					"i0i", -1,-1);
@@ -146,7 +146,7 @@ tpe_sequence_start(struct tpe *tpe, struct server *server){
 			printf("Error sending to server\n");
 			continue;
 		}
-		/* Don't trigger this until we know message was sent */
+		/* FIXME: Don't trigger this until we know message was sent */
 		if (seq->list_begin)
 			seq->list_begin(tpe);
 	}

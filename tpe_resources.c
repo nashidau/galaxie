@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <Ecore_Data.h>
+#include <Eina.h>
 
 #include "tpe.h"
 #include "tpe_comm.h"
@@ -33,7 +33,7 @@ enum {
 
 struct tpe_resources {
 	uint32_t magic;
-        Ecore_List *resources;
+        Eina_List *resources;
 };
 
 
@@ -54,7 +54,7 @@ tpe_resources_init(struct tpe *tpe){
 
 	resources = calloc(1,sizeof(struct tpe_resources));
 	resources->magic = RESOURCE_MAGIC;
-	resources->resources = ecore_list_new();
+	resources->resources = NULL;
 
 	tpe_event_type_add("ResourceNew");
 
@@ -82,11 +82,13 @@ tpe_resources_init(struct tpe *tpe){
 struct resourcedescription *
 tpe_resources_resourcedescription_get(struct tpe *tpe, uint32_t resourceid){
         struct resourcedescription *r;
+	Eina_List *l;
+
 	assert(tpe->resources->magic == RESOURCE_MAGIC);
-        ecore_list_first_goto(tpe->resources->resources);
-        while ((r = ecore_list_next(tpe->resources->resources)))
+	EINA_LIST_FOREACH(tpe->resources->resources, l, r){
                 if (r->id == resourceid)
                         return r;
+	}
 
         return NULL;
 
@@ -146,7 +148,7 @@ tpe_resources_resourcedescription_msg(void *data,int etype,void *event){
 	if (rd == NULL){
 		rd = calloc(1,sizeof(struct resourcedescription));
 		rd->id = id;
-		ecore_list_append(tpe->resources->resources,rd);
+		tpe->resources->resources = eina_list_append(tpe->resources->resources,rd);
 		/* Can queue now... not sent until we return... */
 		tpe_event_send("ResourceNew", rd, tpe_event_nofree, NULL);
 	}
@@ -178,6 +180,7 @@ uint32_t
 tpe_resources_resourcedescription_get_by_name(struct tpe *tpe, 
 		const char *name){
 	struct resourcedescription *r;
+	Eina_List *l;
 	assert(tpe);
 	assert(tpe->resources);
 	assert(name);
@@ -186,8 +189,7 @@ tpe_resources_resourcedescription_get_by_name(struct tpe *tpe,
 		return (uint32_t)-1;
 	assert(tpe->resources->magic == RESOURCE_MAGIC);
 
-        ecore_list_first_goto(tpe->resources->resources);
-        while ((r = ecore_list_next(tpe->resources->resources))){
+	EINA_LIST_FOREACH(tpe->resources->resources, l, r){
 		if (r->name == NULL){
 			printf("Warning NULL name for resource\n");
 		}

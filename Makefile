@@ -1,5 +1,5 @@
 PKGCONFIG=pkg-config
-PKGS='evas ecore ecore-con ecore-job imlib2 lua5.1 talloc'
+PKGS='evas ecore ecore-con lua5.1 talloc eina'
 
 CFLAGS+=`${PKGCONFIG} --cflags ${PKGS}`
 LDFLAGS+=`${PKGCONFIG} --libs ${PKGS}`
@@ -35,11 +35,11 @@ GUI=	#		\
 	gui_window.o	\
 	gui_list.o	
 
-NEWGUI=			\
+NEWGUI=		#	\
 	gui/star.o
 	#gui/map.o	\
 
-AIS=			\
+AIS=	#		\
 	ai_smith.o	\
 	ai_jones.o
 
@@ -84,7 +84,8 @@ install:
 	cp gui/data/star.png ${PREFIX}/share/galaxie/widgets/
 
 ailist.h:  ${AI_SRCS}
-	grep -h TPE_AI ${AI_SRCS} > ailist.h
+	touch ailist.h
+	#grep -h TPE_AI ${AI_SRCS} > ailist.h
 
 galaxie: ${OBJECTS} ${GUI} ${AIS}  ${NEWGUI}
 	${CC} -o galaxie ${OBJECTS} ${GUI} ${AIS} ${LDFLAGS}

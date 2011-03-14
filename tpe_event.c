@@ -4,14 +4,16 @@
 #include <string.h>
 
 #include <Ecore.h>
-#include <Ecore_Data.h>
+#include <Eina.h>
 
 #include "tpe_event.h"
 
 
 /*
  * Globacl generic TPE event structure */
-static Ecore_Hash *hash;
+#warning Using a list for events!
+static Eina_List *hash;
+//static Eina_Hash *hash;
 
 struct event_info {
 	const char *name;
@@ -26,10 +28,11 @@ unsigned int hash_pjw(const char *s);
  */
 int
 tpe_event_init(void){
-	hash = ecore_hash_new((unsigned int(*)(const void*))hash_pjw, 
+	hash = NULL;
+	/*
+	hash = ecore_hash_new((unsigned int(*)(const void*))hash_pjw,
 			(int(*)(const void*,const void*))strcmp);
-	
-	/* Init lazily */
+	*/
 
 	return !hash;
 }
@@ -46,7 +49,8 @@ tpe_event_type_add(const char *name){
 	einfo->handlers = 0;
 	
 	/* XXX: This cast needs to go: Needs a fix in ecore however */
-	ecore_hash_set(hash, (void*)name, einfo);	
+	//ecore_hash_set(hash, (void*)name, einfo);	
+	hash = eina_list_append(hash, einfo);
 	return 0;
 }
 
@@ -59,8 +63,16 @@ int
 tpe_event_handler_add(const char *event,
 		int (*handler)(void *data, int id, void *event), void *data){
 	struct event_info *einfo;
+	Eina_List *l;
 
-	einfo = ecore_hash_get(hash, event);
+//	einfo = ecore_hash_get(hash, event);
+	EINA_LIST_FOREACH(hash, l, einfo){
+		if (strcmp(einfo->name, event) == 0)
+			break;
+		else
+			einfo = NULL;
+	}
+
 	if (einfo == NULL){
 		printf("Unable to find event '%s'\n",event);
 		return -1;
@@ -115,8 +127,16 @@ int
 tpe_event_send(const char *event, void *edata,	
 		void (*freefn)(void *data, void *event), void *freedata){
 	struct event_info *einfo;
+	Eina_List *l;
 
-	einfo = ecore_hash_get(hash, event);
+	//einfo = ecore_hash_get(hash, event);
+	EINA_LIST_FOREACH(hash, l, einfo){
+		if (strcmp(einfo->name, event) == 0)
+			break;
+		else
+			einfo = NULL;
+	}
+
 	if (einfo == NULL){
 		printf("Warning: Unregisted event '%s'\n",event);
 		return -1;

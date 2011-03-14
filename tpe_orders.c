@@ -10,7 +10,7 @@
 #include <string.h>
 #include <talloc.h>
 
-#include <Ecore_Data.h>
+#include <Eina.h>
 
 #include "tpe.h"
 #include "galaxie.h"
@@ -86,7 +86,7 @@ static const struct argsize {
 struct tpe_orders {
 	struct tpe *tpe;
 
-	Ecore_List *ordertypes;
+	Eina_List *ordertypes;
 };
 
 
@@ -117,7 +117,7 @@ tpe_orders_init(struct tpe *tpe){
 	struct tpe_orders *orders;
 
 	orders = calloc(1,sizeof(struct tpe_orders));
-	orders->ordertypes = ecore_list_new();
+	orders->ordertypes = NULL;
 	orders->tpe = tpe;
 
 	tpe_event_handler_add("MsgOrderDescription", /* 9 */
@@ -154,8 +154,9 @@ tpe_orders_order_desc_updated(struct tpe *tpe, uint32_t id){
 struct order_desc *
 tpe_order_orders_get_desc_by_id(struct tpe *tpe, uint32_t type){
 	struct order_desc *od;
-	ecore_list_first_goto(tpe->orders->ordertypes);
-	while ((od = ecore_list_next(tpe->orders->ordertypes))){
+	Eina_List *l;
+
+	EINA_LIST_FOREACH(tpe->orders->ordertypes, l, od){
 		if (type == od->otype)
 			return od;
 	}
@@ -166,8 +167,9 @@ tpe_order_orders_get_desc_by_id(struct tpe *tpe, uint32_t type){
 int
 tpe_order_get_type_by_name(struct tpe *tpe, const char *name){
 	struct order_desc *od;
-	ecore_list_first_goto(tpe->orders->ordertypes);
-	while ((od = ecore_list_next(tpe->orders->ordertypes))){
+	Eina_List *l;
+
+	EINA_LIST_FOREACH(tpe->orders->ordertypes, l, od){
 		if (strcmp(name, od->name) == 0)
 			return od->otype;
 	}
@@ -178,8 +180,9 @@ tpe_order_get_type_by_name(struct tpe *tpe, const char *name){
 const char * 
 tpe_order_get_name_by_type(struct tpe *tpe, uint32_t type){
 	struct order_desc *od;
-	ecore_list_first_goto(tpe->orders->ordertypes);
-	while ((od = ecore_list_next(tpe->orders->ordertypes))){
+	Eina_List *l;
+
+	EINA_LIST_FOREACH(tpe->orders->ordertypes, l, od){
 		if (type == od->otype)
 			return od->name;
 	}
@@ -189,9 +192,10 @@ tpe_order_get_name_by_type(struct tpe *tpe, uint32_t type){
 const char *
 tpe_order_get_name(struct tpe *tpe, struct order *order){
 	struct order_desc *od;
+	Eina_List *l;
 	assert(order);
-	ecore_list_first_goto(tpe->orders->ordertypes);
-	while ((od = ecore_list_next(tpe->orders->ordertypes))){
+
+	EINA_LIST_FOREACH(tpe->orders->ordertypes, l, od){
 		if (order->type == od->otype)
 			return od->name;
 	}
@@ -217,7 +221,7 @@ tpe_orders_msg_order_description(void *data, int type, void *edata){
 			&od->otype,&od->name, &od->description, 
 			&od->nargs, &od->args, &od->updated);
 
-	ecore_list_append(tpe->orders->ordertypes, od);
+	tpe->orders->ordertypes = eina_list_append(tpe->orders->ordertypes, od);
 
 	return 1;
 }

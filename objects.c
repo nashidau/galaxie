@@ -21,7 +21,7 @@
 #include <string.h>
 
 #include <Evas.h>
-#include <Ecore_Data.h>
+#include <Eina.h>
 
 #include "tpe.h"
 #include "galaxietypes.h"
@@ -35,7 +35,7 @@
 
 struct tpe_obj {
 	struct tpe *tpe;
-	Ecore_Hash *objhash;
+	Eina_Hash *objhash;
 	int check;
 
 	struct watcher *watchers;
@@ -202,7 +202,8 @@ tpe_obj_init(struct tpe *tpe){
 			tpe_obj_list_begin,
 			tpe_obj_list_end);
 
-	obj->objhash = ecore_hash_new(NULL,NULL);
+	/* FIXME: No data free callback */
+	obj->objhash = eina_hash_int32_new(NULL);
 
 	return obj;
 }
@@ -217,10 +218,10 @@ tpe_obj_data_receive(void *data, int eventid, void *edata){
 	struct tpe *tpe;
 	struct tpe_obj *obj;
 	struct object *o;
-	int *oldchildren,noldchildren;
+	//int *oldchildren,noldchildren;
 	int id,n,i;
 	int isnew;
-	int oldowner;
+	//int oldowner;
 	void *end;
 	
 	tpe = data;
@@ -293,7 +294,8 @@ tpe_obj_obj_get_by_id(struct tpe *tpe, uint32_t oid){
 	if (tpe->obj == NULL) return NULL;
 	if (oid == TPE_OBJ_NIL) return NULL;
 
-	return ecore_hash_get(tpe->obj->objhash, (void*)oid);
+	/* FIXME: nash: Wrong */
+	return eina_hash_find(tpe->obj->objhash, &oid);
 }
 
 struct object *
@@ -307,7 +309,8 @@ tpe_obj_obj_add(struct tpe_obj *obj, int oid){
 	o->magic = object_magic;
 	o->oid = oid;
 	o->tpe = obj->tpe;
-	ecore_hash_set(obj->objhash, (void*)oid, o);
+	/* FIXME: nash: wrong */
+	eina_hash_set(obj->objhash, &oid, o);
 	return o;	
 }
 
@@ -338,10 +341,12 @@ tpe_obj_obj_dump(struct object *o){
 }
 
 /* This needs to be removed */
-Ecore_List *
+
+Eina_List *
 tpe_obj_obj_list(struct tpe_obj *obj){
 	if (obj == NULL) return NULL;
-	return ecore_hash_keys(obj->objhash);
+	//return eina_hash_set(obj->objhash);
+	return NULL;
 }
 
 
@@ -350,15 +355,16 @@ tpe_obj_obj_list(struct tpe_obj *obj){
  *
  * FIXME: this list is invalidated as soon as an object is deleted.
  */
+#if 0
 struct bytype {
-	Ecore_List *list;
+	Eina_List *list;
 	enum objtype type;
 };
 
 static void
 _append_by_type(void *nodev, void *typedata){
 	struct bytype *type = typedata;
-	Ecore_Hash_Node *node = nodev;
+	Eina_ *node = nodev;
 	struct object *o;
 
 	o = node->value;
@@ -380,6 +386,7 @@ tpe_obj_obj_list_by_type(struct tpe *tpe, enum objtype type){
 	
 	return bytype.list;
 }
+#endif
 
 uint64_t 
 tpe_obj_object_updated(struct tpe *tpe, uint32_t oid){
@@ -466,6 +473,8 @@ struct listcbdata {
 
 static void
 tpe_obj_list_cleanup_cb(void *nodev, void *checkdata){
+#warning Commented out function
+#if 0
 	struct listcbdata *cbdata;
 	Ecore_Hash_Node *node = nodev;
 	struct object *o;
@@ -484,10 +493,13 @@ tpe_obj_list_cleanup_cb(void *nodev, void *checkdata){
 		o->changed = 0;
 		o->isnew = 0;
 	}
+#endif
 }
 
 static void
 tpe_obj_list_end(struct tpe *tpe){
+#warning cOmmented out
+#if 0
 	struct listcbdata data;
 
 	data.check = tpe->obj->check;
@@ -495,10 +507,13 @@ tpe_obj_list_end(struct tpe *tpe){
  
 	ecore_hash_for_each_node(tpe->obj->objhash, tpe_obj_list_cleanup_cb, 
 			&data);
+#endif
 }
 
 static void
 tpe_obj_cleanup(struct tpe *tpe, struct object *o){
+#warning commented out
+#if 0
 	int i;
 
 	ecore_hash_remove(tpe->obj->objhash,(void*)o->oid);
@@ -526,6 +541,7 @@ tpe_obj_cleanup(struct tpe *tpe, struct object *o){
 	if (tpe->obj->home == o)
 		tpe->obj->home = NULL;
 	free(o);
+#endif
 }
 
 /**

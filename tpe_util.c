@@ -10,7 +10,7 @@
 
 #include <talloc.h>
 
-#include <Ecore_Data.h>
+#include <Eina.h>
 
 #include "tpe_util.h"
 
@@ -900,8 +900,6 @@ extract_string(const char **src, int *lenp){
 uint64_t 
 tpe_util_dist_calc2(struct object *obj1, struct object *obj2){
 	uint64_t x,y,z;
-	int64_t llabs(int64_t);
-	int64_t llrintl(long double);
 
 	x = llabs(obj1->pos.x - obj2->pos.x);
 	y = llabs(obj1->pos.y - obj2->pos.y);

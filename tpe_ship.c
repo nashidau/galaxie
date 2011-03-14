@@ -10,7 +10,7 @@
 #include <stdlib.h>
 
 #include <Ecore.h>
-#include <Ecore_Data.h>
+#include <Eina.h>
 #include <Evas.h>
 
 #include "tpe.h"
@@ -21,8 +21,8 @@
 #include "server.h"
 
 struct tpe_ship {
-	Ecore_List *designs;
-};	
+	Eina_List *designs;
+};
 struct design {
 	uint32_t did;
 	const char *name;
@@ -37,7 +37,7 @@ tpe_ship_init(struct tpe *tpe){
 	struct tpe_ship *ships;
 
 	ships = calloc(1,sizeof(struct tpe_ship));
-	ships->designs = ecore_list_new();
+	ships->designs = NULL;
 
 	tpe_sequence_register(tpe, "MsgGetDesignIDs",
 			"MsgListOfDesignIDs",
@@ -53,10 +53,12 @@ tpe_ship_init(struct tpe *tpe){
 struct design *
 tpe_ship_design_get(struct tpe *tpe, uint32_t design){
 	struct design *d;
-	ecore_list_first_goto(tpe->ship->designs);
-	while ((d = ecore_list_next(tpe->ship->designs)))
+	Eina_List *l;
+
+	EINA_LIST_FOREACH(tpe->ship->designs, l, d){
 		if (d->did == design)
 			return d;
+	}
 
 	return NULL;
 
@@ -65,10 +67,12 @@ tpe_ship_design_get(struct tpe *tpe, uint32_t design){
 const char *
 tpe_ship_design_name_get(struct tpe *tpe, uint32_t design){
 	struct design *d;
-	ecore_list_first_goto(tpe->ship->designs);
-	while ((d = ecore_list_next(tpe->ship->designs)))
+	Eina_List *l;
+
+	EINA_LIST_FOREACH(tpe->ship->designs, l, d){
 		if (d->did == design)
 			return d->name;
+	}
 
 	return NULL;
 }
@@ -99,8 +103,8 @@ tpe_ship_msg_design(void *data, int eventid, void *event){
 			&design->name,
 			&design->description);
 
-	ecore_list_append(tpe->ship->designs, design);
-printf("Design: %s [%d]\n",design->name, design->did);
+	tpe->ship->designs = eina_list_append(tpe->ship->designs, design);
+
 	free(cats);
 
 	return 1;

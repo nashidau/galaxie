@@ -206,8 +206,8 @@ main(int argc, char **argv){
 
 //	if (opt->usegui)
 //		tpe->gui = gui_init(tpe, opt->theme, opt->fullscreen);
-	if (opt->ai && opt->ai->init)	
-		tpe->ai = opt->ai->init(tpe);
+	//if (opt->ai && opt->ai->init)	
+	//	tpe->ai = opt->ai->init(tpe);
 
 	if (opt->browse)
 		browser_add(tpe,opt->server);
