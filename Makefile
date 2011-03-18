@@ -2,7 +2,7 @@ PKGCONFIG=pkg-config
 PKGS='evas ecore ecore-con lua5.1 talloc eina'
 
 CFLAGS+=`${PKGCONFIG} --cflags ${PKGS}`
-LDFLAGS+=`${PKGCONFIG} --libs ${PKGS}`
+LDFLAGS+=`${PKGCONFIG} --libs ${PKGS}` -lm
 
 ifeq "${PREFIX}" ""
 	PREFIX=/usr/local
