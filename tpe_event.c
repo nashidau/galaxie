@@ -59,9 +59,9 @@ tpe_event_type_add(const char *name){
  *
  * Checks to make sure the event type has been registered first 
  */
-int 
+int
 tpe_event_handler_add(const char *event,
-		int (*handler)(void *data, int id, void *event), void *data){
+		Eina_Bool (*handler)(void *data, int id, void *event), void *data){
 	struct event_info *einfo;
 	Eina_List *l;
 

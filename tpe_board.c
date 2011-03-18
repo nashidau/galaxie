@@ -58,8 +58,8 @@ static struct parseitem parsemessage[] = {
 };
 
 /* Event handlers for messages */
-static int tpe_board_msg_board_receive(void *data, int type, void *event);
-static int tpe_board_msg_message_receive(void *data, int type, void *event);
+static Eina_Bool tpe_board_msg_board_receive(void *data, int type, void *event);
+static Eina_Bool tpe_board_msg_message_receive(void *data, int type, void *event);
 static void update_free(void *d1, void *d2);
 
 static int tpe_board_board_changed_notify(struct tpe *tpe, struct board *board);
@@ -120,7 +120,7 @@ tpe_board_board_updated_get(struct tpe *tpe, uint32_t oid){
 struct board *
 tpe_board_board_add(struct tpe *tpe, uint32_t oid){
         struct board *board;
-	
+
 	if (tpe == NULL) return NULL;
 	if (tpe->board == NULL) tpe_board_init(tpe);
 	if (tpe->board == NULL) return NULL;
@@ -133,7 +133,7 @@ tpe_board_board_add(struct tpe *tpe, uint32_t oid){
 }
 
 
-static int 
+static Eina_Bool
 tpe_board_msg_board_receive(void *data, int type, void *event){
 	struct tpe *tpe;
 	struct msg *msg = event;
@@ -198,7 +198,7 @@ tpe_board_msg_board_receive(void *data, int type, void *event){
  * Saves the new message in the boards list of messages.
  *
  */
-static int 
+static Eina_Bool
 tpe_board_msg_message_receive(void *data, int type, void *event){
 	struct board *board;
 	struct message *message;
@@ -208,7 +208,7 @@ tpe_board_msg_message_receive(void *data, int type, void *event){
 	tpe = data;
 	msg = event;
 
-	message = parse_block(msg->data, parsemessage, NULL, 
+	message = parse_block(msg->data, parsemessage, NULL,
 		"struct message", sizeof(struct message), NULL);
 	if (!message) return -1;
 

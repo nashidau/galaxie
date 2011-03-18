@@ -28,10 +28,10 @@ struct tpe_sequence {
 	Eina_List *seqs;
 };
 
-static int tpe_sequence_new_turn(void *data, int eventid, void *event);
-static int tpe_sequence_connect(void *data, int eventid, void *event);
-static int tpe_sequence_handle_oids(void *udata, int type, void *event);
-static int tpe_sequence_start(struct tpe *, struct server *);
+static Eina_Bool tpe_sequence_new_turn(void *data, int eventid, void *event);
+static Eina_Bool tpe_sequence_connect(void *data, int eventid, void *event);
+static Eina_Bool tpe_sequence_handle_oids(void *udata, int type, void *event);
+static Eina_Bool tpe_sequence_start(struct tpe *, struct server *);
 
 struct tpe_sequence *
 tpe_sequence_init(struct tpe *tpe){
@@ -80,7 +80,7 @@ tpe_sequence_register(struct tpe *tpe,
 
 	tpe_event_handler_add(oidlist, tpe_sequence_handle_oids, seq);
 
-	return 0; 
+	return 0;
 }
 
 /** 
@@ -88,7 +88,7 @@ tpe_sequence_register(struct tpe *tpe,
  *  - Fire of list of update requests for each sequence 
  */
 
-static int 
+static Eina_Bool
 tpe_sequence_new_turn(void *data, int eventid, void *event){
 	struct tpe *tpe;
 	struct server *server;
@@ -101,7 +101,7 @@ tpe_sequence_new_turn(void *data, int eventid, void *event){
 }
 
 /* Callback for connecting */
-static int
+static Eina_Bool
 tpe_sequence_connect(void *data, int eventid, void *event){
 	struct connect *connect;
 	struct tpe *tpe;
@@ -115,7 +115,7 @@ tpe_sequence_connect(void *data, int eventid, void *event){
 
 
 
-static int
+static Eina_Bool
 tpe_sequence_start(struct tpe *tpe, struct server *server){
 	struct tpe_sequence *tsequence;
 	struct sequence *seq;
@@ -170,7 +170,7 @@ tpe_sequence_start(struct tpe *tpe, struct server *server){
  *
  * FIXME: Check lengths correctly...
  */
-static int
+static Eina_Bool
 tpe_sequence_handle_oids(void *udata, int type, void *msgv){
 	struct sequence *seq;
 	struct msg *msg;
@@ -184,10 +184,10 @@ tpe_sequence_handle_oids(void *udata, int type, void *msgv){
 	seq = udata;
 	msg = msgv;
 
-	tpe_util_parse_packet(msg->data, msg->end, 
+	tpe_util_parse_packet(msg->data, msg->end,
 			"iiO",&seqkey,&more,&noids,&oids);
 	seq->position += noids;
-	
+
 	toget = malloc((noids + 1) * sizeof(int));
 	for (i = 0 , n = 0; i < noids ; i ++){
 		updated = seq->lastupdatefn(seq->tpe, oids[i].oid);

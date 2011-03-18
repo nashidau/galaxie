@@ -37,7 +37,7 @@ struct tpe_resources {
 };
 
 
-static int tpe_resources_resourcedescription_msg(void *,int,void*);
+static Eina_Bool tpe_resources_resourcedescription_msg(void *,int,void*);
 
 /**
  * Initialise the resource system. 
@@ -128,8 +128,7 @@ tpe_resources_resourcedescription_updated(struct tpe *tpe, uint32_t resourceid){
  * - a UInt32, size per unit of resource (0 for not applicable)
  * - a UInt64, the last modified time of this resource description
  */
- 
-static int 
+static Eina_Bool
 tpe_resources_resourcedescription_msg(void *data,int etype,void *event){
 	struct resourcedescription *rd;
 	struct tpe *tpe;

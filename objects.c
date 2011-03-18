@@ -135,11 +135,11 @@ static struct parseitem objdescparse[] = {
 
 const char *const object_magic = "ObjectMagic";
 
-static int tpe_obj_data_receive(void *data, int eventid, void *event);
+static Eina_Bool tpe_obj_data_receive(void *data, int eventid, void *event);
 static void tpe_obj_list_begin(struct tpe *tpe);
 static void tpe_obj_list_end(struct tpe *tpe);
 
-static int tpe_obj_object_description_receive(void *data, int eventid, void *event);
+static Eina_Bool tpe_obj_object_description_receive(void *data, int eventid, void *event);
 static void tpe_obj_object_description_list_begin(struct tpe *tpe);
 static void tpe_obj_object_description_list_end(struct tpe *tpe);
 static uint64_t tpe_obj_object_description_updated(struct tpe *, uint32_t odid);
@@ -203,7 +203,7 @@ tpe_obj_init(struct tpe *tpe){
  * Callback for the event of a object being discovered 
  *
  */
-static int
+static Eina_Bool
 tpe_obj_data_receive(void *data, int eventid, void *edata){
 	struct msg *msg;
 	struct tpe *tpe;
@@ -639,25 +639,24 @@ tpe_obj_object_description_updated(struct tpe *tpe, uint32_t odid){
 }
 
 
-static int 
+static Eina_Bool
 tpe_obj_object_description_receive(void *data, int eventid, void *event){
 	struct msg *msg;
 	struct objectdesc *desc;
 	int *x;
 	msg = event;
-	
+
 	x = msg->data;
-	printf("msg->data: %08x %08x %08x\n",ntohl(x[0]), 
+	printf("msg->data: %08x %08x %08x\n",ntohl(x[0]),
 			ntohl(x[1]),
 			ntohl(x[2]));
 
-	desc = parse_block(msg->data, objdescparse, NULL, 
-			"struct objdesc", sizeof(struct objectdesc), 
+	desc = parse_block(msg->data, objdescparse, NULL,
+			"struct objdesc", sizeof(struct objectdesc),
 			(void *)&msg->end);
 
 	tpe_obj_object_description_dump(desc);
 
-	
 	return 1;
 }
 

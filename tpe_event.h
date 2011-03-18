@@ -2,7 +2,8 @@ int tpe_event_init(void);
 int tpe_event_type_add(const char *name);
 
 int tpe_event_handler_add(const char *event,
-		int (*handler)(void *data, int type, void *event), void *data);
+		Eina_Bool (*handler)(void *data, int type, void *event),
+		void *data);
 
 
 int tpe_event_send(const char *name , void *event,
