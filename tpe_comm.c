@@ -75,15 +75,15 @@ static void tpe_comm_create_account(struct connect *connect);
 static int tpe_comm_create_account_cb(void *tpev, struct msg *msg);
 static int tpe_comm_may_login(void *data, struct msg *msg);
 static int tpe_comm_logged_in(void *data, struct msg *msg);
-static int tpe_comm_msg_fail(void *udata, int type, void *event);
-static int tpe_comm_time_remaining(void *udata, int type, void *event);
+static Eina_Bool tpe_comm_msg_fail(void *udata, int type, void *event);
+static Eina_Bool tpe_comm_time_remaining(void *udata, int type, void *event);
 
 static int tpe_comm_msg_player_id(void *userdata, struct msg *msg);
 
-static int tpe_comm_get_time(void *msg);
+static Eina_Bool tpe_comm_get_time(void *msg);
 
 /* Generic handlers */
-static int tpe_comm_available_features_msg(void *udata, int type, void *event);
+static Eina_Bool tpe_comm_available_features_msg(void *udata, int type, void *);
 
 
 
@@ -248,7 +248,7 @@ tpe_comm_create_account_cb(void *connectv, struct msg *msg){
 }
 
 
-static int
+static Eina_Bool
 tpe_comm_get_time(void *server){
 	server_send(server, "MsgGetTimeRemaining", NULL,NULL,NULL,0);
 	return 1;
@@ -276,9 +276,9 @@ tpe_comm_msg_player_id(void *userdata, struct msg *msg){
 /**
  * Event Handler for "Available features" message.
  *
- * Currently jsut prints out the data
+ * Currently just prints out the data
  */
-static int 
+static Eina_Bool
 tpe_comm_available_features_msg(void *udata, int type, void *event){
 	struct msg *msg;
 	struct tpe *tpe = udata;
@@ -311,7 +311,7 @@ tpe_comm_available_features_msg(void *udata, int type, void *event){
 
 }
 
-static int
+static Eina_Bool
 tpe_comm_msg_fail(void *udata, int etype, void *event){
 	struct msg *msg = event;
 	int rv;
@@ -330,7 +330,7 @@ tpe_comm_msg_fail(void *udata, int etype, void *event){
 
 
 
-static int 
+static Eina_Bool
 tpe_comm_time_remaining(void *udata, int type, void *event){
 	struct msg *msg = event;
 	struct tpe *tpe;
@@ -359,7 +359,7 @@ tpe_comm_time_remaining(void *udata, int type, void *event){
 	}
 	printf("Time: %4d\tTurn %2d (%s)\n", remain,turn, turnname);
 
-	free(turnname);
+	free((char *)turnname);
 	return 1;
 }
 

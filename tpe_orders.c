@@ -100,14 +100,14 @@ struct probeinfo {
 	void *data;
 };
 
-static int tpe_orders_msg_order_description(void *, int type, void *data);
-static int tpe_orders_msg_order(void *, int type, void *data);
+static Eina_Bool tpe_orders_msg_order_description(void *, int type, void *data);
+static Eina_Bool tpe_orders_msg_order(void *, int type, void *data);
 
-static int tpe_orders_object_update(void *, int type, void *data);
+static Eina_Bool tpe_orders_object_update(void *, int type, void *data);
 
 static int tpe_order_arg_format(struct tpe *tpe, char *buf, int pos, int maxlen,
 		struct order *order, struct order_desc *desc, int argnum);
-static void tpe_order_parse_args(struct tpe *tpe, struct order *order, 
+static void tpe_order_parse_args(struct tpe *tpe, struct order *order,
 		struct order_desc *desc, int *p, int *end);
 
 static int object_probe_data(void *userdata, struct msg *msg);
@@ -207,7 +207,7 @@ tpe_order_get_name(struct tpe *tpe, struct order *order){
  * Parse an order 
  *
  */
-static int
+static Eina_Bool
 tpe_orders_msg_order_description(void *data, int type, void *edata){
 	struct msg *msg;
 	struct tpe *tpe = data;
@@ -227,10 +227,10 @@ tpe_orders_msg_order_description(void *data, int type, void *edata){
 }
 
 
-/* Update the order list for this object 
+/* Update the order list for this object
  *
  */
-static int 
+static Eina_Bool
 tpe_orders_object_update(void *tpev, int type, void *objv){
 	struct object *o = objv;
 	struct tpe *tpe = tpev;
@@ -273,7 +273,7 @@ tpe_orders_object_update(void *tpev, int type, void *objv){
  * have to
  *
  */
-static int 
+static Eina_Bool
 tpe_orders_msg_order(void *data, int type, void *event){
 	struct tpe *tpe = data;
 	struct object *object;

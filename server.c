@@ -179,21 +179,21 @@ struct server_cb {
 static void server_event_register(struct tpe *tpe);
 
 
-static int server_receive(void *data, int type, void *edata);
-static int server_con_event_server_add(void *data, int type, void *edata);
+static Eina_Bool server_receive(void *data, int type, void *edata);
+static Eina_Bool server_con_event_server_add(void *data, int type, void *edata);
 static int server_cb_add(struct server *server, int seq, msgcb cb, void *userdata);
 //static void connect_logged_in(void *server, const char *type, int len, void *mdata);
 //static int server_register_events(struct server *server);
 //static void connect_accept(void *server, const char * type, int len,
 //		void *mdata);
-static void server_handle_packet(struct server *server, int proto, int seq, 
+static void server_handle_packet(struct server *server, int proto, int seq,
 			int type, int len, void *data);
 
 static int format_server(int32_t *buf, const char *format, va_list ap);
 static void msg_free(void *udata, void *msg);
 
 enum {
-	HEADER_PROTO_3 = ('T' << 24) | ('P' << 16) | ('0' << 8) | ('3'), 
+	HEADER_PROTO_3 = ('T' << 24) | ('P' << 16) | ('0' << 8) | ('3'),
 	HEADER_PROTO_4 = ('T' << 24) | ('P' << 16) | (4 << 8) | 0,
 };
 
@@ -211,11 +211,11 @@ server_init(struct tpe *tpe){
 	servers->tpe = tpe;
 
 	//server->seq = 1;
-	
+
 	/* Register events */
 	server_event_register(tpe);
 
-	ecore_event_handler_add(ECORE_CON_EVENT_SERVER_ADD, 	
+	ecore_event_handler_add(ECORE_CON_EVENT_SERVER_ADD,
 			server_con_event_server_add, servers);
 	ecore_event_handler_add(ECORE_CON_EVENT_CLIENT_DATA,
 			server_receive, servers);
@@ -273,12 +273,12 @@ server_connect(struct tpe *tpe,
 
 /***************************************/
 
-/* 
+/*
  * Callback to say Ecore_Con has connected
  *
  * Now we will attempt to connect
  */
-static int 
+static Eina_Bool
 server_con_event_server_add(void *data, int type, void *edata){
 	struct servers *servers;
 	struct server *server;
@@ -315,7 +315,7 @@ server_con_event_server_add(void *data, int type, void *edata){
 	return 0;
 }
 
-static int 
+static Eina_Bool
 server_receive(void *udata, int ecore_event_type, void *edata){
 	struct servers *servers;
 	struct server *server;

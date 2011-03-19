@@ -30,7 +30,7 @@ struct design {
 	uint64_t updated;
 };
 
-static int tpe_ship_msg_design(void *data, int eventid, void *event);
+static Eina_Bool tpe_ship_msg_design(void *data, int eventid, void *event);
 
 struct tpe_ship *
 tpe_ship_init(struct tpe *tpe){
@@ -78,7 +78,7 @@ tpe_ship_design_name_get(struct tpe *tpe, uint32_t design){
 }
 
 
-uint64_t 
+uint64_t
 tpe_ship_design_updated_get(struct tpe *tpe, uint32_t design){
 	struct design *d;
 	d = tpe_ship_design_get(tpe,design);
@@ -87,7 +87,7 @@ tpe_ship_design_updated_get(struct tpe *tpe, uint32_t design){
 	return UINT64_MAX;
 }
 
-static int 
+static Eina_Bool
 tpe_ship_msg_design(void *data, int eventid, void *event){
 	struct design *design = NULL;
 	int32_t *cats = NULL,ncats;
@@ -98,8 +98,8 @@ tpe_ship_msg_design(void *data, int eventid, void *event){
 
 	msg = event;
 
-	tpe_util_parse_packet(msg->data, msg->end, "ilass", &design->did, 
-			&design->updated, &ncats,&cats, 
+	tpe_util_parse_packet(msg->data, msg->end, "ilass", &design->did,
+			&design->updated, &ncats,&cats,
 			&design->name,
 			&design->description);
 

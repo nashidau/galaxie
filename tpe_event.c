@@ -11,7 +11,7 @@
 
 /*
  * Globacl generic TPE event structure */
-#warning Using a list for events!
+// FIXME: Using a list for events!
 static Eina_List *hash;
 //static Eina_Hash *hash;
 
@@ -34,7 +34,7 @@ tpe_event_init(void){
 			(int(*)(const void*,const void*))strcmp);
 	*/
 
-	return !hash;
+	return 0;
 }
 
 
