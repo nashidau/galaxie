@@ -267,6 +267,11 @@ server_connect(struct tpe *tpe,
 	/* FIXME: ssl */
 	server->svr = ecore_con_server_connect(ECORE_CON_REMOTE_SYSTEM,
 				servername,port,server);
+	if (server->svr == NULL){
+		printf("Could not create server\n");
+		// FIXME: Clean up
+		return NULL;
+	}
 
 	return server;
 }
@@ -428,7 +433,7 @@ server_handle_packet(struct server *server, int proto, int seq, int type,
 				if (cb->cb)
 					cb->cb(cb->userdata, msg);
 				cb->deleteme = 1;
-			} 
+			}
 		}
 
 		/* Now clean things up without callbacks */
@@ -442,7 +447,7 @@ server_handle_packet(struct server *server, int proto, int seq, int type,
 				if (cb->next)
 					cb->next->prev = cb->prev;
 				free(cb);
-			} 
+			}
 		}
 
 	}
