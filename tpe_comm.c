@@ -254,6 +254,13 @@ tpe_comm_get_time(void *server){
 	return 1;
 }
 
+/**
+ * FIXME: THis is entirely broken now.
+ *
+ * This used to a single number, now it's a sequence.
+ * So this needs to be updated to reflect that.
+ * Probably best to use the standard sequence handling routines if I can.
+ */
 static int
 tpe_comm_msg_player_id(void *userdata, struct msg *msg){
 	struct tpe *tpe = userdata;
