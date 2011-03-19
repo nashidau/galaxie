@@ -176,6 +176,7 @@ main(int argc, char **argv){
 
 	evas_init();
 	ecore_init();
+	ecore_con_init();
 
 	tpe = talloc_zero(NULL,struct tpe);
 	if (tpe == NULL) exit(1);
