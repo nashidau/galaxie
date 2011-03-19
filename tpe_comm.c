@@ -90,7 +90,7 @@ static Eina_Bool tpe_comm_available_features_msg(void *udata, int type, void *);
 void
 tpe_comm_init(struct tpe *tpe){
 	/* FIXME: Need to check for multi start here */
-	tpe_event_handler_add("MsgAvailableFeatures", 
+	tpe_event_handler_add("MsgAvailableFeatures",
 			tpe_comm_available_features_msg, tpe);
 	tpe_event_handler_add("MsgFail", tpe_comm_msg_fail, tpe);
 	tpe_event_handler_add("MsgTimeRemaining",tpe_comm_time_remaining, tpe);
@@ -254,9 +254,11 @@ tpe_comm_get_time(void *server){
 	return 1;
 }
 
-static int 
+static int
 tpe_comm_msg_player_id(void *userdata, struct msg *msg){
 	struct tpe *tpe = userdata;
+	uint64_t modtime;
+	int i;
 
 	if (strcmp(msg->type, "MsgFail") == 0){
 		/* Message fail! */
@@ -265,8 +267,19 @@ tpe_comm_msg_player_id(void *userdata, struct msg *msg){
 		exit(1);
 	}
 
-	tpe_util_parse_packet(msg->data, msg->end, "iss", &tpe->player,
-			&tpe->racename, &tpe->playername);
+	if (strcmp(msg->type, "MsgSEQUENCE") == 0){
+		/* Ahh.. just the sequence header... drop it */
+		return 1;
+	}
+
+for (i = 0 ; i < msg->len / 4; i ++)
+printf("%08x ",((uint32_t *)msg->data)[msg->len / 4]);
+printf("\n");
+
+	tpe_util_parse_packet(msg->data, msg->end, "issl", &tpe->player,
+			&tpe->racename, &tpe->playername, &modtime);
+	printf("Player %d: %s (%s)\n",tpe->player, tpe->racename,
+			tpe->playername);
 
 	return 1;
 }
