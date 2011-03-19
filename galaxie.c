@@ -52,18 +52,18 @@ struct startopt {
 	unsigned int ssl:  1;
 	unsigned short port;
 	char *server;
-	
+
 	char *game;
 
 	char *username;
 	char *password;
-	
+
 	/* AI options */
 	struct ai_info *ai;
 
 	/* GUI options */
-	unsigned int usegui :1; 
-	unsigned int fullscreen :1; 
+	unsigned int usegui :1;
+	unsigned int fullscreen :1;
 	char *theme;
 
 	struct {
@@ -212,8 +212,8 @@ main(int argc, char **argv){
 	if (opt->browse)
 		browser_add(tpe,opt->server);
 	else if (opt->server && opt->username && opt->password)
-		tpe_comm_connect(tpe, opt->server, opt->port, 
-				opt->game, 
+		tpe_comm_connect(tpe, opt->server, opt->port,
+				opt->game,
 				opt->username, opt->password);
 
 	ecore_main_loop_begin();

@@ -104,19 +104,19 @@ tpe_comm_init(struct tpe *tpe){
 
 
 int
-tpe_comm_connect(struct tpe *tpe, 
-			const char *server, int port, 
+tpe_comm_connect(struct tpe *tpe,
+			const char *server, int port,
 			const char *game,
 			const char *user, const char *pass){
 	struct connect *connect;
-	
+
 	connect = calloc(1,sizeof(struct connect));
 	connect->servername = strdup(server);
 	connect->user = strdup(user);
 	connect->pass = strdup(pass);
 	if (game)
 		connect->game = strdup(game);
-	else 
+	else
 		connect->game = NULL;
 	connect->status = CONSTATUS_CONNECTING;
 
